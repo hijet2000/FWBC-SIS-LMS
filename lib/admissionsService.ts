@@ -42,7 +42,8 @@ let MOCK_VISITOR_LOGS: VisitorLog[] = [
 
 let MOCK_CALL_LOGS: CallLog[] = [
     { id: 'call-1', direction: 'Inbound', callerName: 'Jane Doe', number: '555-1234', topic: 'Enquiry', status: 'Closed', notes: 'Enquired about Form 1 for John Doe. Directed to online application form.', callAt: getISODateMinutesAgo(2100), ownerUserId: 'user-evelyn-reed', linkedEntity: { type: 'Enquiry', id: 'enq-1', name: 'Jane Doe (for John)' } },
-    { id: 'call-2', direction: 'Outbound', number: '555-8765', topic: 'Attendance', status: 'Open', notes: 'Called about repeated absences. Left voicemail.', callAt: getISODateMinutesAgo(20), ownerUserId: 'user-evelyn-reed' },
+    // FIX: Added missing 'callerName' property to satisfy the CallLog type.
+    { id: 'call-2', direction: 'Outbound', callerName: 'Mr. Rodriguez (Guardian)', number: '555-8765', topic: 'Attendance', status: 'Open', notes: 'Called about repeated absences. Left voicemail.', callAt: getISODateMinutesAgo(20), ownerUserId: 'user-evelyn-reed' },
 ];
 
 let MOCK_POSTAL_ITEMS: Postal[] = [

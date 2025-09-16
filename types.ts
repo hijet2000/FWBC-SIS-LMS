@@ -1,6 +1,6 @@
-// FIX: Removed invalid CDATA wrapper.
-// --- CORE & AUTH ---
+// types.ts
 
+// --- CORE ---
 export interface User {
   id: string;
   name: string;
@@ -14,8 +14,7 @@ export interface AuthContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-// --- SHARED UI ---
-
+// --- UI ---
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface ToastMessage {
@@ -29,13 +28,6 @@ export interface ToastContextType {
 }
 
 // --- SIS (Student Information System) ---
-
-export interface SchoolClass {
-  id: string;
-  name: string;
-  teacherId: string;
-}
-
 export interface Student {
   id: string;
   name: string;
@@ -54,37 +46,18 @@ export interface Student {
   photoUrl?: string;
 }
 
-// --- ATTENDANCE ---
-export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
-
-export interface AttendanceEntry {
-  studentId: string;
-  status: AttendanceStatus;
-  minutesAttended?: number;
-}
-
-export interface AttendanceRecord extends AttendanceEntry {
-  id:string;
-  sessionId: string;
-  classId: string;
-  date: string; // YYYY-MM-DD
-  createdAt: string; // ISO
-}
-
-export interface WeeklyEmailSettings {
-  enabled: boolean;
-  sendHour: number; // 0-23
-}
-
-
-// --- ACADEMICS & TIMETABLING ---
-export type DayOfWeek = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI';
-
-export interface Subject {
+export interface SchoolClass {
   id: string;
   name: string;
+  teacherId: string;
+}
+
+// --- Academics ---
+export interface Subject {
+  id: string;
+  name:string;
   code?: string;
-  level?: 'O' | 'A' | 'Other';
+  level: 'O' | 'A' | 'Other';
 }
 
 export interface Teacher {
@@ -102,11 +75,13 @@ export interface Mapping {
 }
 
 export interface Exam {
-  id: string;
-  subjectName: string;
-  className: string;
-  date: string; // YYYY-MM-DD
+    id: string;
+    subjectName: string;
+    className: string;
+    date: string; // YYYY-MM-DD
 }
+
+export type DayOfWeek = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
 
 export interface TimetableEntry {
     id: string;
@@ -117,11 +92,77 @@ export interface TimetableEntry {
     timeSlot: string; // e.g., "09:00-10:00"
 }
 
-// --- LMS (Learning Management System) ---
+// --- Attendance ---
+export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+
+export interface AttendanceRecord {
+  id: string;
+  studentId: string;
+  sessionId: string;
+  classId: string;
+  date: string; // YYYY-MM-DD
+  status: AttendanceStatus;
+  minutesAttended?: number;
+  createdAt: string; // ISO
+}
+
+export interface AttendanceEntry {
+    studentId: string;
+    status: AttendanceStatus;
+    minutesAttended?: number;
+}
+
+export interface WeeklyEmailSettings {
+    enabled: boolean;
+    sendHour: number; // 0-23
+}
+
+
+// --- Fees ---
+export type FeeFrequency = 'Once' | 'Monthly' | 'Termly' | 'Annually';
+
+export interface FeeItem {
+  id: string;
+  name: string;
+  code?: string;
+  amount: number;
+  frequency: FeeFrequency;
+  active: boolean;
+}
+
+export type InvoiceStatus = 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
+
+export interface Invoice {
+  id: string;
+  invoiceNo: string;
+  studentId: string;
+  classId: string;
+  issuedAt: string; // YYYY-MM-DD
+  dueAt: string; // YYYY-MM-DD
+  lineItems: { feeItemId: string; description: string; amount: number }[];
+  total: number;
+  paid: number;
+  status: InvoiceStatus;
+}
+
+export type PaymentMethod = 'Cash' | 'Card' | 'Mobile' | 'Bank';
+
+export interface Payment {
+  id: string;
+  invoiceId: string;
+  receiptNo: string;
+  amount: number;
+  method: PaymentMethod;
+  ref?: string;
+  paidAt: string; // YYYY-MM-DD
+  note?: string;
+}
+
+// --- LMS ---
 export interface Course {
     id: string;
     name: string;
-    status: 'Open' | 'Closed';
+    status: 'Open' | 'Closed' | 'Draft';
 }
 
 export type AssetKind = 'VIDEO' | 'AUDIO' | 'EBOOK';
@@ -131,7 +172,7 @@ export interface DigitalAsset {
   title: string;
   kind: AssetKind;
   url: string;
-  category: string;
+  category?: string;
   createdAt: string; // YYYY-MM-DD
 }
 
@@ -164,27 +205,15 @@ export interface QuizQuestion {
     type: 'single' | 'multi';
     prompt: string;
     choices: string[];
-    correct: number[]; // indices
+    correct: number[]; // indices of correct choices
 }
 
 export interface QuizAnswer {
     questionId: string;
-    selected: number[]; // indices
+    selected: number[]; // indices of selected choices
 }
 
-
-// --- HOMEWORK ---
-export type SubmissionStatus = 'On-time' | 'Late' | 'Not Submitted';
-
-export interface HomeworkStats {
-  totalStudents: number;
-  submitted: number;
-  onTime: number;
-  late: number;
-  notSubmitted: number;
-  submissionRate: number; // percentage
-}
-
+// --- Homework ---
 export interface Homework {
     id: string;
     classId: string;
@@ -194,19 +223,55 @@ export interface Homework {
     dueDate: string; // YYYY-MM-DD
     assignedAt: string; // ISO
     attachments?: { name: string; url: string }[];
-    stats?: HomeworkStats;
-    visibility?: 'Draft' | 'Published';
-    allowLateSubmissions?: boolean;
-    allowResubmission?: boolean;
+    visibility: 'Published' | 'Draft';
+    allowLateSubmissions: boolean;
+    allowResubmission: boolean;
     maxAttachments?: number;
-    allowedFileTypes?: string[]; // e.g., ['.pdf', '.docx']
+    allowedFileTypes?: string[];
     maxFileSizeMB?: number;
+    maxAttempts?: number;
+    stats?: HomeworkStats;
+}
+
+export type SubmissionStatus = 'On-time' | 'Late' | 'Not Submitted';
+
+export interface Submission {
+    id: string;
+    homeworkId: string;
+    studentId: string;
+    status: SubmissionStatus;
+    submittedAt?: string; // ISO
+    text?: string;
+    files?: { name: string; url: string }[];
+    attemptNumber?: number;
+    latePenaltyWaived?: boolean;
+}
+
+export interface Feedback {
+    id: string;
+    submissionId: string;
+    score?: number;
+    comments: string;
+    returnedAt: string; // ISO
+}
+
+export interface EnrichedSubmission extends Submission {
+    studentName: string;
+    feedback?: Feedback;
 }
 
 export interface EnrichedHomeworkForStudent extends Homework {
     submission?: Submission & { feedback?: Feedback };
 }
 
+export interface HomeworkStats {
+    totalStudents: number;
+    submitted: number;
+    onTime: number;
+    late: number;
+    notSubmitted: number;
+    submissionRate: number;
+}
 
 export interface HomeworkDashboardStats {
     dueToday: number;
@@ -224,144 +289,74 @@ export interface HomeworkAnalytics {
     markedCount: number;
 }
 
-
-export interface Submission {
-    id: string;
-    homeworkId: string;
+export interface StudentWatchlistItem {
     studentId: string;
-    status: SubmissionStatus;
-    submittedAt?: string; // ISO
-    text?: string;
-    files?: { name: string; url: string }[];
-}
-
-export interface EnrichedSubmission extends Submission {
     studentName: string;
-    feedback?: Feedback;
+    lateCount: number;
+    missedCount: number;
+    lastIncidentDate: string;
 }
 
-export interface Feedback {
-    id: string;
-    submissionId: string;
-    score?: number;
-    comments: string;
-    returnedAt: string; // ISO
-}
 
-// --- FEES ---
-export type FeeFrequency = 'Once' | 'Monthly' | 'Termly' | 'Annually';
-export type InvoiceStatus = 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
-export type PaymentMethod = 'Cash' | 'Card' | 'Mobile' | 'Bank';
-
-export interface FeeItem {
-  id: string;
-  name: string;
-  code?: string;
-  amount: number;
-  frequency: FeeFrequency;
-  active: boolean;
-}
-
-export interface Invoice {
-    id: string;
-    invoiceNo: string;
-    studentId: string;
-    classId: string;
-    issuedAt: string; // YYYY-MM-DD
-    dueAt: string; // YYYY-MM-DD
-    lineItems: { feeItemId: string; description: string; amount: number }[];
-    total: number;
-    paid: number;
-    status: InvoiceStatus;
-}
-
-export interface Payment {
-    id: string;
-    invoiceId: string;
-    receiptNo: string;
-    amount: number;
-    method: PaymentMethod;
-    paidAt: string; // YYYY-MM-DD
-    ref?: string;
-    note?: string;
-}
-
-// --- ADMISSIONS & FRONT OFFICE ---
+// --- Admissions & Front Office ---
 export type ApplicationStatus = 'New' | 'Screening' | 'DocsMissing' | 'Interview' | 'Offer' | 'Accepted' | 'Approved' | 'Rejected' | 'Waitlist' | 'Withdrawn';
-export type EnquiryStatus = 'New' | 'Contacted' | 'Qualified' | 'Converted' | 'Closed';
-export type EnquirySource = 'Call' | 'Web' | 'Walk-in' | 'Referral' | 'Social';
 
 export interface ApplicantDetails {
     fullName: string;
     dob: string;
     gender: 'Male' | 'Female' | 'Other';
     nationality: string;
-    priorSchool: string;
+    priorSchool?: string;
 }
-
 export interface GuardianDetails {
     name: string;
-    relationship: 'Father' | 'Mother' | 'Guardian';
+    relationship: string;
     phone: string;
     email: string;
     address: string;
 }
-
 export interface ApplicationDocument {
-    type: 'BirthCertificate' | 'ReportCard' | 'Photo';
+    type: 'BirthCertificate' | 'Photo' | 'ReportCard';
     fileName: string;
     url: string;
     verified: boolean;
 }
 
-export interface ScreeningChecklist {
-    ageEligibility: boolean;
-    prerequisitesMet: boolean;
-    catchmentArea: boolean;
-}
-
-export interface InterviewDetails {
-    scheduledAt?: string; // ISO
-    interviewerId?: string;
-    notes?: string;
-}
-
-export interface DecisionDetails {
-    offerExpiresAt?: string; // YYYY-MM-DD
-    rejectionReason?: string;
-}
-
 export interface Application {
-    id: string;
-    enquiryId?: string;
-    applicantName: string;
-    desiredClassId: string;
-    intakeSession: string;
-    status: ApplicationStatus;
-    submittedAt: string; // ISO
-    applicantDetails: ApplicantDetails;
-    guardians: GuardianDetails[];
-    documents: ApplicationDocument[];
-    // New detailed pipeline fields
-    screeningChecklist: ScreeningChecklist;
-    interviewDetails: InterviewDetails;
-    decisionDetails: DecisionDetails;
-    notes?: string;
+  id: string;
+  enquiryId?: string;
+  applicantName: string;
+  desiredClassId: string;
+  intakeSession: string;
+  status: ApplicationStatus;
+  submittedAt: string; // ISO
+  applicantDetails: ApplicantDetails;
+  guardians: GuardianDetails[];
+  documents: ApplicationDocument[];
+  screeningChecklist: {
+      ageEligibility: boolean;
+      prerequisitesMet: boolean;
+      catchmentArea: boolean;
+  };
+  interviewDetails: {
+      scheduledAt?: string; // ISO
+      interviewerId?: string;
+      notes?: string;
+  };
+  decisionDetails: {
+      offerExpiresAt?: string; // YYYY-MM-DD
+      rejectionReason?: string;
+  };
 }
 
-export interface PublicApplicationView {
-    applicantName: string;
-    status: ApplicationStatus;
-    nextSteps: string;
-    interviewDetails?: InterviewDetails;
-    missingDocuments: string[];
+export interface SeatAllocation {
+    classId: string;
+    capacity: number;
+    allocated: number;
 }
 
-export interface CsvValidationError {
-    rowIndex: number;
-    field: string;
-    message: string;
-}
+export type EnquiryStatus = 'New' | 'Contacted' | 'Qualified' | 'Converted' | 'Closed';
+export type EnquirySource = 'Web' | 'Call' | 'Walk-in' | 'Referral' | 'Social';
 
 export interface Enquiry {
     id: string;
@@ -372,27 +367,19 @@ export interface Enquiry {
     status: EnquiryStatus;
     ownerUserId: string;
     targetClassId?: string;
-    preferredIntake?: string;
-    notes?: string;
     createdAt: string; // ISO
+    notes?: string;
 }
 
 export interface FollowUp {
     id: string;
     enquiryId: string;
-    applicationId?: string;
     ownerId: string;
     dueAt: string; // ISO
     doneAt?: string; // ISO
     method: 'Call' | 'Email' | 'Visit';
     summary: string;
     outcome?: string;
-}
-
-export interface SeatAllocation {
-    classId: string;
-    capacity: number;
-    allocated: number;
 }
 
 export interface VisitorLog {
@@ -403,7 +390,7 @@ export interface VisitorLog {
     timeIn: string; // ISO
     timeOut?: string; // ISO
     hostUserId?: string;
-    badgeNo?: string;
+    badgeNo: string;
     isOverstay?: boolean;
     isUnresolved?: boolean;
 }
@@ -415,22 +402,18 @@ export type CallStatus = 'Open' | 'Closed';
 export interface CallLog {
     id: string;
     direction: CallDirection;
-    callerName?: string;
-    number?: string;
+    callerName: string;
+    number: string;
     topic: CallTopic;
     status: CallStatus;
     notes: string;
     callAt: string; // ISO
     ownerUserId?: string;
-    linkedEntity?: {
-        type: 'Student' | 'Enquiry';
-        id: string;
-        name: string;
-    }
+    linkedEntity?: { type: 'Student' | 'Enquiry'; id: string; name: string; };
 }
 
 export type PostalDirection = 'Incoming' | 'Outgoing';
-export type PostalStatus = 'Received' | 'Dispatched' | 'Handed Over';
+export type PostalStatus = 'Received' | 'Handed Over' | 'Dispatched' | 'Delivered';
 
 export interface Postal {
     id: string;
@@ -443,7 +426,7 @@ export interface Postal {
     refNo?: string;
     confidential: boolean;
     status: PostalStatus;
-    attachments?: { name: string; url: string }[];
+    attachments?: { name: string, url: string }[];
 }
 
 export interface Handover {
@@ -452,6 +435,14 @@ export interface Handover {
     fromUserId: string;
     toUserId: string;
     handedAt: string; // ISO
+}
+
+export interface PublicApplicationView {
+    applicantName: string;
+    status: ApplicationStatus;
+    nextSteps: string;
+    interviewDetails: Application['interviewDetails'];
+    missingDocuments: ApplicationDocument['type'][];
 }
 
 export interface OnlineAdmissionsSettings {
@@ -463,22 +454,24 @@ export interface CommunicationTemplate {
     id: string;
     name: string;
     subject: string;
-    body: string; // Could use placeholders like {{applicantName}}
+    body: string;
 }
 
+export interface CsvValidationError {
+    rowIndex: number;
+    field: string;
+    message: string;
+}
 
-// --- TRANSPORT ---
-export type TripStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
-export type BoardingDirection = 'Pickup' | 'Dropoff';
-
+// --- Transport ---
 export interface Vehicle {
-    id: string;
-    regNo: string;
-    make: string;
-    model: string;
-    capacity?: number;
-    active: boolean;
-    notes?: string;
+  id: string;
+  regNo: string;
+  make: string;
+  model: string;
+  capacity: number;
+  active: boolean;
+  notes?: string;
 }
 
 export interface Driver {
@@ -495,14 +488,16 @@ export interface TransportRoute {
     stops: { id: string; label: string }[];
 }
 
+export type TripStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
+
 export interface Trip {
     id: string;
     date: string; // YYYY-MM-DD
     vehicleId: string;
     driverId: string;
     routeId: string;
-    startTime?: string; // HH:MM
-    endTime?: string; // HH:MM
+    startTime?: string; // HH:mm
+    endTime?: string; // HH:mm
     status: TripStatus;
 }
 
@@ -513,6 +508,8 @@ export interface EligibleStudent extends Student {
     guardianPhone: string;
 }
 
+export type BoardingDirection = 'Pickup' | 'Dropoff';
+
 export interface BoardingEvent {
     id: string;
     tripId: string;
@@ -520,6 +517,7 @@ export interface BoardingEvent {
     direction: BoardingDirection;
     timestampISO: string;
     alertSent: boolean;
+    deviceId?: string;
 }
 
 export interface AlertSettings {
@@ -528,9 +526,9 @@ export interface AlertSettings {
     onDropoff: boolean;
 }
 
-// --- ADMIN & AUDIT ---
-export type AuditModule = 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'LMS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'ADMISSIONS' | 'FRONTOFFICE' | 'AUTH' | 'SYSTEM' | 'ROLES';
-export type AuditAction = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'ROLE_CHANGE' | 'PAYMENT' | 'GRADE' | 'CONVERT' | 'APPROVE';
+// --- Admin & Security ---
+export type AuditModule = 'AUTH' | 'STUDENTS' | 'ACADEMICS' | 'ATTENDANCE' | 'FEES' | 'LMS' | 'HOMEWORK' | 'TRANSPORT' | 'SYSTEM' | 'ADMISSIONS' | 'FRONTOFFICE' | 'LIBRARY' | 'ROLES' | 'HOSTEL';
+export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'ROLE_CHANGE' | 'CONVERT' | 'APPROVE' | 'GRADE';
 
 export interface AuditEvent {
   id: string;
@@ -560,19 +558,145 @@ export interface UserSession {
 }
 
 export interface Role {
-  id: string;
-  name: string;
-  description: string;
-  scopes: string[];
+    id: string;
+    name: string;
+    description: string;
+    scopes: string[];
 }
 
 export interface Permission {
-  scope: string;
-  label: string;
-  description?: string;
+    scope: string;
+    label: string;
+    description: string;
 }
 
 export interface PermissionGroup {
-  module: string;
-  permissions: Permission[];
+    module: string;
+    permissions: Permission[];
+}
+
+// --- Library ---
+export interface Book {
+    id: string;
+    title: string;
+    author: string;
+    isbn?: string;
+    category?: string;
+    language: string;
+    copies: BookCopy[];
+}
+
+export type CopyStatus = 'Available' | 'On Loan' | 'Damaged' | 'Lost' | 'Maintenance';
+
+export interface BookCopy {
+    id: string;
+    bookId: string;
+    barcode: string;
+    rack?: string;
+    shelf?: string;
+    status: CopyStatus;
+}
+
+export type MemberType = 'Student' | 'Teacher';
+
+export interface LibraryMember {
+    id: string;
+    name: string;
+    memberType: MemberType;
+    barcode: string;
+    maxConcurrentLoans: number;
+}
+
+export interface LibraryPolicy {
+    memberType: MemberType;
+    loanDays: number;
+    maxRenewals: number;
+    maxConcurrentLoans: number;
+    graceDays: number;
+    finePerDay: number;
+    lostReplacementFee: number;
+}
+
+export interface Loan {
+    id: string;
+    copyId: string;
+    memberId: string;
+    issuedAt: string; // ISO
+    dueAt: string; // YYYY-MM-DD
+    returnedAt?: string; // ISO
+    renewals: number;
+}
+
+export interface EnrichedLoan extends Loan {
+    bookTitle: string;
+    bookAuthor: string;
+    copyBarcode: string;
+    memberName: string;
+    fine: number;
+}
+
+// --- Hostel ---
+export interface Hostel {
+    id: string;
+    name: string;
+    type: 'Boys' | 'Girls';
+}
+
+export interface HostelFloor {
+    id: string;
+    hostelId: string;
+    name: string; // e.g., 'Ground Floor', 'First Floor'
+}
+
+export interface HostelRoom {
+    id: string;
+    floorId: string;
+    name: string; // e.g., '101', '102'
+    capacity: number;
+    roomType: 'Standard' | 'Premium' | 'Accessible';
+}
+
+export type BedStatus = 'Available' | 'Occupied' | 'Blocked';
+
+export interface Bed {
+    id: string;
+    roomId: string;
+    name: string; // e.g., 'A', 'B'
+    status: BedStatus;
+}
+
+export interface Allocation {
+    id: string;
+    studentId: string;
+    bedId: string;
+    checkInDate: string; // YYYY-MM-DD
+    checkOutDate?: string; // YYYY-MM-DD
+    notes?: string;
+}
+
+export interface HostelVisitor {
+    id: string;
+    studentId: string; // The student being visited
+    visitorName: string;
+    relationship: string;
+    timeIn: string; // ISO
+    timeOut?: string; // ISO
+}
+
+export interface CurfewCheck {
+    id: string;
+    date: string; // YYYY-MM-DD
+    studentId: string;
+    status: 'Present' | 'Absent';
+    notes?: string;
+    checkedByUserId: string;
+}
+
+export interface CurfewException {
+    id: string;
+    studentId: string;
+    fromDate: string; // YYYY-MM-DD
+    toDate: string; // YYYY-MM-DD
+    reason: string;
+    approvedByUserId: string;
 }

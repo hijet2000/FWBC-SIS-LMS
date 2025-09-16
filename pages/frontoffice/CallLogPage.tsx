@@ -60,10 +60,11 @@ const CallLogPage: React.FC = () => {
         if (!user || !quickLog.notes.trim()) return;
         
         try {
-            // FIX: The `createCallLog` function signature omits `status`, as the service sets it to 'Open' by default. Removed it from the payload.
+            // FIX: The createCallLog function's input type requires ownerUserId. Added it to the payload.
             const newLog = await admissionsService.createCallLog({
                 ...quickLog,
                 callAt: new Date().toISOString(),
+                ownerUserId: user.id,
             }, user);
             
             if (newLog.topic === 'Safeguarding') {

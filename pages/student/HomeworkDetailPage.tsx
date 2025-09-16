@@ -31,7 +31,6 @@ const StudentHomeworkDetailPage: React.FC = () => {
     const [submission, setSubmission] = useState<(Submission & { feedback?: Feedback }) | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Form state for new submission
     const [text, setText] = useState('');
     const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,14 +59,33 @@ const StudentHomeworkDetailPage: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
+    const handleFileAdd = () => {
+        if (homework?.maxAttachments && files.length >= homework.maxAttachments) {
+            addToast(`You can only attach up to ${homework.maxAttachments} files.`, 'warning');
+            return;
+        }
+        // Mock file selection
+        const mockFile = `submission_${Date.now()}.pdf`;
+        setFiles([...files, { name: mockFile, url: '#' }]);
+    };
+    
+    const handleAttachmentClick = (fileUrl: string) => {
+        addToast("Generating secure download link...", "info");
+        // Simulate backend call to get a signed URL
+        setTimeout(() => {
+            const signedUrl = `${fileUrl}?token=xyz123&expires=${Date.now() + 60000}`;
+            window.open(signedUrl, '_blank');
+        }, 500);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!homeworkId || !studentId || !user) return;
         setIsSubmitting(true);
         try {
             await homeworkService.submitHomework({ homeworkId, studentId, text, files }, user);
-            addToast('Homework submitted successfully!', 'success');
-            fetchData(); // Refresh to show updated status
+            addToast('Homework submitted! Your teacher will be notified.', 'success');
+            fetchData();
         } catch(e: any) {
             addToast(e.message || 'Failed to submit homework.', 'error');
         } finally {
@@ -79,8 +97,11 @@ const StudentHomeworkDetailPage: React.FC = () => {
     if (!homework) return <div className="text-center p-8 text-red-500">Homework not found.</div>;
 
     const hasFeedback = !!submission?.feedback;
-    const canSubmit = !hasFeedback || homework.allowResubmission;
-    const isOverdue = new Date(homework.dueDate) < new Date() && !submission;
+    const attemptsMade = submission?.attemptNumber || 0;
+    const maxAttempts = homework.maxAttempts || 1;
+    const canResubmit = !hasFeedback || homework.allowResubmission;
+    const canAttempt = attemptsMade < maxAttempts;
+    const canSubmit = canResubmit && canAttempt;
 
     return (
         <div className="space-y-6">
@@ -93,13 +114,13 @@ const StudentHomeworkDetailPage: React.FC = () => {
                         <p className="whitespace-pre-wrap text-gray-700">{homework.instructions}</p>
                          {homework.attachments && homework.attachments.length > 0 && (
                              <div className="mt-4 pt-4 border-t">
-                                <h4 className="font-semibold text-sm mb-2">Attachments</h4>
+                                <h4 className="font-semibold text-sm mb-2">Teacher Attachments</h4>
                                 <ul className="list-disc list-inside space-y-1">
                                     {homework.attachments.map((file, index) => (
                                         <li key={index}>
-                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                                            <button onClick={() => handleAttachmentClick(file.url)} className="text-indigo-600 hover:underline">
                                                 {file.name}
-                                            </a>
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
@@ -121,46 +142,21 @@ const StudentHomeworkDetailPage: React.FC = () => {
                 <div className="lg:col-span-1 space-y-6">
                     <DetailCard title="Your Submission">
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            <textarea id="text-submission" rows={8} value={text} onChange={(e) => setText(e.target.value)} className="w-full mt-1 rounded-md border-gray-300 disabled:bg-gray-100" placeholder="Type your response here..." disabled={!canSubmit}/>
                             <div>
-                                <label htmlFor="text-submission" className="block text-sm font-medium text-gray-700">Your Answer</label>
-                                <textarea
-                                    id="text-submission"
-                                    rows={8}
-                                    value={text}
-                                    onChange={(e) => setText(e.target.value)}
-                                    className="w-full mt-1 rounded-md border-gray-300 disabled:bg-gray-100"
-                                    placeholder="Type your response here..."
-                                    disabled={!canSubmit}
-                                />
+                                {canSubmit && <div className="mt-1 p-4 border-2 border-dashed rounded-md text-center"> <button type="button" onClick={handleFileAdd} disabled={!canSubmit} className="text-sm text-indigo-600 disabled:text-gray-400"> + Add File </button> </div>}
+                                {files.length > 0 && <ul className="text-sm list-disc list-inside mt-2">{files.map(f => <li key={f.name}>{f.name}</li>)}</ul>}
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Attachments</label>
-                                {canSubmit && <div className="mt-1 p-4 border-2 border-dashed rounded-md text-center">
-                                    <button type="button" onClick={() => setFiles([...files, {name: `file-${files.length + 1}.pdf`, url: '#'}])} disabled={!canSubmit} className="text-sm text-indigo-600 disabled:text-gray-400">
-                                        + Add File (Mock)
-                                    </button>
-                                </div>}
-                                {files.length > 0 && <ul className="text-sm list-disc list-inside mt-2">
-                                    {files.map(f => <li key={f.name}>{f.name}</li>)}
-                                </ul>}
-                            </div>
-                            <button type="submit" disabled={isSubmitting || !canSubmit} className="w-full py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">
-                                {isSubmitting ? 'Submitting...' : submission ? 'Update Submission' : 'Submit'}
-                            </button>
-                             {isOverdue && <p className="text-xs text-center text-red-500">This assignment is overdue. Late submissions may be penalized.</p>}
-                             {!canSubmit && <p className="text-xs text-center text-gray-500">Feedback has been given. Resubmission is not allowed.</p>}
+                            <button type="submit" disabled={isSubmitting || !canSubmit} className="w-full py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">{isSubmitting ? 'Submitting...' : submission ? 'Update Submission' : 'Submit'}</button>
+                            {!canSubmit && <p className="text-xs text-center text-gray-500">{!canAttempt ? `Maximum attempts (${maxAttempts}) reached.` : 'Feedback has been given.'}</p>}
                         </form>
-                         {submission && (
-                            <div className="mt-4 text-sm text-center">
-                                <p>Status: <span className="font-bold">{submission.status}</span></p>
-                                {submission.submittedAt && <p>Submitted on: {new Date(submission.submittedAt).toLocaleString()}</p>}
-                            </div>
-                         )}
+                         {submission && (<div className="mt-4 text-sm text-center"> <p>Status: <span className="font-bold">{submission.status}</span></p> {submission.submittedAt && <p>Submitted on: {new Date(submission.submittedAt).toLocaleString()}</p>} </div>)}
                     </DetailCard>
                      <div className="bg-gray-50 p-4 rounded-lg border space-y-2">
                          <h4 className="font-semibold text-sm">Policies</h4>
                          <PolicyItem label="Late Submissions" value={homework.allowLateSubmissions ? 'Allowed' : 'Not Allowed'} />
                          <PolicyItem label="Resubmission" value={homework.allowResubmission ? 'Allowed after feedback' : 'Not Allowed'} />
+                         <PolicyItem label="Attempts" value={`${attemptsMade} / ${maxAttempts}`} />
                          <PolicyItem label="Max Attachments" value={homework.maxAttachments || 'N/A'} />
                          <PolicyItem label="File Types" value={homework.allowedFileTypes?.join(', ') || 'Any'} />
                      </div>

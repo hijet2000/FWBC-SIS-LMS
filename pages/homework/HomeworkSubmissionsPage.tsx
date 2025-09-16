@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as homeworkService from '../../lib/homeworkService';
 import type { Homework, EnrichedSubmission, SubmissionStatus, HomeworkAnalytics } from '../../types';
+import { exportToCsv } from '../../lib/exporters';
 import FeedbackModal from '../../components/homework/FeedbackModal';
 
 const statusStyles: Record<SubmissionStatus, string> = {
@@ -58,8 +59,7 @@ const HomeworkSubmissionsPage: React.FC = () => {
 
     const handleFeedbackSuccess = () => {
         setSelectedSubmission(null);
-        addToast('Feedback saved successfully!', 'success');
-        fetchData(); // Refresh data to show feedback status
+        fetchData();
     };
     
     const handleBulkMark = async () => {
@@ -72,6 +72,30 @@ const HomeworkSubmissionsPage: React.FC = () => {
         await homeworkService.bulkMarkSubmissions(homeworkId, notSubmittedIds, 0, 'No submission received.', user);
         addToast(`Marked ${notSubmittedIds.length} missing submissions.`, 'success');
         fetchData();
+    };
+    
+    const handleWaivePenalty = async (submissionId: string) => {
+        if (!user) return;
+        await homeworkService.waiveLatePenalty(submissionId, user);
+        addToast('Late penalty waived.', 'success');
+        fetchData();
+    };
+
+    const handleExport = () => {
+        const dataForExport = filteredSubmissions.map(s => ({
+            studentName: s.studentName,
+            status: s.status,
+            submittedAt: s.submittedAt ? new Date(s.submittedAt).toLocaleString() : 'N/A',
+            score: s.feedback?.score ?? 'Not Marked',
+            latePenaltyWaived: s.latePenaltyWaived ? 'Yes' : 'No',
+        }));
+        exportToCsv(`${homework?.title}_submissions.csv`, [
+            { key: 'studentName', label: 'Student' },
+            { key: 'status', label: 'Status' },
+            { key: 'submittedAt', label: 'Submitted At' },
+            { key: 'score', label: 'Score' },
+            { key: 'latePenaltyWaived', label: 'Penalty Waived' },
+        ], dataForExport);
     };
 
     const filteredSubmissions = useMemo(() => {
@@ -98,33 +122,20 @@ const HomeworkSubmissionsPage: React.FC = () => {
                 </nav>
             </div>
 
-            {activeTab === 'overview' && (
-                <div className="bg-white p-4 rounded-lg shadow-sm border">
-                    <h2 className="text-xl font-semibold mb-4">Submissions Overview</h2>
-                     <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {submissions.map(sub => {
-                            const isMarked = !!sub.feedback;
-                            return (<li key={sub.studentId} className="p-3 border rounded-md">
-                                <p className="font-medium">{sub.studentName}</p>
-                                <div className="flex justify-between items-center text-xs mt-1">
-                                    <span className={`px-2 py-0.5 rounded-full ${statusStyles[sub.status]}`}>{sub.status}</span>
-                                    {isMarked && <span className="text-green-600 font-bold">Marked ✓</span>}
-                                </div>
-                            </li>)
-                        })}
-                    </ul>
-                </div>
-            )}
+            {activeTab === 'overview' && ( <div className="bg-white p-4 rounded-lg shadow-sm border"> <h2 className="text-xl font-semibold mb-4">Submissions Overview</h2> <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> {submissions.map(sub => { const isMarked = !!sub.feedback; return (<li key={sub.studentId} className="p-3 border rounded-md"> <p className="font-medium">{sub.studentName}</p> <div className="flex justify-between items-center text-xs mt-1"> <span className={`px-2 py-0.5 rounded-full ${statusStyles[sub.status]}`}>{sub.status}</span> {isMarked && <span className="text-green-600 font-bold">Marked ✓</span>} </div> </li>) })} </ul> </div> )}
             
             {activeTab === 'submissions' && (
                 <div>
-                     <div className="bg-white p-4 rounded-lg shadow-sm border mb-6 flex justify-between items-center">
+                     <div className="bg-white p-4 rounded-lg shadow-sm border mb-6 flex justify-between items-center flex-wrap gap-4">
                         <div>
                             {(['all', 'On-time', 'Late', 'Not Submitted'] as const).map(status => (
                                 <button key={status} onClick={() => setSubmissionFilter(status)} className={`px-3 py-1 text-sm rounded-full mr-2 ${submissionFilter === status ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}>{status}</button>
                             ))}
                         </div>
-                        <button onClick={handleBulkMark} className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md">Mark all missing as 0</button>
+                        <div className="flex gap-2">
+                             <button onClick={handleExport} className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-md border">Export CSV</button>
+                             <button onClick={handleBulkMark} className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md border border-red-200">Mark all missing as 0</button>
+                        </div>
                     </div>
                     <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                         <table className="min-w-full divide-y divide-gray-300">
@@ -139,15 +150,12 @@ const HomeworkSubmissionsPage: React.FC = () => {
                                 {filteredSubmissions.map(sub => (
                                     <tr key={sub.studentId}>
                                         <td className="px-4 py-4 text-sm font-medium">{sub.studentName}</td>
-                                        <td className="px-4 py-4 text-sm"><span className={`px-2 py-1 text-xs rounded-full ${statusStyles[sub.status]}`}>{sub.status}</span></td>
+                                        <td className="px-4 py-4 text-sm"><span className={`px-2 py-1 text-xs rounded-full ${statusStyles[sub.status]}`}>{sub.status}{sub.latePenaltyWaived && '*'}</span></td>
                                         <td className="px-4 py-4 text-sm">{sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'N/A'}</td>
                                         <td className="px-4 py-4 text-sm">{sub.feedback?.score ?? 'N/A'}</td>
-                                        <td className="px-4 py-4 text-right text-sm font-medium">
-                                            {sub.status !== 'Not Submitted' && (
-                                                <button onClick={() => setSelectedSubmission(sub)} className="text-indigo-600 hover:text-indigo-900">
-                                                    {sub.feedback ? 'Edit Feedback' : 'Give Feedback'}
-                                                </button>
-                                            )}
+                                        <td className="px-4 py-4 text-right text-sm font-medium space-x-2">
+                                            {sub.status === 'Late' && !sub.latePenaltyWaived && <button onClick={() => handleWaivePenalty(sub.id)} className="text-yellow-600 hover:underline">Waive Penalty</button>}
+                                            {sub.status !== 'Not Submitted' && ( <button onClick={() => setSelectedSubmission(sub)} className="text-indigo-600 hover:text-indigo-900">{sub.feedback ? 'Edit Feedback' : 'Give Feedback'}</button> )}
                                         </td>
                                     </tr>
                                 ))}
@@ -157,39 +165,9 @@ const HomeworkSubmissionsPage: React.FC = () => {
                 </div>
             )}
             
-            {activeTab === 'analytics' && (
-                loading.analytics ? <p>Loading analytics...</p> : analytics &&
-                <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Submission Rate</h4><p className="text-2xl font-bold">{analytics.submissionRate.toFixed(1)}%</p></div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">On-Time Rate</h4><p className="text-2xl font-bold">{analytics.onTimeRate.toFixed(1)}%</p></div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Average Score</h4><p className="text-2xl font-bold">{analytics.averageScore?.toFixed(1) || 'N/A'}</p></div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Marked</h4><p className="text-2xl font-bold">{analytics.markedCount}/{analytics.totalSubmissions}</p></div>
-                    </div>
-                    <div className="bg-white p-4 rounded-lg shadow-sm border">
-                        <h3 className="font-semibold mb-4">Late Submission Distribution</h3>
-                        <div className="flex items-end gap-2 h-40">
-                            {analytics.lateDistribution.length > 0 ? analytics.lateDistribution.map(item => (
-                                <div key={item.daysLate} className="flex-1 flex flex-col items-center justify-end">
-                                    <div className="bg-yellow-400 w-full rounded-t-md text-center text-xs text-yellow-800 font-bold" style={{ height: `${item.count * 30}px` }}>{item.count}</div>
-                                    <div className="text-xs mt-1">{item.daysLate}d late</div>
-                                </div>
-                            )) : <p className="text-sm text-gray-500">No late submissions.</p>}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {activeTab === 'analytics' && ( loading.analytics ? <p>Loading analytics...</p> : analytics && <div className="space-y-6"> <div className="grid grid-cols-2 md:grid-cols-4 gap-6"> <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Submission Rate</h4><p className="text-2xl font-bold">{analytics.submissionRate.toFixed(1)}%</p></div> <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">On-Time Rate</h4><p className="text-2xl font-bold">{analytics.onTimeRate.toFixed(1)}%</p></div> <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Average Score</h4><p className="text-2xl font-bold">{analytics.averageScore?.toFixed(1) || 'N/A'}</p></div> <div className="bg-white p-4 rounded-lg shadow-sm border text-center"><h4 className="text-sm text-gray-500">Marked</h4><p className="text-2xl font-bold">{analytics.markedCount}/{analytics.totalSubmissions}</p></div> </div> <div className="bg-white p-4 rounded-lg shadow-sm border"> <h3 className="font-semibold mb-4">Late Submission Distribution</h3> <div className="flex items-end gap-2 h-40"> {analytics.lateDistribution.length > 0 ? analytics.lateDistribution.map(item => ( <div key={item.daysLate} className="flex-1 flex flex-col items-center justify-end"> <div className="bg-yellow-400 w-full rounded-t-md text-center text-xs text-yellow-800 font-bold" style={{ height: `${item.count * 30}px` }}>{item.count}</div> <div className="text-xs mt-1">{item.daysLate}d late</div> </div> )) : <p className="text-sm text-gray-500">No late submissions.</p>} </div> </div> </div> )}
 
-            {selectedSubmission && user && (
-                <FeedbackModal
-                    isOpen={!!selectedSubmission}
-                    onClose={() => setSelectedSubmission(null)}
-                    onSaveSuccess={handleFeedbackSuccess}
-                    submission={selectedSubmission}
-                    studentName={selectedSubmission.studentName}
-                    actor={user}
-                />
-            )}
+            {selectedSubmission && user && ( <FeedbackModal isOpen={!!selectedSubmission} onClose={() => setSelectedSubmission(null)} onSaveSuccess={handleFeedbackSuccess} submission={selectedSubmission} studentName={selectedSubmission.studentName} actor={user} /> )}
         </div>
     );
 };
