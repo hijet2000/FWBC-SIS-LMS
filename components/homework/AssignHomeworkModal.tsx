@@ -19,7 +19,11 @@ const AssignHomeworkModal: React.FC<AssignHomeworkModalProps> = ({ isOpen, onClo
         classId: '',
         subjectId: '',
         dueDate: '',
+        visibility: 'Published' as 'Draft' | 'Published',
+        allowLateSubmissions: true,
+        allowResubmission: false,
     });
+    const [attachments, setAttachments] = useState<{ name: string; url: string }[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSaving, setIsSaving] = useState(false);
 
@@ -38,7 +42,7 @@ const AssignHomeworkModal: React.FC<AssignHomeworkModalProps> = ({ isOpen, onClo
         if (!validate()) return;
         setIsSaving(true);
         try {
-            await createHomework(formData, actor);
+            await createHomework({ ...formData, attachments }, actor);
             onSaveSuccess();
         } catch {
             setErrors({ form: 'An error occurred while saving.' });
@@ -83,6 +87,28 @@ const AssignHomeworkModal: React.FC<AssignHomeworkModalProps> = ({ isOpen, onClo
                         <label>Due Date</label>
                         <input type="date" value={formData.dueDate} onChange={e => setFormData({ ...formData, dueDate: e.target.value })} className="w-full rounded-md border-gray-300" />
                         {errors.dueDate && <p className="text-sm text-red-600">{errors.dueDate}</p>}
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700">Attachments</label>
+                        <div className="mt-1 p-4 border-2 border-dashed rounded-md text-center">
+                            <button type="button" onClick={() => setAttachments([...attachments, {name: `resource_${attachments.length + 1}.pdf`, url: '#'}])} className="text-sm text-indigo-600">
+                                + Add File (Mock)
+                            </button>
+                        </div>
+                        {attachments.length > 0 && <ul className="text-sm list-disc list-inside mt-2">
+                            {attachments.map(f => <li key={f.name}>{f.name}</li>)}
+                        </ul>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Policies</label>
+                        <div className="mt-2 space-y-2">
+                             <select value={formData.visibility} onChange={e => setFormData({ ...formData, visibility: e.target.value as any })} className="w-full rounded-md border-gray-300 text-sm">
+                                <option value="Published">Published (Visible to students)</option>
+                                <option value="Draft">Draft (Hidden from students)</option>
+                            </select>
+                            <div className="flex items-center"><input type="checkbox" id="late" checked={formData.allowLateSubmissions} onChange={e => setFormData({...formData, allowLateSubmissions: e.target.checked})} className="h-4 w-4 rounded" /><label htmlFor="late" className="ml-2 text-sm">Allow late submissions</label></div>
+                            <div className="flex items-center"><input type="checkbox" id="resubmit" checked={formData.allowResubmission} onChange={e => setFormData({...formData, allowResubmission: e.target.checked})} className="h-4 w-4 rounded" /><label htmlFor="resubmit" className="ml-2 text-sm">Allow resubmission after marking</label></div>
+                        </div>
                     </div>
                 </div>
                 <div className="bg-gray-50 px-6 py-3 flex justify-end gap-3">

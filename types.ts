@@ -64,7 +64,7 @@ export interface AttendanceEntry {
 }
 
 export interface AttendanceRecord extends AttendanceEntry {
-  id: string;
+  id:string;
   sessionId: string;
   classId: string;
   date: string; // YYYY-MM-DD
@@ -176,6 +176,15 @@ export interface QuizAnswer {
 // --- HOMEWORK ---
 export type SubmissionStatus = 'On-time' | 'Late' | 'Not Submitted';
 
+export interface HomeworkStats {
+  totalStudents: number;
+  submitted: number;
+  onTime: number;
+  late: number;
+  notSubmitted: number;
+  submissionRate: number; // percentage
+}
+
 export interface Homework {
     id: string;
     classId: string;
@@ -184,7 +193,37 @@ export interface Homework {
     instructions: string;
     dueDate: string; // YYYY-MM-DD
     assignedAt: string; // ISO
+    attachments?: { name: string; url: string }[];
+    stats?: HomeworkStats;
+    visibility?: 'Draft' | 'Published';
+    allowLateSubmissions?: boolean;
+    allowResubmission?: boolean;
+    maxAttachments?: number;
+    allowedFileTypes?: string[]; // e.g., ['.pdf', '.docx']
+    maxFileSizeMB?: number;
 }
+
+export interface EnrichedHomeworkForStudent extends Homework {
+    submission?: Submission & { feedback?: Feedback };
+}
+
+
+export interface HomeworkDashboardStats {
+    dueToday: number;
+    overdueSubmissions: number;
+    needsMarking: number;
+}
+
+export interface HomeworkAnalytics {
+    submissionRate: number;
+    onTimeRate: number;
+    lateRate: number;
+    averageScore: number | null;
+    lateDistribution: { daysLate: number; count: number }[];
+    totalSubmissions: number;
+    markedCount: number;
+}
+
 
 export interface Submission {
     id: string;
@@ -194,6 +233,11 @@ export interface Submission {
     submittedAt?: string; // ISO
     text?: string;
     files?: { name: string; url: string }[];
+}
+
+export interface EnrichedSubmission extends Submission {
+    studentName: string;
+    feedback?: Feedback;
 }
 
 export interface Feedback {
@@ -485,7 +529,7 @@ export interface AlertSettings {
 }
 
 // --- ADMIN & AUDIT ---
-export type AuditModule = 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'LMS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'ADMISSIONS' | 'FRONTOFFICE' | 'AUTH' | 'SYSTEM';
+export type AuditModule = 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'LMS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'ADMISSIONS' | 'FRONTOFFICE' | 'AUTH' | 'SYSTEM' | 'ROLES';
 export type AuditAction = 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'ROLE_CHANGE' | 'PAYMENT' | 'GRADE' | 'CONVERT' | 'APPROVE';
 
 export interface AuditEvent {
@@ -513,4 +557,22 @@ export interface UserSession {
     ip: string;
     ua: string;
     active: boolean;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  scopes: string[];
+}
+
+export interface Permission {
+  scope: string;
+  label: string;
+  description?: string;
+}
+
+export interface PermissionGroup {
+  module: string;
+  permissions: Permission[];
 }

@@ -1,4 +1,4 @@
-import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry } from '../types';
+import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry, User } from '../types';
 import { getClasses, getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';
 
@@ -108,12 +108,51 @@ export const saveAttendance = async (payload: SaveAttendancePayload): Promise<{ 
     return Promise.resolve({ success: true });
 };
 
+export const saveStudentAttendanceRecord = async (payload: { studentId: string; classId: string; date: string; status: AttendanceStatus; minutesAttended?: number; actor: User }): Promise<AttendanceRecord> => {
+    await delay(500);
 
-export const listAttendanceRecords = async (params: { classId?: string; from?: string; to?: string }): Promise<AttendanceRecord[]> => {
+    const newRecord: AttendanceRecord = {
+        id: `att-${payload.date}-${payload.studentId}`,
+        studentId: payload.studentId,
+        classId: payload.classId,
+        sessionId: `sess-manual-${payload.date}-${payload.classId}`,
+        date: payload.date,
+        status: payload.status,
+        minutesAttended: payload.minutesAttended,
+        createdAt: new Date().toISOString(),
+    };
+    
+    // In a real app, this would be an upsert to create or update a record
+    const existingIndex = MOCK_RECORDS.findIndex(r => r.id === newRecord.id);
+    if (existingIndex > -1) {
+        MOCK_RECORDS[existingIndex] = newRecord;
+    } else {
+        MOCK_RECORDS.push(newRecord);
+    }
+    
+    logAuditEvent({
+        actorId: payload.actor.id,
+        actorName: payload.actor.name,
+        action: 'UPDATE',
+        module: 'ATTENDANCE',
+        entityType: 'AttendanceRecord',
+        entityId: newRecord.id,
+        entityDisplay: `Attendance for student ${payload.studentId} on ${payload.date}`,
+        after: { status: payload.status }
+    });
+    return newRecord;
+};
+
+
+
+export const listAttendanceRecords = async (params: { classId?: string; from?: string; to?: string; studentId?: string }): Promise<AttendanceRecord[]> => {
     await delay(600);
     let results = [...MOCK_RECORDS];
     if (params.classId) {
         results = results.filter(r => r.classId === params.classId);
+    }
+     if (params.studentId) {
+        results = results.filter(r => r.studentId === params.studentId);
     }
     if (params.from) {
         results = results.filter(r => r.date >= params.from!);
@@ -121,7 +160,7 @@ export const listAttendanceRecords = async (params: { classId?: string; from?: s
     if (params.to) {
         results = results.filter(r => r.date <= params.to!);
     }
-    return Promise.resolve(results.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    return Promise.resolve(results.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)));
 };
 
 export const getTodaysAttendanceSummary = async (): Promise<{ presentRate: number }> => {

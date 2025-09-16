@@ -27,6 +27,7 @@ import PlannerPage from './pages/academics/PlannerPage';
 // Homework Pages
 import HomeworkListPage from './pages/homework/HomeworkListPage';
 import HomeworkSubmissionsPage from './pages/homework/HomeworkSubmissionsPage';
+import HomeworkReportsPage from './pages/homework/HomeworkReportsPage';
 import StudentHomeworkListPage from './pages/student/HomeworkListPage';
 import StudentHomeworkDetailPage from './pages/student/HomeworkDetailPage';
 
@@ -63,6 +64,7 @@ import CatchUpViewerPage from './pages/library/CatchUpViewerPage';
 // Admin Pages
 import AuditTrailPage from './pages/admin/AuditTrailPage';
 import UserActivityPage from './pages/admin/UserActivityPage';
+import RolesPage from './pages/admin/RolesPage';
 
 // Public Pages
 import ApplyPage from './pages/public/ApplyPage';
@@ -105,7 +107,8 @@ function App() {
                   {/* Homework Module Routes (Teacher) */}
                   <Route path="homework" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkListPage /></RequireScope>} />
                   <Route path="homework/:homeworkId" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkSubmissionsPage /></RequireScope>} />
-                  
+                  <Route path="homework/reports" element={<RequireScope requiredScopes={['school:admin']}><HomeworkReportsPage /></RequireScope>} />
+
                   {/* Homework Module Routes (Student) */}
                   <Route path="student/homework" element={<RequireScope requiredScopes={['homework:student']}><StudentHomeworkListPage /></RequireScope>} />
                   <Route path="student/homework/:homeworkId" element={<RequireScope requiredScopes={['homework:student']}><StudentHomeworkDetailPage /></RequireScope>} />
@@ -155,6 +158,7 @@ function App() {
                   {/* Admin Module Routes */}
                   <Route path="admin/audit" element={<RequireScope requiredScopes={['school:admin']}><AuditTrailPage /></RequireScope>} />
                   <Route path="admin/activity" element={<RequireScope requiredScopes={['school:admin']}><UserActivityPage /></RequireScope>} />
+                  <Route path="admin/roles" element={<RequireScope requiredScopes={['school:admin']}><RolesPage /></RequireScope>} />
 
                 </Route>
                 <Route path="*" element={<Navigate to="/school/site_123" replace />} />

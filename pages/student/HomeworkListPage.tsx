@@ -3,42 +3,42 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as homeworkService from '../../lib/homeworkService';
-import { getStudent } from '../../lib/schoolService';
 import { listSubjects } from '../../lib/academicsService';
-// FIX: Import Feedback type to create a combined type for submissions with feedback.
-import type { Homework, Submission, Feedback, Subject, Student } from '../../types';
+import type { Subject, EnrichedHomeworkForStudent } from '../../types';
 
-interface HomeworkCardProps {
-    homework: Homework;
-    // FIX: Update submission type to include optional feedback property.
-    submission?: Submission & { feedback?: Feedback };
-    subjectName?: string;
-}
+// FIX: Add 'Late' to the list of possible statuses.
+type HomeworkStatus = 'Overdue' | 'Completed' | 'Submitted' | 'Not Submitted' | 'Due' | 'Late';
 
-const HomeworkCard: React.FC<HomeworkCardProps> = ({ homework, submission, subjectName }) => {
-    const { siteId } = useParams<{ siteId: string }>();
-    const status = submission?.status || 'Not Submitted';
-    // FIX: Property 'feedback' now exists on the updated submission type.
-    const isCompleted = !!submission?.feedback;
-
-    let statusText = 'Due';
-    let statusColor = 'text-gray-500';
-    if (new Date(homework.dueDate) < new Date() && status === 'Not Submitted') {
-        statusText = 'Overdue';
-        statusColor = 'text-red-500';
-    } else if (isCompleted) {
-        statusText = 'Completed';
-        statusColor = 'text-green-600';
+const getStatus = (hw: EnrichedHomeworkForStudent): { text: HomeworkStatus, className: string } => {
+    const { submission, dueDate } = hw;
+    if (submission?.feedback) {
+        return { text: 'Completed', className: 'bg-green-100 text-green-800' };
     }
+    if (submission) {
+        // FIX: Explicitly handle 'Late' status and assign a consistent color.
+        if (submission.status === 'Late') {
+            return { text: 'Late', className: 'bg-yellow-100 text-yellow-800' };
+        }
+        return { text: 'Submitted', className: 'bg-blue-100 text-blue-800' };
+    }
+    if (new Date(dueDate) < new Date()) {
+        return { text: 'Overdue', className: 'bg-red-100 text-red-800' };
+    }
+    return { text: 'Due', className: 'bg-gray-100 text-gray-800' };
+};
+
+const HomeworkCard: React.FC<{ homework: EnrichedHomeworkForStudent; subjectName?: string; }> = ({ homework, subjectName }) => {
+    const { siteId } = useParams<{ siteId: string }>();
+    const status = getStatus(homework);
 
     return (
         <Link to={`/school/${siteId}/student/homework/${homework.id}`} className="block bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start">
                 <div>
-                    <p className="text-sm text-gray-500">{subjectName}</p>
+                    <p className="text-sm text-gray-500">{subjectName || 'General'}</p>
                     <h3 className="font-semibold text-lg text-gray-800">{homework.title}</h3>
                 </div>
-                <span className={`text-sm font-bold ${statusColor}`}>{statusText}</span>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${status.className}`}>{status.text}</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">Due: {homework.dueDate}</p>
         </Link>
@@ -48,38 +48,23 @@ const HomeworkCard: React.FC<HomeworkCardProps> = ({ homework, submission, subje
 const StudentHomeworkListPage: React.FC = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
-    // HACK: For demo, using a fixed student ID. In a real app, this would come from the user object.
+    // HACK: For demo, using a fixed student ID.
     const studentId = 's01';
 
-    const [homework, setHomework] = useState<Homework[]>([]);
-    // FIX: Update state to hold submissions that may include feedback.
-    const [submissions, setSubmissions] = useState<Map<string, Submission & { feedback?: Feedback }>>(new Map());
+    const [allHomework, setAllHomework] = useState<EnrichedHomeworkForStudent[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [student, setStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'active' | 'overdue' | 'completed'>('active');
 
     useEffect(() => {
         if (!studentId) return;
         setLoading(true);
         Promise.all([
-            getStudent(studentId),
+            homeworkService.listHomeworkForStudent(studentId),
             listSubjects(),
-        ]).then(async ([studentData, subjectData]) => {
-            setStudent(studentData);
+        ]).then(([hwData, subjectData]) => {
+            setAllHomework(hwData);
             setSubjects(subjectData);
-            if (studentData) {
-                const hwData = await homeworkService.listHomework({ classId: studentData.classId });
-                setHomework(hwData);
-                // FIX: Use combined type for the map to correctly store submissions with feedback.
-                const subMap = new Map<string, Submission & { feedback?: Feedback }>();
-                for (const hw of hwData) {
-                    const sub = await homeworkService.getSubmissionForStudent(hw.id, studentId);
-                    if (sub) {
-                        subMap.set(hw.id, sub);
-                    }
-                }
-                setSubmissions(subMap);
-            }
         }).catch(() => {
             addToast('Failed to load homework.', 'error');
         }).finally(() => {
@@ -90,15 +75,13 @@ const StudentHomeworkListPage: React.FC = () => {
     const subjectMap = useMemo(() => new Map(subjects.map(s => [s.id, s.name])), [subjects]);
 
     const categorizedHomework = useMemo(() => {
-        const active: Homework[] = [];
-        const overdue: Homework[] = [];
-        const completed: Homework[] = [];
+        const active: EnrichedHomeworkForStudent[] = [];
+        const overdue: EnrichedHomeworkForStudent[] = [];
+        const completed: EnrichedHomeworkForStudent[] = [];
 
-        homework.forEach(hw => {
-            const submission = submissions.get(hw.id);
-            // FIX: Property 'feedback' now exists on the updated submission type.
-            const isComplete = submission?.status !== 'Not Submitted' && !!submission?.feedback;
-            const isOverdue = new Date(hw.dueDate) < new Date() && (!submission || submission?.status === 'Not Submitted');
+        allHomework.forEach(hw => {
+            const isComplete = !!hw.submission?.feedback;
+            const isOverdue = new Date(hw.dueDate) < new Date() && !hw.submission;
 
             if (isComplete) {
                 completed.push(hw);
@@ -109,50 +92,48 @@ const StudentHomeworkListPage: React.FC = () => {
             }
         });
         return { active, overdue, completed };
-    }, [homework, submissions]);
+    }, [allHomework]);
 
     if (loading) return <div className="text-center p-8">Loading homework...</div>;
 
+    const currentList = categorizedHomework[activeTab];
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800">My Homework</h1>
 
-            {categorizedHomework.overdue.length > 0 && (
-                <div>
-                    <h2 className="text-xl font-semibold text-red-600 mb-4">Overdue</h2>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {categorizedHomework.overdue.map(hw => (
-                            <HomeworkCard key={hw.id} homework={hw} submission={submissions.get(hw.id)} subjectName={subjectMap.get(hw.subjectId)} />
-                        ))}
-                    </div>
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    {(['active', 'overdue', 'completed'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`capitalize whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                                activeTab === tab
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                        >
+                            {tab} ({categorizedHomework[tab].length})
+                        </button>
+                    ))}
+                </nav>
+            </div>
+            
+            {currentList.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {currentList.map(hw => (
+                        <HomeworkCard key={hw.id} homework={hw} subjectName={subjectMap.get(hw.subjectId)} />
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <h3 className="text-lg font-medium text-gray-800">
+                        {activeTab === 'completed' ? "No completed work yet." : "You're all caught up!"}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">There are no assignments in this category.</p>
                 </div>
             )}
-            
-            <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Active</h2>
-                 {categorizedHomework.active.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {categorizedHomework.active.map(hw => (
-                            <HomeworkCard key={hw.id} homework={hw} submission={submissions.get(hw.id)} subjectName={subjectMap.get(hw.subjectId)} />
-                        ))}
-                    </div>
-                 ) : (
-                    <p className="text-gray-500">No active homework. Great job!</p>
-                 )}
-            </div>
-
-             <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Completed</h2>
-                {categorizedHomework.completed.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {categorizedHomework.completed.map(hw => (
-                            <HomeworkCard key={hw.id} homework={hw} submission={submissions.get(hw.id)} subjectName={subjectMap.get(hw.subjectId)} />
-                        ))}
-                    </div>
-                 ) : (
-                    <p className="text-gray-500">No completed homework yet.</p>
-                 )}
-            </div>
         </div>
     );
 };

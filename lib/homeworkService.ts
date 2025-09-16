@@ -1,5 +1,5 @@
-import type { Homework, Submission, Feedback, User } from '../types';
-import { getStudentsByClass } from './schoolService';
+import type { Homework, Submission, Feedback, User, HomeworkStats, HomeworkDashboardStats, EnrichedSubmission, HomeworkAnalytics, EnrichedHomeworkForStudent } from '../types';
+import { getStudentsByClass, getStudent } from './schoolService';
 import { logAuditEvent } from './auditService';
 
 // --- MOCK DATA STORE ---
@@ -10,9 +10,11 @@ const getISODateDaysFromNow = (days: number): string => {
 };
 
 let MOCK_HOMEWORK: Homework[] = [
-    { id: 'hw-1', classId: 'c1', subjectId: 'subj-1', title: 'Algebra Worksheet 1', instructions: 'Complete all odd-numbered problems.', dueDate: getISODateDaysFromNow(5), assignedAt: new Date().toISOString() },
-    { id: 'hw-2', classId: 'c2', subjectId: 'subj-2', title: 'Newton\'s Laws Essay', instructions: 'Write a 500-word essay on the First Law of Motion.', dueDate: getISODateDaysFromNow(10), assignedAt: new Date().toISOString() },
-    { id: 'hw-3', classId: 'c1', subjectId: 'subj-4', title: 'Poem Analysis', instructions: 'Analyze "The Road Not Taken".', dueDate: getISODateDaysFromNow(-2), assignedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 'hw-1', classId: 'c1', subjectId: 'subj-1', title: 'Algebra Worksheet 1', instructions: 'Complete all odd-numbered problems.', dueDate: getISODateDaysFromNow(5), assignedAt: new Date().toISOString(), attachments: [{ name: 'worksheet_1.pdf', url: '#' }], visibility: 'Published', allowLateSubmissions: true, allowResubmission: true, maxAttachments: 3, allowedFileTypes: ['.pdf', '.docx'], maxFileSizeMB: 10 },
+    { id: 'hw-2', classId: 'c2', subjectId: 'subj-2', title: 'Newton\'s Laws Essay', instructions: 'Write a 500-word essay on the First Law of Motion.', dueDate: getISODateDaysFromNow(10), assignedAt: new Date().toISOString(), visibility: 'Published', allowLateSubmissions: true, allowResubmission: false, maxAttachments: 1, allowedFileTypes: ['.docx'] },
+    { id: 'hw-3', classId: 'c1', subjectId: 'subj-4', title: 'Poem Analysis', instructions: 'Analyze "The Road Not Taken".', dueDate: getISODateDaysFromNow(-2), assignedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), attachments: [{ name: 'the_road_not_taken.txt', url: '#' }], visibility: 'Published', allowLateSubmissions: false, allowResubmission: false },
+    { id: 'hw-4', classId: 'c1', subjectId: 'subj-1', title: 'Geometry Problems (Draft)', instructions: 'Draft instructions.', dueDate: getISODateDaysFromNow(15), assignedAt: new Date().toISOString(), visibility: 'Draft', allowLateSubmissions: true, allowResubmission: true },
+
 ];
 
 let MOCK_SUBMISSIONS: Submission[] = [
@@ -31,13 +33,32 @@ let MOCK_FEEDBACK: Feedback[] = [
 // --- MOCK API FUNCTIONS ---
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-export const listHomework = async (params: { classId?: string; subjectId?: string }): Promise<Homework[]> => {
+export const listHomework = async (params: { classId?: string; subjectId?: string; from?: string; to?: string }): Promise<Homework[]> => {
     await delay(400);
-    let results = [...MOCK_HOMEWORK];
+    let results = MOCK_HOMEWORK.filter(h => h.visibility !== 'Draft');
     if (params.classId) results = results.filter(h => h.classId === params.classId);
     if (params.subjectId) results = results.filter(h => h.subjectId === params.subjectId);
+    if (params.from) results = results.filter(h => h.dueDate >= params.from!);
+    if (params.to) results = results.filter(h => h.dueDate <= params.to!);
     return results.sort((a, b) => b.assignedAt.localeCompare(a.assignedAt));
 };
+
+export const listHomeworkForStudent = async (studentId: string): Promise<EnrichedHomeworkForStudent[]> => {
+    await delay(500);
+    const student = await getStudent(studentId);
+    if (!student) return [];
+    
+    const allHomework = MOCK_HOMEWORK.filter(h => h.classId === student.classId && h.visibility === 'Published');
+    
+    const enrichedHomework: EnrichedHomeworkForStudent[] = [];
+    for (const hw of allHomework) {
+        const submission = await getSubmissionForStudent(hw.id, studentId);
+        enrichedHomework.push({ ...hw, submission: submission || undefined });
+    }
+    
+    return enrichedHomework.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+};
+
 
 export const getHomework = async (id: string): Promise<Homework | null> => {
     await delay(200);
@@ -80,6 +101,35 @@ export const listSubmissionsForHomework = async (homeworkId: string): Promise<Su
     return fullSubmissionList;
 };
 
+export const getSubmissionsWithDetails = async (homeworkId: string): Promise<EnrichedSubmission[]> => {
+    await delay(600);
+    const homework = MOCK_HOMEWORK.find(h => h.id === homeworkId);
+    if (!homework) return [];
+    const students = await getStudentsByClass(homework.classId);
+    const submissions = MOCK_SUBMISSIONS.filter(s => s.homeworkId === homeworkId);
+    const feedback = MOCK_FEEDBACK.filter(f => submissions.some(s => s.id === f.submissionId));
+    
+    const subMap = new Map(submissions.map(s => [s.studentId, s]));
+    const feedbackMap = new Map(feedback.map(f => [f.submissionId, f]));
+
+    return students.map(student => {
+        const submission = subMap.get(student.id);
+        const base = {
+            id: submission?.id || `placeholder-${student.id}`,
+            homeworkId,
+            studentId: student.id,
+            status: submission?.status || 'Not Submitted',
+            studentName: student.name,
+            submittedAt: submission?.submittedAt,
+        };
+        if (submission) {
+            return { ...base, feedback: feedbackMap.get(submission.id) };
+        }
+        return base;
+    });
+};
+
+
 export const getSubmissionForStudent = async (homeworkId: string, studentId: string): Promise<(Submission & { feedback?: Feedback }) | null> => {
     await delay(300);
     const submission = MOCK_SUBMISSIONS.find(s => s.homeworkId === homeworkId && s.studentId === studentId);
@@ -117,6 +167,11 @@ export const submitHomework = async (
     }
     
     if (submission) { // Update existing submission
+        // FIX: Manually check for existing feedback in MOCK_FEEDBACK array.
+        const existingFeedback = MOCK_FEEDBACK.find(f => f.submissionId === submission.id);
+        if (!homework.allowResubmission && existingFeedback) {
+            throw new Error("Resubmission not allowed after feedback.");
+        }
         submission.status = status;
         submission.submittedAt = submittedAt.toISOString();
         submission.text = payload.text;
@@ -164,4 +219,125 @@ export const saveFeedback = async (submissionId: string, input: Omit<Feedback, '
     logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'GRADE', module: 'HOMEWORK', entityType: 'Submission', entityId: submission.id, entityDisplay: `Submission for HW ${submission.homeworkId}`, after: newFeedback });
 
     return newFeedback;
+};
+
+// New function for reports
+export const getHomeworkWithStats = async (params: { classId?: string; subjectId?: string }): Promise<Homework[]> => {
+    await delay(1200); // Simulate heavier query
+    const allHomework = await listHomework(params);
+    
+    const homeworkWithStats: Homework[] = [];
+
+    for (const hw of allHomework) {
+        // In a real app, this would be a single efficient DB query
+        const submissions = await listSubmissionsForHomework(hw.id);
+        const totalStudents = submissions.length;
+        if (totalStudents === 0) {
+            homeworkWithStats.push(hw);
+            continue;
+        }
+
+        const onTime = submissions.filter(s => s.status === 'On-time').length;
+        const late = submissions.filter(s => s.status === 'Late').length;
+        const submitted = onTime + late;
+        const notSubmitted = totalStudents - submitted;
+        const submissionRate = (submitted / totalStudents) * 100;
+
+        const stats: HomeworkStats = {
+            totalStudents,
+            submitted,
+            onTime,
+            late,
+            notSubmitted,
+            submissionRate,
+        };
+
+        homeworkWithStats.push({ ...hw, stats });
+    }
+
+    return homeworkWithStats;
+};
+
+
+export const getHomeworkDashboardStats = async (): Promise<HomeworkDashboardStats> => {
+    await delay(500);
+    const today = new Date().toISOString().split('T')[0];
+    let dueToday = 0;
+    let overdueSubmissions = 0;
+    let needsMarking = 0;
+
+    for (const hw of MOCK_HOMEWORK.filter(h => h.visibility === 'Published')) {
+        if (hw.dueDate === today) {
+            dueToday++;
+        }
+        const submissions = MOCK_SUBMISSIONS.filter(s => s.homeworkId === hw.id);
+        const feedbackIds = new Set(MOCK_FEEDBACK.map(f => f.submissionId));
+        
+        for (const sub of submissions) {
+            if (sub.status !== 'Not Submitted' && !feedbackIds.has(sub.id)) {
+                needsMarking++;
+            }
+        }
+
+        if (new Date(hw.dueDate) < new Date()) {
+             const allClassStudents = await getStudentsByClass(hw.classId);
+             const submittedStudentIds = new Set(submissions.map(s => s.studentId));
+             overdueSubmissions += allClassStudents.filter(s => !submittedStudentIds.has(s.id)).length;
+        }
+    }
+    return { dueToday, overdueSubmissions, needsMarking };
+};
+
+export const getHomeworkAnalytics = async (homeworkId: string): Promise<HomeworkAnalytics> => {
+    await delay(700);
+    const homework = MOCK_HOMEWORK.find(h => h.id === homeworkId);
+    if (!homework) throw new Error("Homework not found");
+
+    const submissions = await getSubmissionsWithDetails(homeworkId);
+    const totalSubmissions = submissions.filter(s => s.status !== 'Not Submitted').length;
+    const onTimeCount = submissions.filter(s => s.status === 'On-time').length;
+    const lateCount = submissions.filter(s => s.status === 'Late').length;
+    const markedSubmissions = submissions.filter(s => s.feedback && s.feedback.score !== undefined);
+    
+    const totalScore = markedSubmissions.reduce((acc, sub) => acc + (sub.feedback?.score || 0), 0);
+    const averageScore = markedSubmissions.length > 0 ? totalScore / markedSubmissions.length : null;
+
+    const lateDistributionMap = new Map<number, number>();
+    submissions.filter(s => s.status === 'Late' && s.submittedAt).forEach(s => {
+        const dueDate = new Date(homework.dueDate);
+        const submittedDate = new Date(s.submittedAt!);
+        const diffTime = submittedDate.getTime() - dueDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const daysLate = Math.max(1, diffDays); // At least 1 day late
+        lateDistributionMap.set(daysLate, (lateDistributionMap.get(daysLate) || 0) + 1);
+    });
+
+    return {
+        submissionRate: (totalSubmissions / submissions.length) * 100,
+        onTimeRate: totalSubmissions > 0 ? (onTimeCount / totalSubmissions) * 100 : 0,
+        lateRate: totalSubmissions > 0 ? (lateCount / totalSubmissions) * 100 : 0,
+        averageScore,
+        lateDistribution: Array.from(lateDistributionMap.entries()).map(([daysLate, count]) => ({ daysLate, count })),
+        totalSubmissions,
+        markedCount: markedSubmissions.length,
+    };
+};
+
+export const bulkMarkSubmissions = async (homeworkId: string, studentIds: string[], score: number, comments: string, actor: User): Promise<void> => {
+    await delay(1000);
+    const submissions = await listSubmissionsForHomework(homeworkId);
+    for (const studentId of studentIds) {
+        let submission = submissions.find(s => s.studentId === studentId);
+        if (!submission || submission.id.startsWith('placeholder')) {
+             // Create a submission record to attach feedback to
+             submission = {
+                id: `sub-${Date.now()}-${Math.random()}`,
+                homeworkId,
+                studentId,
+                status: 'Not Submitted',
+            };
+            MOCK_SUBMISSIONS.push(submission);
+        }
+        await saveFeedback(submission.id, { score, comments }, actor);
+    }
 };

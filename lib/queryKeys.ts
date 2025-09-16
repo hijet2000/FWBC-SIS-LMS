@@ -32,6 +32,14 @@ export const lmsKeys = {
   },
 };
 
+// Homework
+export const homeworkKeys = {
+    ...createQueryKeys('homework'),
+    submissions: createQueryKeys('submissions'),
+    reports: createQueryKeys('homeworkReports'),
+};
+
+
 // Fees
 export const feeKeys = {
   ...createQueryKeys('fees'),

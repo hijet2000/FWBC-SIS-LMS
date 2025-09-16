@@ -1,4 +1,4 @@
-import type { SchoolClass, Student, Application } from '../types';
+import type { SchoolClass, Student, Application, User } from '../types';
 import { logAuditEvent } from './auditService';
 
 // MOCK DATA
@@ -70,7 +70,7 @@ export const getStudents = async (filters: StudentFilters = {}): Promise<{ stude
 export const getStudent = async (id: string): Promise<Student | null> => {
     await delay(300);
     const student = MOCK_STUDENTS.find(s => s.id === id);
-    return Promise.resolve(student || null);
+    return Promise.resolve(student ? { ...student } : null);
 };
 
 export const getStudentsByClass = async (classId: string): Promise<Student[]> => {
@@ -78,6 +78,41 @@ export const getStudentsByClass = async (classId: string): Promise<Student[]> =>
     const students = MOCK_STUDENTS.filter(s => s.classId === classId);
     return Promise.resolve(students);
 };
+
+export const updateStudentDetails = async (id: string, updates: Partial<Pick<Student, 'contact' | 'address' | 'photoUrl'>>, actor: User): Promise<Student> => {
+    await delay(500);
+    const index = MOCK_STUDENTS.findIndex(s => s.id === id);
+    if (index === -1) throw new Error("Student not found");
+    const before = { 
+        contact: { ...MOCK_STUDENTS[index].contact }, 
+        address: { ...MOCK_STUDENTS[index].address }, 
+        photoUrl: MOCK_STUDENTS[index].photoUrl 
+    };
+
+    const updatedStudent = {
+        ...MOCK_STUDENTS[index],
+        photoUrl: updates.photoUrl !== undefined ? updates.photoUrl : MOCK_STUDENTS[index].photoUrl,
+        contact: { ...MOCK_STUDENTS[index].contact, ...updates.contact },
+        address: { ...MOCK_STUDENTS[index].address, ...updates.address },
+    };
+    
+    MOCK_STUDENTS[index] = updatedStudent;
+    
+    logAuditEvent({
+        actorId: actor.id,
+        actorName: actor.name,
+        action: 'UPDATE',
+        module: 'STUDENTS',
+        entityType: 'Student',
+        entityId: id,
+        entityDisplay: updatedStudent.name,
+        before,
+        after: { contact: updatedStudent.contact, address: updatedStudent.address, photoUrl: updatedStudent.photoUrl },
+    });
+
+    return { ...updatedStudent };
+};
+
 
 export const createStudentFromApplication = (app: Application): Student => {
     const year = new Date().getFullYear();

@@ -12,6 +12,14 @@ const DetailCard: React.FC<{ title: string; children: React.ReactNode; }> = ({ t
     </div>
 );
 
+const PolicyItem: React.FC<{ label: string; value: React.ReactNode; }> = ({ label, value }) => (
+    <div className="flex justify-between text-xs">
+        <span className="text-gray-500">{label}</span>
+        <span className="font-medium text-gray-700">{value}</span>
+    </div>
+);
+
+
 const StudentHomeworkDetailPage: React.FC = () => {
     const { siteId, homeworkId } = useParams<{ siteId: string; homeworkId: string }>();
     const { user } = useAuth();
@@ -60,8 +68,8 @@ const StudentHomeworkDetailPage: React.FC = () => {
             await homeworkService.submitHomework({ homeworkId, studentId, text, files }, user);
             addToast('Homework submitted successfully!', 'success');
             fetchData(); // Refresh to show updated status
-        } catch {
-            addToast('Failed to submit homework.', 'error');
+        } catch(e: any) {
+            addToast(e.message || 'Failed to submit homework.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -70,8 +78,9 @@ const StudentHomeworkDetailPage: React.FC = () => {
     if (loading) return <div className="text-center p-8">Loading...</div>;
     if (!homework) return <div className="text-center p-8 text-red-500">Homework not found.</div>;
 
-    const isSubmitted = submission?.status !== 'Not Submitted';
     const hasFeedback = !!submission?.feedback;
+    const canSubmit = !hasFeedback || homework.allowResubmission;
+    const isOverdue = new Date(homework.dueDate) < new Date() && !submission;
 
     return (
         <div className="space-y-6">
@@ -80,15 +89,29 @@ const StudentHomeworkDetailPage: React.FC = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <DetailCard title="Instructions">
+                    <DetailCard title="Instructions & Materials">
                         <p className="whitespace-pre-wrap text-gray-700">{homework.instructions}</p>
+                         {homework.attachments && homework.attachments.length > 0 && (
+                             <div className="mt-4 pt-4 border-t">
+                                <h4 className="font-semibold text-sm mb-2">Attachments</h4>
+                                <ul className="list-disc list-inside space-y-1">
+                                    {homework.attachments.map((file, index) => (
+                                        <li key={index}>
+                                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                                                {file.name}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </DetailCard>
                     
                     {hasFeedback && submission?.feedback && (
                          <DetailCard title="Feedback from Teacher">
                              <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                                {submission.feedback.score && <p className="text-2xl font-bold">Score: {submission.feedback.score}/100</p>}
-                                <p className="mt-2 text-gray-800">{submission.feedback.comments}</p>
+                                {submission.feedback.score !== undefined && <p className="text-2xl font-bold">Score: {submission.feedback.score}/100</p>}
+                                <p className="mt-2 text-gray-800 whitespace-pre-wrap">{submission.feedback.comments}</p>
                                 <p className="text-xs text-gray-500 mt-4">Returned on: {new Date(submission.feedback.returnedAt).toLocaleDateString()}</p>
                              </div>
                         </DetailCard>
@@ -105,25 +128,27 @@ const StudentHomeworkDetailPage: React.FC = () => {
                                     rows={8}
                                     value={text}
                                     onChange={(e) => setText(e.target.value)}
-                                    className="w-full mt-1 rounded-md border-gray-300"
+                                    className="w-full mt-1 rounded-md border-gray-300 disabled:bg-gray-100"
                                     placeholder="Type your response here..."
-                                    disabled={hasFeedback}
+                                    disabled={!canSubmit}
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Attachments</label>
-                                <div className="mt-1 p-4 border-2 border-dashed rounded-md text-center">
-                                    <button type="button" onClick={() => setFiles([...files, {name: `file-${files.length + 1}.pdf`, url: '#'}])} disabled={hasFeedback} className="text-sm text-indigo-600">
+                                {canSubmit && <div className="mt-1 p-4 border-2 border-dashed rounded-md text-center">
+                                    <button type="button" onClick={() => setFiles([...files, {name: `file-${files.length + 1}.pdf`, url: '#'}])} disabled={!canSubmit} className="text-sm text-indigo-600 disabled:text-gray-400">
                                         + Add File (Mock)
                                     </button>
-                                </div>
+                                </div>}
                                 {files.length > 0 && <ul className="text-sm list-disc list-inside mt-2">
                                     {files.map(f => <li key={f.name}>{f.name}</li>)}
                                 </ul>}
                             </div>
-                            <button type="submit" disabled={isSubmitting || hasFeedback} className="w-full py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">
-                                {isSubmitting ? 'Submitting...' : isSubmitted ? 'Resubmit' : 'Submit'}
+                            <button type="submit" disabled={isSubmitting || !canSubmit} className="w-full py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">
+                                {isSubmitting ? 'Submitting...' : submission ? 'Update Submission' : 'Submit'}
                             </button>
+                             {isOverdue && <p className="text-xs text-center text-red-500">This assignment is overdue. Late submissions may be penalized.</p>}
+                             {!canSubmit && <p className="text-xs text-center text-gray-500">Feedback has been given. Resubmission is not allowed.</p>}
                         </form>
                          {submission && (
                             <div className="mt-4 text-sm text-center">
@@ -132,6 +157,13 @@ const StudentHomeworkDetailPage: React.FC = () => {
                             </div>
                          )}
                     </DetailCard>
+                     <div className="bg-gray-50 p-4 rounded-lg border space-y-2">
+                         <h4 className="font-semibold text-sm">Policies</h4>
+                         <PolicyItem label="Late Submissions" value={homework.allowLateSubmissions ? 'Allowed' : 'Not Allowed'} />
+                         <PolicyItem label="Resubmission" value={homework.allowResubmission ? 'Allowed after feedback' : 'Not Allowed'} />
+                         <PolicyItem label="Max Attachments" value={homework.maxAttachments || 'N/A'} />
+                         <PolicyItem label="File Types" value={homework.allowedFileTypes?.join(', ') || 'Any'} />
+                     </div>
                 </div>
             </div>
         </div>

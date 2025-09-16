@@ -80,6 +80,17 @@ const AttendanceRecordsPage: React.FC = () => {
         }, { replace: true });
     };
 
+    const setDateRange = (days: number) => {
+        const to = getISODateDaysAgo(0);
+        const from = getISODateDaysAgo(days - 1);
+        setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev);
+            newParams.set('from', from);
+            newParams.set('to', to);
+            return newParams;
+        }, { replace: true });
+    };
+
     const handleClientCsvExport = () => {
         const headers = [
             { key: 'id', label: 'Record ID' },
@@ -111,7 +122,7 @@ const AttendanceRecordsPage: React.FC = () => {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-gray-800">Attendance Records</h1>
             
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div>
                         <label htmlFor="class-filter" className="block text-sm font-medium text-gray-700">Class</label>
@@ -128,6 +139,10 @@ const AttendanceRecordsPage: React.FC = () => {
                         <label htmlFor="to-date" className="block text-sm font-medium text-gray-700">To</label>
                         <input type="date" id="to-date" value={filters.to} onChange={e => handleFilterChange('to', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                     </div>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <button onClick={() => setDateRange(7)} className="px-3 py-1 text-sm border rounded-md hover:bg-gray-50">Last 7 Days</button>
+                    <button onClick={() => setDateRange(30)} className="px-3 py-1 text-sm border rounded-md hover:bg-gray-50">Last 30 Days</button>
                 </div>
                 {!isDateRangeValid && <p className="mt-2 text-sm text-red-600">"From" date cannot be after "To" date.</p>}
             </div>
