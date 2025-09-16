@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+// FIX: Import export functions from attendanceService, not transportService.
 import { listAttendanceRecords, exportRecordsCSV, exportRecordsPDF } from '../lib/attendanceService';
 import { getClasses, getStudents } from '../lib/schoolService';
 import { exportToCsv } from '../lib/exporters';
 import type { AttendanceRecord, SchoolClass, Student } from '../types';
+import { attendanceKeys } from '../lib/queryKeys';
 
 const getISODateDaysAgo = (days: number): string => {
     const date = new Date();
@@ -13,7 +15,6 @@ const getISODateDaysAgo = (days: number): string => {
 
 const AttendanceRecordsPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const { siteId } = useParams<{ siteId: string }>();
 
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -22,11 +23,14 @@ const AttendanceRecordsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [exporting, setExporting] = useState<string | null>(null);
 
-    const classId = searchParams.get('classId') || '';
-    const from = searchParams.get('from') || getISODateDaysAgo(7);
-    const to = searchParams.get('to') || getISODateDaysAgo(0);
+    const filters = useMemo(() => ({
+        classId: searchParams.get('classId') || undefined,
+        from: searchParams.get('from') || getISODateDaysAgo(7),
+        to: searchParams.get('to') || getISODateDaysAgo(0),
+    }), [searchParams]);
 
-    const isDateRangeValid = from <= to;
+    const queryKey = attendanceKeys.list(filters);
+    const isDateRangeValid = filters.from <= filters.to;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,11 +54,13 @@ const AttendanceRecordsPage: React.FC = () => {
         }
         setLoading(true);
         setError(null);
-        listAttendanceRecords({ classId, from, to })
+        
+        const [,, queryFilters] = queryKey;
+        listAttendanceRecords(queryFilters)
             .then(setRecords)
             .catch(() => setError('Failed to load attendance records.'))
             .finally(() => setLoading(false));
-    }, [classId, from, to, isDateRangeValid]);
+    }, [queryKey, isDateRangeValid]);
 
     const studentMap = useMemo(() => new Map(students.map(s => [s.id, s.name])), [students]);
     const classMap = useMemo(() => new Map(classes.map(c => [c.id, c.name])), [classes]);
@@ -85,7 +91,7 @@ const AttendanceRecordsPage: React.FC = () => {
             { key: 'minutesAttended', label: 'Minutes Attended' },
             { key: 'createdAt', label: 'Created At' },
         ];
-        exportToCsv(`attendance-records-${from}-to-${to}.csv`, headers, recordsWithNames);
+        exportToCsv(`attendance-records-${filters.from}-to-${filters.to}.csv`, headers, recordsWithNames);
     };
     
     const handleServerExport = async (exportFn: () => Promise<{ url: string }>, type: string) => {
@@ -109,18 +115,18 @@ const AttendanceRecordsPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div>
                         <label htmlFor="class-filter" className="block text-sm font-medium text-gray-700">Class</label>
-                        <select id="class-filter" value={classId} onChange={e => handleFilterChange('classId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select id="class-filter" value={filters.classId || ''} onChange={e => handleFilterChange('classId', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="">All Classes</option>
                             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="from-date" className="block text-sm font-medium text-gray-700">From</label>
-                        <input type="date" id="from-date" value={from} onChange={e => handleFilterChange('from', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                        <input type="date" id="from-date" value={filters.from} onChange={e => handleFilterChange('from', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                     </div>
                     <div>
                         <label htmlFor="to-date" className="block text-sm font-medium text-gray-700">To</label>
-                        <input type="date" id="to-date" value={to} onChange={e => handleFilterChange('to', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                        <input type="date" id="to-date" value={filters.to} onChange={e => handleFilterChange('to', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                     </div>
                 </div>
                 {!isDateRangeValid && <p className="mt-2 text-sm text-red-600">"From" date cannot be after "To" date.</p>}
@@ -130,9 +136,11 @@ const AttendanceRecordsPage: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Export Options</h2>
                 <div className="flex flex-wrap gap-2">
                     <button onClick={handleClientCsvExport} disabled={!isDateRangeValid || loading} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400">Export Filtered to CSV (Client)</button>
+                    {/* FIX: Use exportRecordsCSV from attendanceService instead of transportService. */}
                     <button onClick={() => handleServerExport(exportRecordsCSV, 'CSV')} disabled={!isDateRangeValid || !!exporting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400">
                         {exporting === 'CSV' ? 'Generating...' : 'Export to CSV (Server)'}
                     </button>
+                    {/* FIX: Use exportRecordsPDF from attendanceService instead of transportService. */}
                     <button onClick={() => handleServerExport(exportRecordsPDF, 'PDF')} disabled={!isDateRangeValid || !!exporting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400">
                          {exporting === 'PDF' ? 'Generating...' : 'Export to PDF (Server)'}
                     </button>

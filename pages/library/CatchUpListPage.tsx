@@ -5,6 +5,7 @@ import * as catchupService from '../../lib/catchupService';
 import { listSubjects } from '../../lib/academicsService';
 import { getClasses } from '../../lib/schoolService';
 import type { CatchupItem, WatchProgress, Subject, SchoolClass } from '../../types';
+import { lmsKeys } from '../../lib/queryKeys';
 
 const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -55,7 +56,6 @@ const CatchupCard: React.FC<{ item: CatchupItem; progress?: WatchProgress; searc
 
 
 const CatchUpListPage: React.FC = () => {
-    const { siteId } = useParams<{ siteId: string }>();
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -67,10 +67,12 @@ const CatchUpListPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const filters = useMemo(() => ({
-        subjectId: searchParams.get('subjectId') || '',
-        classId: searchParams.get('classId') || '',
-        q: searchParams.get('q') || '',
+        subjectId: searchParams.get('subjectId') || undefined,
+        classId: searchParams.get('classId') || undefined,
+        q: searchParams.get('q') || undefined,
     }), [searchParams]);
+
+    const queryKey = lmsKeys.catchup.list(filters);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -79,8 +81,11 @@ const CatchUpListPage: React.FC = () => {
             try {
                 // HACK: Use a mock student ID for demonstration purposes. In a real app, this would come from the auth context.
                 const studentId = user?.scopes.includes('student') ? 's01' : 'admin';
+                const [,, queryFilters] = queryKey;
+                const cleanFilters = Object.fromEntries(Object.entries(queryFilters).filter(([, v]) => v !== undefined));
+
                 const [itemsData, progressData, subjectsData, classesData] = await Promise.all([
-                    catchupService.listCatchup('site_123', filters),
+                    catchupService.listCatchup('site_123', cleanFilters),
                     catchupService.listWatchProgressForStudent('site_123', studentId),
                     listSubjects(),
                     getClasses(),
@@ -96,7 +101,7 @@ const CatchUpListPage: React.FC = () => {
             }
         };
         fetchData();
-    }, [filters, user]);
+    }, [queryKey, user]);
 
     const subjectMap = useMemo(() => new Map(subjects.map(s => [s.id, s.name])), [subjects]);
     const classMap = useMemo(() => new Map(classes.map(c => [c.id, c.name])), [classes]);
@@ -147,9 +152,9 @@ const CatchUpListPage: React.FC = () => {
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input type="search" placeholder="Search by title..." value={filters.q} onChange={e => handleFilterChange('q', e.target.value)} className="w-full rounded-md border-gray-300" />
-                    <select value={filters.subjectId} onChange={e => handleFilterChange('subjectId', e.target.value)} className="w-full rounded-md border-gray-300"><option value="">All Subjects</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-                    <select value={filters.classId} onChange={e => handleFilterChange('classId', e.target.value)} className="w-full rounded-md border-gray-300"><option value="">All Classes</option>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+                    <input type="search" placeholder="Search by title..." value={filters.q || ''} onChange={e => handleFilterChange('q', e.target.value)} className="w-full rounded-md border-gray-300" />
+                    <select value={filters.subjectId || ''} onChange={e => handleFilterChange('subjectId', e.target.value)} className="w-full rounded-md border-gray-300"><option value="">All Subjects</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+                    <select value={filters.classId || ''} onChange={e => handleFilterChange('classId', e.target.value)} className="w-full rounded-md border-gray-300"><option value="">All Classes</option>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

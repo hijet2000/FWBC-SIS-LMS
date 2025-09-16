@@ -1,4 +1,4 @@
-import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer, Subject } from '../types';
+import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer } from '../types';
 import { listSubjects } from './academicsService';
 
 // --- MOCK DATA STORE ---

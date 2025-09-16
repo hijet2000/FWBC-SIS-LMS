@@ -4,6 +4,7 @@ import type { Trip, Vehicle, Driver, TransportRoute, TripStatus } from '../../ty
 import { listTrips, listVehicles, listDrivers, listRoutes, updateTrip } from '../../lib/transportService';
 import Toast from '../../components/ui/Toast';
 import TripModal from '../../components/transport/TripModal';
+import { transportKeys } from '../../lib/queryKeys';
 
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
@@ -23,25 +24,38 @@ const TripsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
     
-    const filters = useMemo(() => ({
-        date: searchParams.get('date') || getTodayDateString(),
+    const clientFilters = useMemo(() => ({
         status: searchParams.get('status') || 'all',
         vehicleId: searchParams.get('vehicleId') || 'all',
         driverId: searchParams.get('driverId') || 'all',
         routeId: searchParams.get('routeId') || 'all',
     }), [searchParams]);
 
-    const fetchData = async () => {
+    const dateFilter = searchParams.get('date') || getTodayDateString();
+    const queryKey = transportKeys.trips.list({ date: dateFilter });
+
+
+    const fetchData = async (shouldFetchTrips: boolean) => {
         setLoading(true);
         setError(null);
         try {
-            const [tripsData, vehiclesData, driversData, routesData] = await Promise.all([
-                listTrips('site_123', { date: filters.date }),
+            // FIX: Explicitly type the promises array to allow different promise types.
+            const promises: Promise<any>[] = [
                 listVehicles('site_123'),
                 listDrivers('site_123'),
                 listRoutes('site_123'),
-            ]);
-            setTrips(tripsData);
+            ];
+            
+            if (shouldFetchTrips) {
+                const [,, filters] = queryKey;
+                promises.unshift(listTrips('site_123', { date: filters.date }));
+            }
+
+            const [tripsData, vehiclesData, driversData, routesData] = shouldFetchTrips 
+                ? await Promise.all(promises) as [Trip[], Vehicle[], Driver[], TransportRoute[]]
+                : [trips, ...await Promise.all(promises.slice(0))] as [Trip[], Vehicle[], Driver[], TransportRoute[]];
+
+            if (shouldFetchTrips) setTrips(tripsData);
             setVehicles(vehiclesData);
             setDrivers(driversData);
             setRoutes(routesData);
@@ -51,21 +65,16 @@ const TripsPage: React.FC = () => {
             setLoading(false);
         }
     };
-
+    
     useEffect(() => {
-        fetchData();
-    }, [filters.date]);
+        fetchData(true);
+    }, [queryKey]);
 
     const handleFilterChange = (key: string, value: string) => {
         setSearchParams(prev => {
             const newParams = new URLSearchParams(prev);
             if (value && value !== 'all') newParams.set(key, value);
             else newParams.delete(key);
-            // If we change the date, refetching happens via useEffect. Others are client-side filters.
-            if (key !== 'date') {
-                // To trigger re-render for client-side filters
-                return newParams;
-            }
             return newParams;
         }, { replace: true });
     };
@@ -76,12 +85,12 @@ const TripsPage: React.FC = () => {
 
     const filteredTrips = useMemo(() => {
         return trips.filter(t => 
-            (filters.status === 'all' || t.status === filters.status) &&
-            (filters.vehicleId === 'all' || t.vehicleId === filters.vehicleId) &&
-            (filters.driverId === 'all' || t.driverId === filters.driverId) &&
-            (filters.routeId === 'all' || t.routeId === filters.routeId)
+            (clientFilters.status === 'all' || t.status === clientFilters.status) &&
+            (clientFilters.vehicleId === 'all' || t.vehicleId === clientFilters.vehicleId) &&
+            (clientFilters.driverId === 'all' || t.driverId === clientFilters.driverId) &&
+            (clientFilters.routeId === 'all' || t.routeId === clientFilters.routeId)
         );
-    }, [trips, filters]);
+    }, [trips, clientFilters]);
 
     const handleOpenModal = (trip: Trip | null = null) => {
         setEditingTrip(trip);
@@ -90,7 +99,7 @@ const TripsPage: React.FC = () => {
 
     const handleSaveSuccess = (message: string) => {
         setIsModalOpen(false);
-        fetchData();
+        fetchData(true);
         setToast({ message, type: 'success' });
     };
 
@@ -105,7 +114,7 @@ const TripsPage: React.FC = () => {
             }
             await updateTrip('site_123', trip.id, updatePayload);
             setToast({ message: `Trip status updated to ${newStatus}.`, type: 'success' });
-            fetchData();
+            fetchData(true);
         } catch {
             setToast({ message: 'Failed to update trip status.', type: 'error' });
         }
@@ -142,14 +151,14 @@ const TripsPage: React.FC = () => {
             
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <input type="date" value={filters.date} onChange={e => handleFilterChange('date', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"/>
-                    <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm">
+                    <input type="date" value={dateFilter} onChange={e => handleFilterChange('date', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"/>
+                    <select value={clientFilters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm">
                         <option value="all">All Statuses</option>
                         {(['Planned', 'In Progress', 'Completed', 'Cancelled'] as TripStatus[]).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    <select value={filters.vehicleId} onChange={e => handleFilterChange('vehicleId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Vehicles</option>{vehicles.map(v => <option key={v.id} value={v.id}>{v.regNo}</option>)}</select>
-                    <select value={filters.driverId} onChange={e => handleFilterChange('driverId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Drivers</option>{drivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
-                    <select value={filters.routeId} onChange={e => handleFilterChange('routeId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Routes</option>{routes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
+                    <select value={clientFilters.vehicleId} onChange={e => handleFilterChange('vehicleId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Vehicles</option>{vehicles.map(v => <option key={v.id} value={v.id}>{v.regNo}</option>)}</select>
+                    <select value={clientFilters.driverId} onChange={e => handleFilterChange('driverId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Drivers</option>{drivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
+                    <select value={clientFilters.routeId} onChange={e => handleFilterChange('routeId', e.target.value)} className="w-full rounded-md border-gray-300 shadow-sm"><option value="all">All Routes</option>{routes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>
                 </div>
             </div>
 

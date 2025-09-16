@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import KpiCard from '../components/dashboard/KpiCard';
 
 // Services
@@ -34,6 +34,7 @@ const CalendarDaysIcon: React.FC<{ className?: string }> = ({ className }) => (
 const SisDashboard: React.FC = () => {
   const { siteId } = useParams<{ siteId: string }>();
   const { user, loading: authLoading } = useAuth();
+  const { addToast } = useToast();
   
   const [kpiData, setKpiData] = useState({
       students: 0,
@@ -42,13 +43,11 @@ const SisDashboard: React.FC = () => {
       exams: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchKpis = async () => {
       try {
         setLoading(true);
-        setError(null);
         const [studentCount, attendanceSummary, coursesData, examsCount] = await Promise.all([
           getStudentsCount(),
           getTodaysAttendanceSummary(),
@@ -65,14 +64,14 @@ const SisDashboard: React.FC = () => {
 
       } catch (e) {
         console.error("Failed to load dashboard KPIs", e);
-        setError("Could not load dashboard data.");
+        addToast("Could not load dashboard data.", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchKpis();
-  }, []);
+  }, [addToast]);
 
 
   if (authLoading) {
@@ -93,7 +92,6 @@ const SisDashboard: React.FC = () => {
             icon={<UsersIcon className="h-6 w-6" />}
             linkTo={`/school/${siteId}/students`}
             loading={loading}
-            error={error}
             className="text-gray-800"
           />
           <KpiCard
@@ -102,7 +100,6 @@ const SisDashboard: React.FC = () => {
             icon={<CheckBadgeIcon className="h-6 w-6" />}
             linkTo={`/school/${siteId}/attendance/exports`}
             loading={loading}
-            error={error}
             className="text-green-600"
           />
           <KpiCard
@@ -111,7 +108,6 @@ const SisDashboard: React.FC = () => {
             icon={<BookOpenIcon className="h-6 w-6" />}
             linkTo={`/school/${siteId}/courses`}
             loading={loading}
-            error={error}
             className="text-gray-800"
           />
           <KpiCard
@@ -120,7 +116,6 @@ const SisDashboard: React.FC = () => {
             icon={<CalendarDaysIcon className="h-6 w-6" />}
             linkTo={`/school/${siteId}/academics/reports`} // No exams page yet, link to reports
             loading={loading}
-            error={error}
             className="text-amber-600"
           />
       </div>

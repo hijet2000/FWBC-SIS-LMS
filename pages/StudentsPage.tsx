@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { getClasses, getStudents } from '../lib/schoolService';
 import type { SchoolClass, Student } from '../types';
+import { useToast } from '../contexts/ToastContext';
+import { studentKeys } from '../lib/queryKeys';
 
 const STUDENTS_PER_PAGE = 10;
 
@@ -62,6 +64,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({ currentPage, to
 const StudentsPage: React.FC = () => {
     const { siteId } = useParams<{ siteId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { addToast } = useToast();
 
     // Data states
     const [students, setStudents] = useState<Student[]>([]);
@@ -71,27 +74,31 @@ const StudentsPage: React.FC = () => {
 
     // UI states
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     // Filter states from URL
-    const classIdFilter = searchParams.get('classId') || '';
-    const queryFilter = searchParams.get('q') || '';
-    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+    const filters = useMemo(() => ({
+        classId: searchParams.get('classId') || undefined,
+        q: searchParams.get('q') || undefined,
+        page: parseInt(searchParams.get('page') || '1', 10),
+        limit: STUDENTS_PER_PAGE,
+    }), [searchParams]);
+
+    const queryKey = studentKeys.list(filters);
     
     // Local state for debouncing search input
-    const [searchTerm, setSearchTerm] = useState(queryFilter);
+    const [searchTerm, setSearchTerm] = useState(filters.q || '');
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     // Fetch classes on mount
     useEffect(() => {
         getClasses()
             .then(data => setClasses(data))
-            .catch(() => setError('Could not load class information.'));
-    }, []);
+            .catch(() => addToast('Could not load class information.', 'error'));
+    }, [addToast]);
 
     // Update URL when debounced search term changes, resetting to page 1
     useEffect(() => {
-        if (debouncedSearchTerm !== queryFilter) {
+        if (debouncedSearchTerm !== filters.q) {
             setSearchParams(prev => {
                 const newParams = new URLSearchParams(prev);
                 if (debouncedSearchTerm) {
@@ -103,23 +110,25 @@ const StudentsPage: React.FC = () => {
                 return newParams;
             }, { replace: true });
         }
-    }, [debouncedSearchTerm, queryFilter, setSearchParams]);
+    }, [debouncedSearchTerm, filters.q, setSearchParams]);
 
-    // Fetch filtered & paginated students when URL filters change
+    // Fetch filtered & paginated students when query key changes
     useEffect(() => {
         setLoading(true);
-        setError(null);
 
-        getStudents({ classId: classIdFilter, q: queryFilter, page: currentPage, limit: STUDENTS_PER_PAGE })
+        const [,, queryFilters] = queryKey;
+        const cleanFilters = Object.fromEntries(Object.entries(queryFilters).filter(([, v]) => v !== undefined));
+
+        getStudents(cleanFilters)
             .then(({ students: paginatedStudents, total }) => {
                 setStudents(paginatedStudents);
                 setTotalStudents(total);
                 setTotalPages(Math.ceil(total / STUDENTS_PER_PAGE));
             })
-            .catch(() => setError('An error occurred while fetching students.'))
+            .catch(() => addToast('An error occurred while fetching students.', 'error'))
             .finally(() => setLoading(false));
 
-    }, [classIdFilter, queryFilter, currentPage]);
+    }, [queryKey, addToast]);
     
     const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newClassId = e.target.value;
@@ -150,7 +159,7 @@ const StudentsPage: React.FC = () => {
     const getStatusText = () => {
         if (loading) return 'Searching...';
         if (totalStudents === 0) return 'Showing 0 of 0 students.';
-        const first = (currentPage - 1) * STUDENTS_PER_PAGE + 1;
+        const first = (filters.page - 1) * STUDENTS_PER_PAGE + 1;
         const last = first + students.length - 1;
         return `Showing ${first}–${last} of ${totalStudents} students.`;
     };
@@ -166,14 +175,6 @@ const StudentsPage: React.FC = () => {
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"><div className="h-4 bg-gray-200 rounded w-12"></div></td>
                     </tr>
                 ))
-            );
-        }
-
-        if (error) {
-            return (
-                <tr>
-                    <td colSpan={4} className="py-8 text-center text-red-600">{error}</td>
-                </tr>
             );
         }
 
@@ -218,7 +219,7 @@ const StudentsPage: React.FC = () => {
                     <label htmlFor="class-filter" className="sr-only">Filter by class</label>
                     <select
                         id="class-filter"
-                        value={classIdFilter}
+                        value={filters.classId || ''}
                         onChange={handleClassChange}
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     >
@@ -261,7 +262,7 @@ const StudentsPage: React.FC = () => {
                                 </tbody>
                             </table>
                              <PaginationControls
-                                currentPage={currentPage}
+                                currentPage={filters.page}
                                 totalPages={totalPages}
                                 onPageChange={handlePageChange}
                             />

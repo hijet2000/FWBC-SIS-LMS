@@ -7,17 +7,13 @@ interface KpiCardProps {
   icon: React.ReactNode;
   linkTo: string;
   loading: boolean;
-  error?: string | null;
   className?: string;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({ title, value, icon, linkTo, loading, error, className = '' }) => {
+const KpiCard: React.FC<KpiCardProps> = ({ title, value, icon, linkTo, loading, className = '' }) => {
   const renderContent = () => {
     if (loading) {
       return <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>;
-    }
-    if (error) {
-      return <span className="text-2xl font-bold text-red-500" title={error}>—</span>;
     }
     return <p className={`text-4xl font-bold ${className}`}>{value}</p>;
   };

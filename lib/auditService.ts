@@ -1,4 +1,4 @@
-import type { AuditEvent, User, UserSession, UserActivityEvent, AuditModule, AuditAction } from '../types';
+import type { AuditEvent, User, UserSession, AuditModule, AuditAction } from '../types';
 
 // --- MOCK DATA STORE ---
 const getISODateMinutesAgo = (minutes: number): string => {

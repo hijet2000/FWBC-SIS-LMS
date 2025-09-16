@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
-import { getClasses, getStudentsByClass, saveAttendance } from '../lib/schoolService';
+import { getClasses, getStudentsByClass } from '../lib/schoolService';
+import { saveAttendance } from '../lib/attendanceService';
 import type { SchoolClass, Student, AttendanceStatus, AttendanceEntry } from '../types';
 import { useAuth } from '../auth/AuthContext';
 

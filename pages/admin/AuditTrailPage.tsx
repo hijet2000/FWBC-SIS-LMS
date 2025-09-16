@@ -4,6 +4,7 @@ import type { AuditEvent, AuditModule, AuditAction, User } from '../../types';
 import * as auditService from '../../lib/auditService';
 import Drawer from '../../components/admin/Drawer';
 import JsonDiffViewer from '../../components/admin/JsonDiffViewer';
+import { adminKeys } from '../../lib/queryKeys';
 
 const getISODateDaysAgo = (days: number): string => {
     const date = new Date();
@@ -23,12 +24,13 @@ const AuditTrailPage: React.FC = () => {
     const filters = useMemo(() => ({
         from: searchParams.get('from') || getISODateDaysAgo(7),
         to: searchParams.get('to') || getISODateDaysAgo(0),
-        actorId: searchParams.get('actorId') || '',
-        // FIX: Correctly cast the search param to ensure the type is not widened to 'string'.
-        module: (searchParams.get('module') || '') as AuditModule | '',
-        action: (searchParams.get('action') || '') as AuditAction | '',
-        q: searchParams.get('q') || '',
+        actorId: searchParams.get('actorId') || undefined,
+        module: (searchParams.get('module') || undefined) as AuditModule | undefined,
+        action: (searchParams.get('action') || undefined) as AuditAction | undefined,
+        q: searchParams.get('q') || undefined,
     }), [searchParams]);
+
+    const queryKey = adminKeys.auditEvents.list(filters);
 
     useEffect(() => {
         auditService.listUsers('site_123').then(setUsers);
@@ -37,16 +39,15 @@ const AuditTrailPage: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        // FIX: The 'action' filter can be an empty string, which is not assignable to 'AuditAction | undefined'.
-        // Coalesce the empty string to 'undefined' to match the expected type.
-        auditService.listAuditEvents('site_123', {
-            ...filters,
-            action: filters.action || undefined,
-        })
+        
+        const [,, queryFilters] = queryKey;
+        const cleanFilters = Object.fromEntries(Object.entries(queryFilters).filter(([, v]) => v !== undefined));
+
+        auditService.listAuditEvents('site_123', cleanFilters)
             .then(setEvents)
             .catch(() => setError('Failed to load audit trail.'))
             .finally(() => setLoading(false));
-    }, [filters]);
+    }, [queryKey]);
 
     const handleFilterChange = (key: string, value: string) => {
         setSearchParams(prev => {
@@ -57,7 +58,7 @@ const AuditTrailPage: React.FC = () => {
         }, { replace: true });
     };
 
-    const modules: AuditModule[] = ['STUDENTS', 'ATTENDANCE', 'ACADEMICS', 'FEES', 'AUTH', 'SYSTEM'];
+    const modules: AuditModule[] = ['STUDENTS', 'ATTENDANCE', 'ACADEMICS', 'FEES', 'AUTH', 'SYSTEM', 'TRANSPORT'];
     const actions: AuditAction[] = ['CREATE', 'UPDATE', 'DELETE', 'PAYMENT', 'LOGIN', 'LOGOUT', 'ROLE_CHANGE'];
 
     return (
@@ -68,12 +69,12 @@ const AuditTrailPage: React.FC = () => {
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input type="date" value={filters.from} onChange={e => handleFilterChange('from', e.target.value)} className="rounded-md border-gray-300" />
                     <input type="date" value={filters.to} onChange={e => handleFilterChange('to', e.target.value)} className="rounded-md border-gray-300" />
-                    <input type="search" placeholder="Search entity or actor..." value={filters.q} onChange={e => handleFilterChange('q', e.target.value)} className="rounded-md border-gray-300" />
+                    <input type="search" placeholder="Search entity or actor..." value={filters.q || ''} onChange={e => handleFilterChange('q', e.target.value)} className="rounded-md border-gray-300" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select value={filters.actorId} onChange={e => handleFilterChange('actorId', e.target.value)} className="rounded-md border-gray-300"><option value="">All Actors</option>{users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select>
-                    <select value={filters.module} onChange={e => handleFilterChange('module', e.target.value)} className="rounded-md border-gray-300"><option value="">All Modules</option>{modules.map(m => <option key={m} value={m}>{m}</option>)}</select>
-                    <select value={filters.action} onChange={e => handleFilterChange('action', e.target.value)} className="rounded-md border-gray-300"><option value="">All Actions</option>{actions.map(a => <option key={a} value={a}>{a}</option>)}</select>
+                    <select value={filters.actorId || ''} onChange={e => handleFilterChange('actorId', e.target.value)} className="rounded-md border-gray-300"><option value="">All Actors</option>{users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select>
+                    <select value={filters.module || ''} onChange={e => handleFilterChange('module', e.target.value)} className="rounded-md border-gray-300"><option value="">All Modules</option>{modules.map(m => <option key={m} value={m}>{m}</option>)}</select>
+                    <select value={filters.action || ''} onChange={e => handleFilterChange('action', e.target.value)} className="rounded-md border-gray-300"><option value="">All Actions</option>{actions.map(a => <option key={a} value={a}>{a}</option>)}</select>
                 </div>
             </div>
 

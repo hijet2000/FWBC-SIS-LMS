@@ -6,6 +6,7 @@ import type { Invoice, SchoolClass, Student, InvoiceStatus } from '../types';
 import Toast from '../components/ui/Toast';
 import RecordPaymentModal from '../components/fees/RecordPaymentModal';
 import { useAuth } from '../auth/AuthContext';
+import { feeKeys } from '../lib/queryKeys';
 
 const statusStyles: Record<InvoiceStatus, string> = {
     Paid: 'bg-green-100 text-green-800',
@@ -31,10 +32,12 @@ const FeesPaymentsPage: React.FC = () => {
 
     // Filters
     const filters = useMemo(() => ({
-        classId: searchParams.get('classId') || '',
-        studentId: searchParams.get('studentId') || '',
+        classId: searchParams.get('classId') || undefined,
+        studentId: searchParams.get('studentId') || undefined,
         status: searchParams.get('status') || 'all',
     }), [searchParams]);
+
+    const queryKey = feeKeys.invoices.list(filters);
 
     // Initial data load for filters
     useEffect(() => {
@@ -51,11 +54,13 @@ const FeesPaymentsPage: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        listInvoices(filters)
+        
+        const [,, queryFilters] = queryKey;
+        listInvoices(queryFilters)
             .then(setInvoices)
             .catch(() => setError("Failed to load invoices."))
             .finally(() => setLoading(false));
-    }, [filters]);
+    }, [queryKey]);
 
     const handleFilterChange = (key: string, value: string) => {
         setSearchParams(prev => {
@@ -71,11 +76,11 @@ const FeesPaymentsPage: React.FC = () => {
         setPaymentModalInvoice(null);
         setToast({ message: `Payment recorded successfully (Receipt: ${receiptNo})`, type: 'success' });
         // Refetch invoices
-        listInvoices(filters).then(setInvoices);
+        const [,, queryFilters] = queryKey;
+        listInvoices(queryFilters).then(setInvoices);
     };
 
     const studentMap = useMemo(() => new Map(students.map(s => [s.id, s.name])), [students]);
-    const classMap = useMemo(() => new Map(classes.map(c => [c.id, c.name])), [classes]);
     const filteredStudents = useMemo(() => filters.classId ? students.filter(s => s.classId === filters.classId) : [], [students, filters.classId]);
 
     return (
@@ -85,11 +90,11 @@ const FeesPaymentsPage: React.FC = () => {
             
             <div className="bg-white p-4 rounded-lg shadow-sm border">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select value={filters.classId} onChange={e => handleFilterChange('classId', e.target.value)} className="rounded-md border-gray-300">
+                    <select value={filters.classId || ''} onChange={e => handleFilterChange('classId', e.target.value)} className="rounded-md border-gray-300">
                         <option value="">All Classes</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
-                    <select value={filters.studentId} onChange={e => handleFilterChange('studentId', e.target.value)} className="rounded-md border-gray-300" disabled={!filters.classId}>
+                    <select value={filters.studentId || ''} onChange={e => handleFilterChange('studentId', e.target.value)} className="rounded-md border-gray-300" disabled={!filters.classId}>
                         <option value="">All Students in Class</option>
                         {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>

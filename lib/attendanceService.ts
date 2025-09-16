@@ -1,7 +1,6 @@
 import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry } from '../types';
 import { getClasses, getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';
-import { useAuth } from '../auth/AuthContext'; // Cannot be used here
 
 // --- MOCK DATA GENERATION ---
 let MOCK_RECORDS: AttendanceRecord[] = [];

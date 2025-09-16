@@ -1,5 +1,6 @@
 
-import type { Subject, Teacher, Mapping, Exam } from '../types';
+
+import type { Subject, Teacher, Mapping, Exam, TimetableEntry } from '../types';
 
 // --- MOCK DATA ---
 const SUBJECTS: Subject[] = [
@@ -43,6 +44,19 @@ const EXAMS: Exam[] = [
     { id: 'exam-3', subjectName: 'Advanced History', className: 'A-Level Arts', date: getISODateDaysFromNow(12) },
     { id: 'exam-4', subjectName: 'English Literature', className: 'Form 1', date: getISODateDaysFromNow(20) },
     { id: 'exam-5', subjectName: 'Chemistry', className: 'A-Level Sciences', date: getISODateDaysFromNow(25) },
+];
+
+let MOCK_TIMETABLE: TimetableEntry[] = [
+    { id: 'tt-1', subjectId: 'subj-1', teacherId: 't-3', classId: 'c1', day: 'MON', timeSlot: '09:00-10:00' },
+    { id: 'tt-2', subjectId: 'subj-4', teacherId: 't-4', classId: 'c1', day: 'MON', timeSlot: '10:00-11:00' },
+    { id: 'tt-3', subjectId: 'subj-2', teacherId: 't-2', classId: 'c2', day: 'MON', timeSlot: '09:00-10:00' },
+    // Teacher Conflict: Ms. Curie (t-2) is booked for c4 and c3 at the same time
+    { id: 'tt-4', subjectId: 'subj-6', teacherId: 't-2', classId: 'c4', day: 'TUE', timeSlot: '11:00-12:00' },
+    { id: 'tt-5', subjectId: 'subj-7', teacherId: 't-2', classId: 'c3', day: 'TUE', timeSlot: '11:00-12:00' },
+    // Class Conflict: Class c1 is booked for Art and Physics at the same time
+    { id: 'tt-6', subjectId: 'subj-5', teacherId: 't-5', classId: 'c1', day: 'WED', timeSlot: '14:00-15:00' },
+    { id: 'tt-7', subjectId: 'subj-2', teacherId: 't-2', classId: 'c1', day: 'WED', timeSlot: '14:00-15:00' },
+    { id: 'tt-8', subjectId: 'subj-8', teacherId: 't-6', classId: 'c4', day: 'FRI', timeSlot: '10:00-11:00' },
 ];
 
 // --- MOCK API FUNCTIONS ---
@@ -109,3 +123,22 @@ export const getUpcomingExamsCount = async (): Promise<number> => {
 
     return Promise.resolve(upcoming.length);
 };
+
+export const getTimetable = async (params: { classId?: string; teacherId?: string }): Promise<TimetableEntry[]> => {
+    await delay(400);
+    let results = [...MOCK_TIMETABLE];
+    if (params.classId) {
+        results = results.filter(e => e.classId === params.classId);
+    }
+    if (params.teacherId) {
+        results = results.filter(e => e.teacherId === params.teacherId);
+    }
+    return Promise.resolve(results);
+};
+
+export const saveTimetableEntry = async (entry: Omit<TimetableEntry, 'id'>): Promise<TimetableEntry> => {
+    await delay(300);
+    const newEntry = { ...entry, id: `tt-${Date.now()}` };
+    MOCK_TIMETABLE.push(newEntry);
+    return newEntry;
+}

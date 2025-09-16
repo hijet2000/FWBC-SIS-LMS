@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { getStudent, getClasses } from '../lib/schoolService';
 import type { Student, SchoolClass } from '../types';
+import { useToast } from '../contexts/ToastContext';
+import { studentKeys } from '../lib/queryKeys';
 
 // --- Helper Components ---
 
@@ -23,11 +25,14 @@ const InfoRow: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, 
 const StudentProfilePage: React.FC = () => {
     const { siteId, studentId } = useParams<{ siteId: string; studentId: string }>();
     const location = useLocation();
+    const { addToast } = useToast();
 
     const [student, setStudent] = useState<Student | null>(null);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const queryKey = studentKeys.detail(studentId!);
     
     useEffect(() => {
         if (!studentId) return;
@@ -36,8 +41,9 @@ const StudentProfilePage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
+                const id = queryKey[queryKey.length - 1];
                 const [studentData, classesData] = await Promise.all([
-                    getStudent(studentId),
+                    getStudent(id),
                     getClasses()
                 ]);
                 
@@ -48,6 +54,7 @@ const StudentProfilePage: React.FC = () => {
                 }
                 setClasses(classesData);
             } catch (err) {
+                addToast('Failed to load student details.', 'error');
                 setError('Failed to load student details.');
             } finally {
                 setLoading(false);
@@ -55,7 +62,7 @@ const StudentProfilePage: React.FC = () => {
         };
 
         fetchData();
-    }, [studentId]);
+    }, [queryKey, addToast, studentId]);
 
     const classMap = new Map(classes.map(c => [c.id, c.name]));
 

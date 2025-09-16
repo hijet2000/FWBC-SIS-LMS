@@ -1,5 +1,5 @@
-
 import React from 'react';
+import ScopeSwitcher from '@/components/dev/ScopeSwitcher';
 
 const Header: React.FC = () => {
   return (
@@ -9,7 +9,8 @@ const Header: React.FC = () => {
           <div className="flex-1 md:flex md:items-center md:gap-12">
             <span className="text-xl font-bold text-gray-800">FWBC 2025</span>
           </div>
-          <div className="md:flex md:items-center md:gap-12">
+          <div className="md:flex md:items-center md:gap-4">
+            <ScopeSwitcher />
             <span className="text-sm font-medium text-gray-500">Foundation</span>
           </div>
         </div>

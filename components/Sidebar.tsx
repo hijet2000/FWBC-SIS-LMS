@@ -1,3 +1,4 @@
+// FIX: Removed invalid CDATA wrapper.
 import React from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -60,6 +61,42 @@ const ShieldIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056v-1.007" />
     </svg>
 );
+const CalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+const FolderAddIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h5l2 2h5a2 2 0 012 2v10a2 2 0 01-2-2H5a2 2 0 01-2-2z" />
+  </svg>
+);
+const IdentificationIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 0h6" />
+  </svg>
+);
+const PhoneIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+    </svg>
+);
+const MailIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+);
+const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const UploadIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);
+
 
 
 interface NavItemProps {
@@ -93,17 +130,49 @@ const Sidebar: React.FC = () => {
       return requiredScopes.some(scope => user.scopes.includes(scope));
   };
   
-  const hasScope = (scope: string) => hasAnyScope([scope]);
-
 
   return (
     <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4 flex flex-col">
       <nav className="flex flex-col gap-1 text-sm font-normal">
+        
+        {hasAnyScope(['homework:student']) && (
+        <>
+            <div className="px-3 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student Portal</div>
+            <NavItem to={`/school/${siteId}/student/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="My Homework" />
+        </>
+        )}
+
         <div className="px-3 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">SIS</div>
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" />}
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/students`} icon={<UsersIcon className="h-4 w-4" />} label="Students" />}
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics`} icon={<BookIcon className="h-4 w-4" />} label="Academics" />}
         
+        <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Academics</div>
+        {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="Homework" />}
+        
+        <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Admissions</div>
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions`} icon={<FolderAddIcon className="h-4 w-4" />} label="Dashboard" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/applications`} icon={<UsersIcon className="h-4 w-4" />} label="Applications" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/seats`} icon={<TableIcon className="h-4 w-4" />} label="Seat Allocation" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/import`} icon={<UploadIcon className="h-4 w-4" />} label="Bulk Import" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/comms`} icon={<MailIcon className="h-4 w-4" />} label="Parent Comms" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports & Funnel" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/online`} icon={<ClipboardIcon className="h-4 w-4" />} label="Online Admissions" />}
+        {hasAnyScope(['admissions:admin']) && <NavItem to={`/school/${siteId}/admissions/offers`} icon={<CheckCircleIcon className="h-4 w-4" />} label="Offers & Acceptance" />}
+
+
+        <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Front Office</div>
+        {hasAnyScope(['frontoffice:admin']) && <NavItem to={`/school/${siteId}/frontoffice/enquiries`} icon={<ClipboardIcon className="h-4 w-4" />} label="Enquiries" />}
+        {hasAnyScope(['frontoffice:admin']) && <NavItem to={`/school/${siteId}/frontoffice/visitors`} icon={<IdentificationIcon className="h-4 w-4" />} label="Visitor Book" />}
+        {hasAnyScope(['frontoffice:admin']) && <NavItem to={`/school/${siteId}/frontoffice/calls`} icon={<PhoneIcon className="h-4 w-4" />} label="Call Log" />}
+        {hasAnyScope(['frontoffice:admin']) && <NavItem to={`/school/${siteId}/frontoffice/postal`} icon={<MailIcon className="h-4 w-4" />} label="Postal Log" />}
+
+
+        <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Timetabling</div>
+        {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/planner`} icon={<CalendarIcon className="h-4 w-4" />} label="Planner" />}
+        {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/class`} icon={<TableIcon className="h-4 w-4" />} label="Class Timetables" />}
+        {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/teacher`} icon={<TableIcon className="h-4 w-4" />} label="Teacher Timetables" />}
+
         <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Attendance</div>
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/attendance`} icon={<ClipboardIcon className="h-4 w-4" />} label="Daily Entry" />}
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/attendance/records`} icon={<TableIcon className="h-4 w-4" />} label="Records" />}

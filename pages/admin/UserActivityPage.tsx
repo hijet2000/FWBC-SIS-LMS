@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import type { User, UserSession, AuditEvent } from '../../types';
 import * as auditService from '../../lib/auditService';
 import Toast from '../../components/ui/Toast';
+import { adminKeys } from '../../lib/queryKeys';
 
 const getISODateDaysAgo = (days: number): string => {
     const date = new Date();
@@ -25,6 +26,10 @@ const UserActivityPage: React.FC = () => {
         to: searchParams.get('to') || getISODateDaysAgo(0),
     }), [searchParams]);
 
+    const sessionsQueryKey = adminKeys.userSessions.list(filters);
+    const eventsQueryKey = adminKeys.auditEvents.list({ actorId: filters.userId, from: filters.from, to: filters.to });
+
+
     useEffect(() => {
         setLoading(p => ({...p, users: true}));
         auditService.listUsers('site_123').then(data => {
@@ -33,19 +38,23 @@ const UserActivityPage: React.FC = () => {
                 handleFilterChange('userId', data[0].id);
             }
         }).finally(() => setLoading(p => ({...p, users: false})));
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!filters.userId) return;
         setLoading(p => ({...p, activity: true}));
+        
+        const [,, sessionFilters] = sessionsQueryKey;
+        const [,, eventFilters] = eventsQueryKey;
+
         Promise.all([
-            auditService.listUserSessions('site_123', filters.userId, { from: filters.from, to: filters.to }),
-            auditService.listUserEvents('site_123', filters.userId, { from: filters.from, to: filters.to })
+            auditService.listUserSessions('site_123', sessionFilters.userId, { from: sessionFilters.from, to: sessionFilters.to }),
+            auditService.listUserEvents('site_123', eventFilters.actorId, { from: eventFilters.from, to: eventFilters.to })
         ]).then(([sessionsData, eventsData]) => {
             setSessions(sessionsData);
             setEvents(eventsData);
         }).finally(() => setLoading(p => ({...p, activity: false})));
-    }, [filters]);
+    }, [sessionsQueryKey, eventsQueryKey, filters.userId]);
     
     const handleFilterChange = (key: string, value: string) => {
         setSearchParams(prev => {
@@ -60,7 +69,8 @@ const UserActivityPage: React.FC = () => {
         await auditService.terminateSession('site_123', sessionId);
         setToast({ message: 'Session terminated.', type: 'success' });
         // Refetch sessions
-        auditService.listUserSessions('site_123', filters.userId, { from: filters.from, to: filters.to }).then(setSessions);
+        const [,, sessionFilters] = sessionsQueryKey;
+        auditService.listUserSessions('site_123', sessionFilters.userId, { from: sessionFilters.from, to: sessionFilters.to }).then(setSessions);
     };
 
     return (

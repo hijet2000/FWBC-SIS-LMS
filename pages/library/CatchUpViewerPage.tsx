@@ -2,13 +2,34 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import * as catchupService from '../../lib/catchupService';
-import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer } from '../../types';
+import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer, Student } from '../../types';
+import { getStudent } from '../../lib/schoolService';
+import { useSignedMedia } from '../../hooks/useSignedMedia';
 import useWatchTracker from '../../hooks/useWatchTracker';
+
 import SecurePlayer from '../../components/digital/SecurePlayer';
+import DynamicWatermark from '../../components/digital/DynamicWatermark';
 import QuizModal from '../../components/library/QuizModal';
 import Toast from '../../components/ui/Toast';
+import Spinner from '../../components/ui/Spinner';
 
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+const ErrorBanner: React.FC<{ error: any; onRetry: () => void; backLink: string }> = ({ error, onRetry, backLink }) => (
+    <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg" role="alert">
+        <div className="flex">
+            <div>
+                <p className="font-bold text-red-800">Playback Error: {error.code}</p>
+                <p className="text-sm text-red-700">{error.message}</p>
+                <div className="mt-4 space-x-4">
+                    <button onClick={onRetry} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Re-validate Session</button>
+                    <Link to={backLink} className="text-sm text-gray-600 hover:underline">Back to List</Link>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 
 const CatchUpViewerPage: React.FC = () => {
     const { siteId, contentId } = useParams<{ siteId: string; contentId: string }>();
@@ -18,6 +39,7 @@ const CatchUpViewerPage: React.FC = () => {
     const studentId = useMemo(() => (user?.scopes.includes('student') ? 's01' : null), [user]);
 
     const [item, setItem] = useState<CatchupItem | null>(null);
+    const [student, setStudent] = useState<Student | null>(null);
     const [initialProgress, setInitialProgress] = useState<WatchProgress | null>(null);
     const [policy, setPolicy] = useState<CatchupPolicy | null>(null);
     const [quiz, setQuiz] = useState<{ questions: QuizQuestion[] } | null>(null);
@@ -28,7 +50,15 @@ const CatchUpViewerPage: React.FC = () => {
     const [isQuizOpen, setIsQuizOpen] = useState(false);
     
     const videoRef = useRef<HTMLVideoElement>(null);
-    
+    const backLink = `/school/${siteId}/library/catchup${location.search}`;
+
+    const { signedUrl, tokenId, loading: urlLoading, error: urlError, retry } = useSignedMedia({
+        contentId,
+        rawUrl: item?.url || null,
+        kind: 'VIDEO',
+        ttlSec: 600, // 10 minute TTL for longer videos
+    });
+
     const { totalSecondsWatched } = useWatchTracker(videoRef, {
         contentId: contentId!,
         studentId: studentId!,
@@ -46,8 +76,9 @@ const CatchUpViewerPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const [itemData, progressData, policyData, quizData] = await Promise.all([
+                const [itemData, studentData, progressData, policyData, quizData] = await Promise.all([
                     catchupService.getCatchup('site_123', contentId),
+                    getStudent(studentId),
                     catchupService.getWatchProgress('site_123', contentId, studentId),
                     catchupService.getCatchupPolicy('site_123'),
                     catchupService.getQuiz('site_123', contentId),
@@ -58,6 +89,7 @@ const CatchUpViewerPage: React.FC = () => {
                     return;
                 }
                 setItem(itemData);
+                setStudent(studentData);
                 setInitialProgress(progressData);
                 setPolicy(policyData);
                 setQuiz(quizData);
@@ -108,7 +140,21 @@ const CatchUpViewerPage: React.FC = () => {
         return result;
     };
 
-    if (loading) return <div className="text-center p-8">Loading lesson...</div>;
+    const renderPlayer = () => {
+        if (urlLoading || !signedUrl) {
+            return (
+                <div className="w-full aspect-video bg-gray-200 flex items-center justify-center rounded-lg">
+                    <Spinner />
+                </div>
+            );
+        }
+        if (urlError) {
+             return <ErrorBanner error={urlError} onRetry={retry} backLink={backLink} />;
+        }
+        return <SecurePlayer ref={videoRef} src={signedUrl} />;
+    };
+
+    if (loading) return <div className="text-center p-8"><Spinner /></div>;
     if (error) return <div className="text-center p-8 text-red-600 bg-red-50">{error}</div>;
     if (!item) return <div className="text-center p-8">Lesson content is not available.</div>;
 
@@ -116,14 +162,22 @@ const CatchUpViewerPage: React.FC = () => {
         <div className="space-y-6 max-w-4xl mx-auto">
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             <div>
-                 <Link to={`/school/${siteId}/library/catchup${location.search}`} className="text-sm text-indigo-600 hover:text-indigo-800">
+                 <Link to={backLink} className="text-sm text-indigo-600 hover:text-indigo-800">
                      &larr; Back to List
                 </Link>
                 <h1 className="text-3xl font-bold text-gray-800 mt-2">{item.title}</h1>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <SecurePlayer ref={videoRef} src={item.url} watermarkText={user?.name} />
+                <DynamicWatermark
+                    userName={user?.name}
+                    admissionNo={student?.admissionNo}
+                    siteId={siteId}
+                    tokenId={tokenId}
+                >
+                    {renderPlayer()}
+                </DynamicWatermark>
+
                 <div className="mt-4 space-y-2">
                     <p className="font-medium">Progress</p>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -141,7 +195,7 @@ const CatchUpViewerPage: React.FC = () => {
                  <p className="text-sm text-gray-500 mt-1">You must watch at least {policy?.requiredWatchPct}% of the video and then pass a short quiz.</p>
                  <button
                     onClick={() => setIsQuizOpen(true)}
-                    disabled={!isWatchRequirementMet || !quiz}
+                    disabled={!isWatchRequirementMet || !quiz || !!urlError}
                     className="mt-4 px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                     {initialProgress?.completed ? 'Review Quiz' : 'Take Quiz'}

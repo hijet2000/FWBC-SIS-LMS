@@ -10,12 +10,16 @@ const MOCK_USER: User = {
   scopes: [
     'sis:admin',
     'school:admin',
+    'admissions:admin',
+    'frontoffice:admin',
     'sis:students:read', 
     'sis:academics:read', 
     'sis:attendance:write', 
     'sis:library:read',
     'lms:admin', 
-    'lms:courses:write'
+    'lms:courses:write',
+    'homework:teacher',
+    'homework:student'
   ],
 };
 

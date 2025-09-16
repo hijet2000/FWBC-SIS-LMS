@@ -9,13 +9,14 @@ const PRESETS = {
         scopes: [
             'sis:admin', 'school:admin', 'sis:students:read', 
             'sis:academics:read', 'sis:attendance:write', 
-            'sis:library:read', 'lms:admin', 'lms:courses:write'
+            'sis:library:read', 'lms:admin', 'lms:courses:write',
+            'homework:teacher', 'homework:student'
         ]
     },
-    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin'] },
-    sis: { name: 'SIS-Only Admin', scopes: ['school:admin'] },
+    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin', 'homework:teacher'] },
+    sis: { name: 'SIS-Only Admin', scopes: ['school:admin', 'homework:teacher'] },
     lms: { name: 'LMS-Only Admin', scopes: ['lms:admin'] },
-    student: { name: 'Student', scopes: ['student'] },
+    student: { name: 'Student', scopes: ['student', 'homework:student'] },
 };
 
 const ScopeSwitcher: React.FC = () => {
@@ -74,26 +75,24 @@ const ScopeSwitcher: React.FC = () => {
     }) || 'custom';
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 bg-white p-3 rounded-lg shadow-lg border border-gray-300">
-            <div className="flex items-center gap-4">
-                <div className="text-xs font-bold text-gray-600 uppercase">
-                    <p>Dev Tools</p>
-                    <p>Scope Switcher</p>
-                </div>
-                <select 
-                    value={currentPresetKey}
-                    onChange={(e) => handleScopeChange(e.target.value as keyof typeof PRESETS)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-xs"
-                    aria-label="Switch user scope preset"
-                >
-                    {originalUser && <option value="default">Default ({originalUser.scopes.length} scopes)</option>}
-                    <option value="full">{PRESETS.full.name}</option>
-                    <option value="sis">{PRESETS.sis.name}</option>
-                    <option value="lms">{PRESETS.lms.name}</option>
-                    <option value="student">{PRESETS.student.name}</option>
-                    {currentPresetKey === 'custom' && <option value="custom" disabled>Custom Scopes</option>}
-                </select>
-            </div>
+        <div className="flex items-center gap-2">
+            <label htmlFor="scope-switcher" className="text-xs font-bold text-gray-600 uppercase">
+                Scope
+            </label>
+            <select 
+                id="scope-switcher"
+                value={currentPresetKey}
+                onChange={(e) => handleScopeChange(e.target.value as keyof typeof PRESETS)}
+                className="block w-full rounded-md border-gray-300 py-1.5 pl-2 pr-8 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                aria-label="Switch user scope preset"
+            >
+                {originalUser && <option value="default">Default</option>}
+                <option value="full">{PRESETS.full.name}</option>
+                <option value="sis">{PRESETS.sis.name}</option>
+                <option value="lms">{PRESETS.lms.name}</option>
+                <option value="student">{PRESETS.student.name}</option>
+                {currentPresetKey === 'custom' && <option value="custom" disabled>Custom</option>}
+            </select>
         </div>
     );
 };
