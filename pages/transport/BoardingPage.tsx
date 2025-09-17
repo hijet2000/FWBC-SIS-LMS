@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Trip, Vehicle, Driver, TransportRoute, BoardingEvent, AlertSettings, EligibleStudent, BoardingDirection } from '../../types';
 import * as transportService from '../../lib/transportService';
@@ -43,11 +42,11 @@ const BoardingPage: React.FC = () => {
                 setRoutes(routesData);
                 
                 const eligibleMap = new Map(eligibleStudentsData.map(s => [s.id, s]));
-                // FIX: Use a safer method like Object.assign to merge student and transport info to avoid potential spread operator issues.
-                const enrichedStudents = studentsData.students.map(s => {
-                    const transportInfo = eligibleMap.get(s.id) || {};
-                    return Object.assign({}, s, transportInfo);
-                });
+                // FIX: Add a fallback empty object for the spread operator to prevent errors if a student is not in the eligible map.
+                const enrichedStudents = studentsData.students.map(s => ({
+                    ...s,
+                    ...(eligibleMap.get(s.id) || {}),
+                }));
                 setStudents(enrichedStudents as EligibleStudent[]);
                 
             } catch {
@@ -126,7 +125,7 @@ const BoardingPage: React.FC = () => {
 
         try {
             const timestampISO = new Date().toISOString();
-            await transportService.logBoarding('site_123', { tripId: selectedTripId, studentId: student.id, direction, timestampISO });
+            const logResult = await transportService.logBoarding('site_123', { tripId: selectedTripId, studentId: student.id, direction, timestampISO });
             setToast({ message: `${student.name} marked for ${direction}.`, type: 'success' });
             setStudentIdentifier('');
             

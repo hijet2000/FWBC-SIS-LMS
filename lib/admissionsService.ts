@@ -1,5 +1,4 @@
-
-import type { Application, ApplicationStatus, Enquiry, EnquiryStatus, FollowUp, VisitorLog, CallLog, Postal, Handover, User, SeatAllocation, CallDirection, CallTopic, PublicApplicationView, OnlineAdmissionsSettings, CommunicationTemplate, CommunicationChannel } from '../types';
+import type { Application, ApplicationStatus, Enquiry, EnquiryStatus, FollowUp, VisitorLog, CallLog, Postal, Handover, User, SeatAllocation, CallDirection, CallTopic, PublicApplicationView } from '../types';
 import { logAuditEvent } from './auditService';
 import { createStudentFromApplication } from './schoolService';
 
@@ -42,8 +41,7 @@ let MOCK_VISITOR_LOGS: VisitorLog[] = [
 
 let MOCK_CALL_LOGS: CallLog[] = [
     { id: 'call-1', direction: 'Inbound', callerName: 'Jane Doe', number: '555-1234', topic: 'Enquiry', status: 'Closed', notes: 'Enquired about Form 1 for John Doe. Directed to online application form.', callAt: getISODateMinutesAgo(2100), ownerUserId: 'user-evelyn-reed', linkedEntity: { type: 'Enquiry', id: 'enq-1', name: 'Jane Doe (for John)' } },
-    // FIX: Added missing 'callerName' property to satisfy the CallLog type.
-    { id: 'call-2', direction: 'Outbound', callerName: 'Mr. Rodriguez (Guardian)', number: '555-8765', topic: 'Attendance', status: 'Open', notes: 'Called about repeated absences. Left voicemail.', callAt: getISODateMinutesAgo(20), ownerUserId: 'user-evelyn-reed' },
+    { id: 'call-2', direction: 'Outbound', number: '555-8765', topic: 'Attendance', status: 'Open', notes: 'Called about repeated absences. Left voicemail.', callAt: getISODateMinutesAgo(20), ownerUserId: 'user-evelyn-reed' },
 ];
 
 let MOCK_POSTAL_ITEMS: Postal[] = [
@@ -53,18 +51,6 @@ let MOCK_POSTAL_ITEMS: Postal[] = [
 
 let MOCK_HANDOVERS: Handover[] = [
     { id: 'ho-1', postalId: 'post-1', fromUserId: 'user-evelyn-reed', toUserId: 't-1', handedAt: getISODateMinutesAgo(500) }
-];
-
-let MOCK_ONLINE_SETTINGS: OnlineAdmissionsSettings = {
-    acceptingNewApplications: true,
-    message: 'Welcome to FWBC. We are now accepting applications for the 2025-2026 academic year.',
-};
-
-const MOCK_COMM_TEMPLATES: CommunicationTemplate[] = [
-    // FIX: Added missing 'channel' property to satisfy the CommunicationTemplate type.
-    { id: 't-remind', name: 'Interview Reminder', channel: 'Email', subject: 'Your Interview Reminder', body: 'Dear {{guardianName}}, this is a reminder for {{applicantName}}\'s interview on...' },
-    { id: 't-docs', name: 'Missing Documents Request', channel: 'Email', subject: 'Action Required: Missing Documents', body: 'Dear {{guardianName}}, we require additional documents for {{applicantName}}\'s application...' },
-    { id: 't-offer', name: 'Offer Letter', channel: 'Email', subject: 'Congratulations! An Offer from FWBC', body: 'Dear {{guardianName}}, we are pleased to offer {{applicantName}} a place at...' },
 ];
 
 
@@ -139,16 +125,8 @@ export const checkSeatAvailability = async (classId: string): Promise<{ availabl
 type PublicAppInput = Omit<Application, 'id' | 'enquiryId' | 'status' | 'submittedAt' | 'applicantName' | 'screeningChecklist' | 'interviewDetails' | 'decisionDetails'>;
 export const submitPublicApplication = async (input: PublicAppInput): Promise<{ application: Application, duplicate: boolean }> => {
     await delay(1000);
-    const { applicantDetails, guardians } = input;
-    
-    // More robust duplicate check
-    const duplicate = MOCK_APPLICATIONS.some(a =>
-        a.applicantDetails.fullName.toLowerCase() === applicantDetails.fullName.toLowerCase() &&
-        a.applicantDetails.dob === applicantDetails.dob &&
-        a.guardians.some(g => g.email && guardians[0]?.email && g.email.toLowerCase() === guardians[0].email.toLowerCase())
-    );
-
     const applicantName = input.applicantDetails.fullName;
+    const duplicate = MOCK_APPLICATIONS.some(a => a.applicantName.toLowerCase() === applicantName.toLowerCase());
     const newApp: Application = {
         ...input,
         id: `app-pub-${Date.now()}`,
@@ -199,32 +177,6 @@ export const bulkImportApplications = async (newApps: Omit<Application, 'id'|'st
     logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'CREATE', module: 'ADMISSIONS', entityType: 'Application', entityDisplay: 'Bulk Import', meta: { count: newApps.length } });
     return { success: true, count: newApps.length };
 };
-
-export const getOnlineAdmissionsSettings = async (): Promise<OnlineAdmissionsSettings> => {
-    await delay(200);
-    return { ...MOCK_ONLINE_SETTINGS };
-};
-
-export const updateOnlineAdmissionsSettings = async (settings: OnlineAdmissionsSettings, actor: User): Promise<void> => {
-    await delay(500);
-    const before = { ...MOCK_ONLINE_SETTINGS };
-    MOCK_ONLINE_SETTINGS = settings;
-    logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'ADMISSIONS', entityType: 'Settings', entityDisplay: 'Online Admissions Settings', before, after: settings });
-};
-
-export const listCommunicationTemplates = async (): Promise<CommunicationTemplate[]> => {
-    await delay(150);
-    return [...MOCK_COMM_TEMPLATES];
-};
-
-export const sendBulkCommunication = async (applicationIds: string[], templateId: string, actor: User): Promise<{ success: boolean; count: number }> => {
-    await delay(1200);
-    const template = MOCK_COMM_TEMPLATES.find(t => t.id === templateId);
-    console.log(`[MOCK SEND] Sending template "${template?.name}" to ${applicationIds.length} applicants.`);
-    logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'ADMISSIONS', entityType: 'Communication', entityDisplay: `Bulk Send: ${template?.name}`, meta: { count: applicationIds.length, templateId } });
-    return { success: true, count: applicationIds.length };
-};
-
 
 
 // --- REST OF THE SERVICE (Enquiries, Visitors, etc.) ---
@@ -315,7 +267,8 @@ export const listHandovers = async (postalId: string): Promise<Handover[]> => {
 
 export const createHandover = async (input: Omit<Handover, 'id'>, actor: User): Promise<Handover> => {
     await delay(400);
-    const newHandover: Handover = { ...input, id: `ho-${Date.now()}`};
+    // FIX: Correctly add fromUserId from actor
+    const newHandover: Handover = { ...input, id: `ho-${Date.now()}`, fromUserId: actor.id };
     MOCK_HANDOVERS.push(newHandover);
     
     // Also update postal item status

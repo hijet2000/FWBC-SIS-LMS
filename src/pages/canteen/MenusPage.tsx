@@ -1,1 +1,0 @@
-full contents of src/pages/canteen/MenusPage.tsx

@@ -1,1 +1,0 @@
-full contents of src/pages/integrations/WebhooksPage.tsx

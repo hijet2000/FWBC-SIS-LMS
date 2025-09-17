@@ -1,1 +1,0 @@
-full contents of public/service-worker.js

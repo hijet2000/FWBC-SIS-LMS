@@ -60,6 +60,7 @@ const CallLogPage: React.FC = () => {
         if (!user || !quickLog.notes.trim()) return;
         
         try {
+            // FIX: The `createCallLog` function signature omits `status`, as the service sets it to 'Open' by default. Removed it from the payload.
             const newLog = await admissionsService.createCallLog({
                 ...quickLog,
                 callAt: new Date().toISOString(),

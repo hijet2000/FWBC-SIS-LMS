@@ -1,43 +1,69 @@
-import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry, User } from '../types';
+import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry } from '../types';
 import { getClasses, getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';
-import { exportToCsv } from './exporters';
-import { generateSimplePdf } from './pdfGenerator';
 
 // --- MOCK DATA GENERATION ---
 let MOCK_RECORDS: AttendanceRecord[] = [];
 let MOCK_SETTINGS: WeeklyEmailSettings = { enabled: true, sendHour: 8 };
 
+const getTodayDateStringForGeneration = () => {
+    const today = new Date();
+    // No timezone offset needed for mock data comparison
+    return today.toISOString().split('T')[0];
+};
+
 const generateMockData = async () => {
     if (MOCK_RECORDS.length > 0) return;
 
     const classes = await getClasses();
+    // FIX: Destructure `students` array from the response of `getStudents` to fix .filter call.
     const { students } = await getStudents({limit: 1000});
     const records: AttendanceRecord[] = [];
     const today = new Date();
-    
-    for (let i = 0; i < 30; i++) { // Generate for last 30 days
+
+    for (let i = 0; i < 90; i++) { // 90 days of history
         const date = new Date(today);
         date.setDate(today.getDate() - i);
-        const dateString = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split('T')[0];
 
-        for (const student of students) {
-            const statusChance = Math.random();
-            let status: AttendanceStatus = 'PRESENT';
-            if (statusChance > 0.95) status = 'ABSENT';
-            else if (statusChance > 0.9) status = 'LATE';
-            else if (statusChance > 0.88) status = 'EXCUSED';
+        // Only generate for weekdays
+        if (date.getDay() === 0 || date.getDay() === 6) continue;
 
-            if (status !== 'ABSENT' || Math.random() > 0.5) { // Log some absences too
-                 records.push({
-                    id: `rec-${student.id}-${dateString}`,
+        // Pick 2 classes to have attendance today
+        const activeClasses = [classes[0], classes[1]];
+
+        for (const schoolClass of activeClasses) {
+            const classStudents = students.filter(s => s.classId === schoolClass.id);
+            for (const student of classStudents) {
+                const random = Math.random();
+                let status: AttendanceStatus;
+                let minutesAttended: number | undefined = 420; // 7 hours
+
+                if (random < 0.85) {
+                    status = 'PRESENT';
+                } else if (random < 0.90) {
+                    status = 'LATE';
+                    minutesAttended = Math.floor(Math.random() * (410 - 360 + 1) + 360);
+                } else if (random < 0.98) {
+                    status = 'ABSENT';
+                    minutesAttended = 0;
+                } else {
+                    status = 'EXCUSED';
+                    minutesAttended = undefined;
+                }
+                
+                const createdAt = new Date(date);
+                createdAt.setHours(8 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60));
+
+                records.push({
+                    id: `att-${dateStr}-${student.id}`,
                     studentId: student.id,
-                    sessionId: `sess-${dateString}`,
-                    classId: student.classId,
-                    date: dateString,
-                    status: status,
-                    minutesAttended: status === 'PRESENT' ? 360 : status === 'LATE' ? 300 : undefined,
-                    createdAt: new Date().toISOString(),
+                    sessionId: `sess-${dateStr}-${schoolClass.id}`,
+                    classId: schoolClass.id,
+                    date: dateStr,
+                    status,
+                    minutesAttended,
+                    createdAt: createdAt.toISOString(),
                 });
             }
         }
@@ -45,55 +71,26 @@ const generateMockData = async () => {
     MOCK_RECORDS = records;
 };
 
-// --- MOCK API ---
+// Initialize data on load
+generateMockData();
+
+// --- MOCK API FUNCTIONS ---
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-export const listAttendanceRecords = async (filters: { classId?: string; studentId?: string; from?: string; to?: string }): Promise<AttendanceRecord[]> => {
-    await delay(400);
-    let results = [...MOCK_RECORDS];
-    if (filters.classId) results = results.filter(r => r.classId === filters.classId);
-    if (filters.studentId) results = results.filter(r => r.studentId === filters.studentId);
-    if (filters.from) results = results.filter(r => r.date >= filters.from!);
-    if (filters.to) results = results.filter(r => r.date <= filters.to!);
-    return results.sort((a,b) => b.date.localeCompare(a.date));
-};
-
-export const getTodaysAttendanceSummary = async (): Promise<{ present: number; absent: number; total: number; presentRate: number; }> => {
-    await delay(350);
-    const todayString = new Date().toISOString().split('T')[0];
-    const todaysRecords = MOCK_RECORDS.filter(r => r.date === todayString);
-    const present = todaysRecords.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
-    const total = (await getStudents({limit: 1000})).students.length; // Approximate total students for today
-    const absent = total - present;
-    return { present, absent, total, presentRate: total > 0 ? (present/total) * 100 : 0 };
-};
 
 interface SaveAttendancePayload {
     siteId: string;
     classId: string;
-    date: string;
+    date: string; // YYYY-MM-DD
     entries: AttendanceEntry[];
-    actor: { id: string, name: string };
-    className: string;
+    actor: { id: string; name: string; }; // Added for audit
+    className: string; // Added for audit
 }
-export const saveAttendance = async (payload: SaveAttendancePayload): Promise<void> => {
-    await delay(800);
-    // Remove existing records for this class and date to prevent duplicates
-    MOCK_RECORDS = MOCK_RECORDS.filter(r => !(r.classId === payload.classId && r.date === payload.date));
-    
-    const newRecords: AttendanceRecord[] = payload.entries.map(entry => ({
-        id: `rec-${entry.studentId}-${payload.date}-${Math.random()}`,
-        studentId: entry.studentId,
-        sessionId: `sess-${payload.date}`,
-        classId: payload.classId,
-        date: payload.date,
-        status: entry.status,
-        minutesAttended: entry.minutesAttended,
-        createdAt: new Date().toISOString(),
-    }));
-    
-    MOCK_RECORDS.push(...newRecords);
 
+export const saveAttendance = async (payload: SaveAttendancePayload): Promise<{ success: true }> => {
+    await delay(800);
+    console.log('Saving attendance:', payload);
+    
+    // Instrumentation
     logAuditEvent({
         actorId: payload.actor.id,
         actorName: payload.actor.name,
@@ -102,66 +99,70 @@ export const saveAttendance = async (payload: SaveAttendancePayload): Promise<vo
         entityType: 'AttendanceSheet',
         entityId: `${payload.classId}-${payload.date}`,
         entityDisplay: `${payload.className} on ${payload.date}`,
-        meta: { entriesCount: newRecords.length }
+        meta: {
+            entriesCount: payload.entries.length,
+        }
     });
+
+    // In a real app, this would persist to a database.
+    return Promise.resolve({ success: true });
 };
 
-export const saveStudentAttendanceRecord = async (payload: { studentId: string; classId: string; date: string; status: AttendanceStatus; actor: User }): Promise<void> => {
-    await delay(500);
-    const newRecord: AttendanceRecord = {
-        id: `rec-${payload.studentId}-${payload.date}-${Math.random()}`,
-        studentId: payload.studentId,
-        sessionId: `sess-${payload.date}`,
-        classId: payload.classId,
-        date: payload.date,
-        status: payload.status,
-        createdAt: new Date().toISOString(),
-    };
-    MOCK_RECORDS.unshift(newRecord);
-     logAuditEvent({
-        actorId: payload.actor.id,
-        actorName: payload.actor.name,
-        action: 'CREATE',
-        module: 'ATTENDANCE',
-        entityType: 'AttendanceRecord',
-        entityId: newRecord.id,
-        entityDisplay: `Record for ${payload.studentId} on ${payload.date}`,
-        after: { status: payload.status }
-    });
+
+export const listAttendanceRecords = async (params: { classId?: string; from?: string; to?: string }): Promise<AttendanceRecord[]> => {
+    await delay(600);
+    let results = [...MOCK_RECORDS];
+    if (params.classId) {
+        results = results.filter(r => r.classId === params.classId);
+    }
+    if (params.from) {
+        results = results.filter(r => r.date >= params.from!);
+    }
+    if (params.to) {
+        results = results.filter(r => r.date <= params.to!);
+    }
+    return Promise.resolve(results.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+};
+
+export const getTodaysAttendanceSummary = async (): Promise<{ presentRate: number }> => {
+    await delay(550);
+    
+    // To make the demo robust, let's use the most recent day with data.
+    const mostRecentDate = MOCK_RECORDS.reduce((max, r) => r.date > max ? r.date : max, '1970-01-01');
+    if (mostRecentDate === '1970-01-01') {
+        return Promise.resolve({ presentRate: 0 });
+    }
+    const recentRecords = MOCK_RECORDS.filter(r => r.date === mostRecentDate);
+    
+    if (recentRecords.length === 0) return Promise.resolve({ presentRate: 0 });
+    
+    const presentCount = recentRecords.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+    return Promise.resolve({ presentRate: (presentCount / recentRecords.length) * 100 });
 };
 
 export const getWeeklyEmailSettings = async (): Promise<WeeklyEmailSettings> => {
-    await delay(150);
-    return { ...MOCK_SETTINGS };
+    await delay(200);
+    return Promise.resolve(MOCK_SETTINGS);
 };
 
-export const updateWeeklyEmailSettings = async (settings: WeeklyEmailSettings): Promise<void> => {
-    await delay(400);
-    MOCK_SETTINGS = settings;
+export const updateWeeklyEmailSettings = async (settings: WeeklyEmailSettings): Promise<WeeklyEmailSettings> => {
+    await delay(500);
+    MOCK_SETTINGS = { ...settings };
+    // To test a failure case:
+    // return Promise.reject(new Error("Failed to save settings."));
+    return Promise.resolve(MOCK_SETTINGS);
 };
 
-// Mock Export Functions
-export const exportRecordsCSV = async (): Promise<{ url: string }> => {
-    await delay(1000);
-    exportToCsv('server_attendance_records.csv', [{key: 'id', label: 'ID'}, {key: 'date', label: 'Date'}, {key: 'status', label: 'Status'}], MOCK_RECORDS);
-    return { url: '#' }; // In real app, this would be a URL to a generated file
-};
-export const exportRecordsPDF = async (): Promise<{ url: string }> => {
+
+// --- SERVER EXPORT STUBS ---
+const mockExport = async (type: string) => {
     await delay(1500);
-    generateSimplePdf('Server Attendance Records', JSON.stringify(MOCK_RECORDS.slice(0, 10), null, 2));
-    return { url: '#' };
-};
-export const exportAnalyticsCSV = async (): Promise<{ url: string }> => {
-    await delay(1000);
-     exportToCsv('server_attendance_analytics.csv', [{key: 'date', label: 'Date'}, {key: 'presentRate', label: 'PresentRate'}], [{date: '2025-09-01', presentRate: 95.2}]);
-    return { url: '#' };
-};
-export const exportAnalyticsPDF = async (): Promise<{ url: string }> => {
-    await delay(1500);
-    generateSimplePdf('Server Attendance Analytics', 'Date,Present\n2025-09-01,95.2%');
-    return { url: '#' };
+    const blob = new Blob([`This is a mock ${type} export from the server.`], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    return Promise.resolve({ url });
 };
 
-
-// Initialize mock data
-generateMockData();
+export const exportRecordsCSV = () => mockExport('Records CSV');
+export const exportRecordsPDF = () => mockExport('Records PDF');
+export const exportAnalyticsCSV = () => mockExport('Analytics CSV');
+export const exportAnalyticsPDF = () => mockExport('Analytics PDF');

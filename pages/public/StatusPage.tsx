@@ -18,7 +18,6 @@ const StatusPage: React.FC = () => {
         setLoading(true);
         setError('');
         setSearched(true);
-        setStatus(null);
         setSearchParams({ ref, email });
         
         try {
@@ -40,8 +39,8 @@ const StatusPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-center mb-6">Check Application Status</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <input value={ref} onChange={e => setRef(e.target.value)} placeholder="Application Reference" className="w-full rounded-md" required />
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Guardian Email" className="w-full rounded-md" required />
+                    <input value={ref} onChange={e => setRef(e.target.value)} placeholder="Application Reference" className="w-full" required />
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Guardian Email" className="w-full" required />
                     <button type="submit" disabled={loading} className="w-full py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">
                         {loading ? 'Checking...' : 'Check Status'}
                     </button>
@@ -52,12 +51,10 @@ const StatusPage: React.FC = () => {
                 {searched && !loading && status && (
                     <div className="mt-6 pt-6 border-t">
                         <h2 className="text-lg font-semibold">Status for {status.applicantName}</h2>
-                        <div className="mt-4 space-y-2 text-sm">
-                            <p><strong>Current Status:</strong> <span className="font-mono bg-gray-100 p-1 rounded">{status.status}</span></p>
-                            <p><strong>Next Steps:</strong> {status.nextSteps}</p>
-                            {status.interviewDetails?.scheduledAt && <p><strong>Interview:</strong> {new Date(status.interviewDetails.scheduledAt).toLocaleString()}</p>}
-                            {status.missingDocuments.length > 0 && <p className="text-yellow-700"><strong>Action Required:</strong> Please submit {status.missingDocuments.join(', ')}.</p>}
-                        </div>
+                        <p className="mt-2"><strong>Current Status:</strong> <span className="font-mono bg-gray-100 p-1 rounded">{status.status}</span></p>
+                        <p className="mt-2"><strong>Next Steps:</strong> {status.nextSteps}</p>
+                        {status.interviewDetails?.scheduledAt && <p><strong>Interview:</strong> {new Date(status.interviewDetails.scheduledAt).toLocaleString()}</p>}
+                        {status.missingDocuments.length > 0 && <p className="text-yellow-700"><strong>Action Required:</strong> Please submit {status.missingDocuments.join(', ')}.</p>}
                     </div>
                 )}
             </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getTimetable, listSubjects, listTeachers, saveTimetableEntry } from '../../lib/academicsService';
 import { getClasses } from '../../lib/schoolService';
 import { detectConflicts } from '../../lib/conflictDetector';
+// FIX: Import ToastType to allow for 'warning' toasts.
 import type { TimetableEntry, Subject, Teacher, SchoolClass, DayOfWeek, ToastType } from '../../types';
 import TimetableGrid from '../../components/academics/TimetableGrid';
 import Modal from '../../components/ui/Modal';
@@ -17,6 +18,7 @@ const PlannerPage: React.FC = () => {
     const [meta, setMeta] = useState<{ subjects: Subject[], teachers: Teacher[], classes: SchoolClass[] }>({ subjects: [], teachers: [], classes: [] });
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // FIX: Update toast state type to use the imported ToastType, allowing 'warning'.
     const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
     const fetchData = async () => {

@@ -1,271 +1,159 @@
+// FIX: Removed invalid CDATA wrapper.
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import ErrorBoundary from './components/ErrorBoundary';
-
+import Spinner from './components/ui/Spinner';
 import Layout from './components/Layout';
-import RequireScope from './components/auth/RequireScope';
-
-// Pages
 import SisDashboard from './pages/SisDashboard';
+import PlaceholderPage from './pages/PlaceholderPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentProfilePage from './pages/StudentProfilePage';
 import AttendancePage from './pages/AttendancePage';
+import AcademicsPage from './pages/AcademicsPage';
+import LibraryPage from './pages/LibraryPage';
+import LibraryViewerPage from './pages/LibraryViewerPage';
 import AttendanceRecordsPage from './pages/AttendanceRecordsPage';
 import AttendanceExportsPage from './pages/AttendanceExportsPage';
-import AcademicsPage from './pages/AcademicsPage';
+import FeesPage from './pages/FeesPage';
+import FeesPaymentsPage from './pages/FeesPaymentsPage';
+
+// Academics Pages
 import ClassTimetablePage from './pages/academics/ClassTimetablePage';
 import TeacherTimetablePage from './pages/academics/TeacherTimetablePage';
 import PlannerPage from './pages/academics/PlannerPage';
-import LibraryPage from './pages/LibraryPage';
-import LibraryViewerPage from './pages/LibraryViewerPage';
-import CatchUpListPage from './pages/library/CatchUpListPage';
-import CatchUpViewerPage from './pages/library/CatchUpViewerPage';
-import CatalogPage from './pages/library/CatalogPage';
-import MembersPage from './pages/library/MembersPage';
-import MemberDetailPage from './pages/library/MemberDetailPage';
-import CirculationPage from './pages/library/CirculationPage';
-import LibraryReportsPage from './pages/library/ReportsPage';
-import LibrarySettingsPage from './pages/library/SettingsPage';
-import FeesPage from './pages/FeesPage';
-import FeesPaymentsPage from './pages/FeesPaymentsPage';
+
+// Homework Pages
+import HomeworkListPage from './pages/homework/HomeworkListPage';
+import HomeworkSubmissionsPage from './pages/homework/HomeworkSubmissionsPage';
+
+// Admissions Pages
 import AdmissionsDashboard from './pages/admissions/AdmissionsDashboard';
 import ApplicationsPage from './pages/admissions/ApplicationsPage';
 import ApplicationDetailPage from './pages/admissions/ApplicationDetailPage';
 import SeatAllocationPage from './pages/admissions/SeatAllocationPage';
-import OffersPage from './pages/admissions/OffersPage';
-import CommsPage from './pages/admissions/CommsPage';
 import BulkImportPage from './pages/admissions/BulkImportPage';
-import OnlineAdmissionsPage from './pages/admissions/OnlineAdmissionsPage';
 import AdmissionsReportsPage from './pages/admissions/AdmissionsReportsPage';
+
+// Front Office Page
+import VisitorsPage from './pages/frontoffice/VisitorsPage';
 import EnquiriesPage from './pages/frontoffice/EnquiriesPage';
 import EnquiryDetailPage from './pages/frontoffice/EnquiryDetailPage';
-import VisitorsPage from './pages/frontoffice/VisitorsPage';
 import CallLogPage from './pages/frontoffice/CallLogPage';
 import PostalPage from './pages/frontoffice/PostalPage';
 import PostalDetailPage from './pages/frontoffice/PostalDetailPage';
+
+
+// Transport Pages
 import VehiclesPage from './pages/transport/VehiclesPage';
 import TripsPage from './pages/transport/TripsPage';
 import BoardingPage from './pages/transport/BoardingPage';
-import HomeworkListPage from './pages/homework/HomeworkListPage';
-import HomeworkSubmissionsPage from './pages/homework/HomeworkSubmissionsPage';
-import HomeworkReportsPage from './pages/homework/HomeworkReportsPage';
-import StudentHomeworkListPage from './pages/student/HomeworkListPage';
-import StudentHomeworkDetailPage from './pages/student/HomeworkDetailPage';
-import ParentPortalPage from './pages/parent/ParentPortalPage';
+
+// Catch-up Pages
+import CatchUpListPage from './pages/library/CatchUpListPage';
+import CatchUpViewerPage from './pages/library/CatchUpViewerPage';
+
+// Admin Pages
 import AuditTrailPage from './pages/admin/AuditTrailPage';
 import UserActivityPage from './pages/admin/UserActivityPage';
-// The RolesPage was moved to the admin folder, so the import path is updated.
-import RolesPage from './pages/admin/RolesPage';
+
+// Public Pages
 import ApplyPage from './pages/public/ApplyPage';
 import StatusPage from './pages/public/StatusPage';
-import NoAccessPage from './pages/NoAccessPage';
-import PlaceholderPage from './pages/PlaceholderPage';
 
-// Hostel pages
-import HostelDashboardPage from './pages/hostel/HostelDashboardPage';
-import HostelStructurePage from './pages/hostel/HostelStructurePage';
-import HostelAllocationsPage from './pages/hostel/HostelAllocationsPage';
-import HostelVisitorsPage from './pages/hostel/HostelVisitorsPage';
-import HostelCurfewPage from './pages/hostel/HostelCurfewPage';
-import HostelReportsPage from './pages/hostel/HostelReportsPage';
-
-// CMS Pages
-import CmsDashboardPage from './pages/cms/CmsDashboardPage';
-import PagesListPage from './pages/cms/PagesListPage';
-import PageEditorPage from './pages/cms/PageEditorPage';
-import MenusPage from './pages/cms/MenusPage';
-import NewsListPage from './pages/cms/NewsListPage';
-import EventsListPage from './pages/cms/EventsListPage';
-import MediaLibraryPage from './pages/cms/MediaLibraryPage';
-import CmsSettingsPage from './pages/cms/CmsSettingsPage';
-
-// Public Site Pages
-import PublicLayout from './pages/public/site/PublicLayout';
-import PublicHomePage from './pages/public/site/PublicHomePage';
-import PublicPage from './pages/public/site/PublicPage';
-import PublicNewsIndexPage from './pages/public/site/PublicNewsIndexPage';
-import PublicNewsArticlePage from './pages/public/site/PublicNewsArticlePage';
-
-// Certificate Pages
-import CertificatesDashboardPage from './pages/certificates/CertificatesDashboardPage';
-import TemplatesListPage from './pages/certificates/TemplatesListPage';
-import TemplateDesignerPage from './pages/certificates/TemplateDesignerPage';
-import BatchIssuancePage from './pages/certificates/BatchIssuancePage';
-import ManageIssuesPage from './pages/certificates/ManageIssuesPage';
-import VerifyPage from './pages/public/VerifyPage';
-import MyCertificatesPage from './pages/student/MyCertificatesPage';
-
-// Data & Analytics Pages
-import AnalyticsDashboardPage from './pages/analytics/AnalyticsDashboardPage';
-import BiConnectorsPage from './pages/analytics/BiConnectorsPage';
-import DataExportsPage from './pages/analytics/DataExportsPage';
-
-// System Health / Observability Pages
-import SloDashboardPage from './pages/system-health/SloDashboardPage';
-import AlertingPage from './pages/system-health/AlertingPage';
-import IncidentsPage from './pages/system-health/IncidentsPage';
-import FeatureFlagsPage from './pages/system-health/FeatureFlagsPage';
+import RequireScope from './components/auth/RequireScope';
 
 
-const App: React.FC = () => {
+function App() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <ToastProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/apply/:siteId" element={<ApplyPage />} />
-              <Route path="/status" element={<StatusPage />} />
-              <Route path="/verify/:serialNumber" element={<VerifyPage />} />
-
-              {/* Public Site Routes */}
-              <Route path="/site/:siteId" element={<PublicLayout />}>
-                <Route index element={<PublicHomePage />} />
-                <Route path="news" element={<PublicNewsIndexPage />} />
-                <Route path="news/:slug" element={<PublicNewsArticlePage />} />
-                <Route path=":slug" element={<PublicPage />} />
-              </Route>
-
-              {/* Parent Portal Route */}
-              <Route path="/parent-portal/:studentId" element={<ParentPortalPage />} />
-              
-              {/* Main App Routes */}
-              <Route path="/school/:siteId" element={<Layout />}>
-                <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<SisDashboard />} />
+    <AuthProvider>
+      <ToastProvider>
+        <HashRouter>
+          <ErrorBoundary>
+            <React.Suspense fallback={<Spinner />}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/school/site_123" replace />} />
                 
-                {/* SIS */}
-                <Route path="students" element={<StudentsPage />} />
-                <Route path="students/:studentId" element={<StudentProfilePage />} />
-                <Route path="attendance" element={<AttendancePage />} />
-                <Route path="attendance/records" element={<AttendanceRecordsPage />} />
-                <Route path="attendance/exports" element={<AttendanceExportsPage />} />
+                {/* Public Routes */}
+                <Route path="/apply/:siteId" element={<ApplyPage />} />
+                <Route path="/apply/:siteId/status" element={<StatusPage />} />
 
-                {/* Academics */}
-                <Route path="academics" element={<AcademicsPage />} />
-                <Route path="academics/planner" element={<PlannerPage />} />
-                <Route path="academics/class-timetables" element={<ClassTimetablePage />} />
-                <Route path="academics/teacher-timetables" element={<TeacherTimetablePage />} />
-                <Route path="academics/reports" element={<PlaceholderPage title="Academic Reports" />} />
 
-                {/* Library */}
-                <Route path="library" element={<Navigate to="digital" replace />} />
-                <Route path="library/digital" element={<LibraryPage />} />
-                <Route path="library/digital/view" element={<LibraryViewerPage />} />
-                <Route path="library/catchup" element={<CatchUpListPage />} />
-                <Route path="library/catchup/view/:contentId" element={<CatchUpViewerPage />} />
-                <Route path="library/physical/catalog" element={<CatalogPage />} />
-                <Route path="library/physical/members" element={<MembersPage />} />
-                <Route path="library/physical/members/:memberId" element={<MemberDetailPage />} />
-                <Route path="library/physical/circulation" element={<CirculationPage />} />
-                <Route path="library/physical/reports" element={<LibraryReportsPage />} />
-                <Route path="library/physical/settings" element={<LibrarySettingsPage />} />
+                {/* Staff Routes */}
+                <Route path="/school/:siteId" element={<Layout />}>
+                  <Route index element={<SisDashboard />} />
+                  <Route path="students" element={<RequireScope requiredScopes={['school:admin']}><StudentsPage /></RequireScope>} />
+                  <Route path="students/:studentId" element={<RequireScope requiredScopes={['school:admin']}><StudentProfilePage /></RequireScope>} />
+                  
+                  <Route path="academics" element={<RequireScope requiredScopes={['school:admin']}><AcademicsPage /></RequireScope>} />
+                  <Route path="academics/subjects" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Manage Subjects" /></RequireScope>} />
+                  <Route path="academics/gradebooks" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Gradebooks" /></RequireScope>} />
+                  <Route path="academics/reports" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Report Cards" /></RequireScope>} />
+                  
+                  {/* Timetabling Sub-module */}
+                  <Route path="academics/planner" element={<RequireScope requiredScopes={['school:admin']}><PlannerPage /></RequireScope>} />
+                  <Route path="academics/timetable/class" element={<RequireScope requiredScopes={['school:admin']}><ClassTimetablePage /></RequireScope>} />
+                  <Route path="academics/timetable/teacher" element={<RequireScope requiredScopes={['school:admin']}><TeacherTimetablePage /></RequireScope>} />
 
-                {/* Fees */}
-                <Route path="fees" element={<FeesPage />} />
-                <Route path="fees/payments" element={<FeesPaymentsPage />} />
-                
-                {/* Admissions */}
-                <Route path="admissions" element={<AdmissionsDashboard />} />
-                <Route path="admissions/applications" element={<ApplicationsPage />} />
-                <Route path="admissions/applications/:applicationId" element={<ApplicationDetailPage />} />
-                <Route path="admissions/seats" element={<SeatAllocationPage />} />
-                <Route path="admissions/offers" element={<OffersPage />} />
-                <Route path="admissions/comms" element={<CommsPage />} />
-                <Route path="admissions/import" element={<BulkImportPage />} />
-                <Route path="admissions/online-settings" element={<OnlineAdmissionsPage />} />
-                <Route path="admissions/reports" element={<AdmissionsReportsPage />} />
+                  {/* Homework Module Routes */}
+                  <Route path="homework" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkListPage /></RequireScope>} />
+                  <Route path="homework/:homeworkId" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkSubmissionsPage /></RequireScope>} />
 
-                {/* Front Office */}
-                <Route path="frontoffice/enquiries" element={<EnquiriesPage />} />
-                <Route path="frontoffice/enquiries/:enquiryId" element={<EnquiryDetailPage />} />
-                <Route path="frontoffice/visitors" element={<VisitorsPage />} />
-                <Route path="frontoffice/calls" element={<CallLogPage />} />
-                <Route path="frontoffice/postal" element={<PostalPage />} />
-                <Route path="frontoffice/postal/:postalId" element={<PostalDetailPage />} />
-                
-                {/* Transport */}
-                <Route path="transport/vehicles" element={<VehiclesPage />} />
-                <Route path="transport/trips" element={<TripsPage />} />
-                <Route path="transport/boarding" element={<BoardingPage />} />
+                  {/* Admissions Module Routes */}
+                  <Route path="admissions" element={<RequireScope requiredScopes={['admissions:admin']}><AdmissionsDashboard /></RequireScope>} />
+                  <Route path="admissions/applications" element={<RequireScope requiredScopes={['admissions:admin']}><ApplicationsPage /></RequireScope>} />
+                  <Route path="admissions/applications/:applicationId" element={<RequireScope requiredScopes={['admissions:admin']}><ApplicationDetailPage /></RequireScope>} />
+                  <Route path="admissions/seats" element={<RequireScope requiredScopes={['admissions:admin']}><SeatAllocationPage /></RequireScope>} />
+                  <Route path="admissions/online" element={<RequireScope requiredScopes={['admissions:admin']}><PlaceholderPage title="Online Admissions Management" /></RequireScope>} />
+                  <Route path="admissions/offers" element={<RequireScope requiredScopes={['admissions:admin']}><PlaceholderPage title="Offers & Acceptance" /></RequireScope>} />
+                  <Route path="admissions/import" element={<RequireScope requiredScopes={['admissions:admin']}><BulkImportPage /></RequireScope>} />
+                  <Route path="admissions/comms" element={<RequireScope requiredScopes={['admissions:admin']}><PlaceholderPage title="Parent Communications" /></RequireScope>} />
+                  <Route path="admissions/reports" element={<RequireScope requiredScopes={['admissions:admin']}><AdmissionsReportsPage /></RequireScope>} />
+                  
+                  {/* Front Office Module Routes */}
+                  <Route path="frontoffice/visitors" element={<RequireScope requiredScopes={['frontoffice:admin']}><VisitorsPage /></RequireScope>} />
+                  <Route path="frontoffice/enquiries" element={<RequireScope requiredScopes={['frontoffice:admin']}><EnquiriesPage /></RequireScope>} />
+                  <Route path="frontoffice/enquiries/:enquiryId" element={<RequireScope requiredScopes={['frontoffice:admin']}><EnquiryDetailPage /></RequireScope>} />
+                  <Route path="frontoffice/calls" element={<RequireScope requiredScopes={['frontoffice:admin']}><CallLogPage /></RequireScope>} />
+                  <Route path="frontoffice/postal" element={<RequireScope requiredScopes={['frontoffice:admin']}><PostalPage /></RequireScope>} />
+                  <Route path="frontoffice/postal/:postalId" element={<RequireScope requiredScopes={['frontoffice:admin']}><PostalDetailPage /></RequireScope>} />
 
-                {/* Homework (Teacher view) */}
-                <Route path="homework" element={<HomeworkListPage />} />
-                <Route path="homework/:homeworkId" element={<HomeworkSubmissionsPage />} />
-                <Route path="homework/reports" element={<HomeworkReportsPage />} />
 
-                {/* Hostel */}
-                <Route path="hostel/dashboard" element={<HostelDashboardPage />} />
-                <Route path="hostel/structure" element={<HostelStructurePage />} />
-                <Route path="hostel/allocations" element={<HostelAllocationsPage />} />
-                <Route path="hostel/visitors" element={<HostelVisitorsPage />} />
-                <Route path="hostel/curfew" element={<HostelCurfewPage />} />
-                <Route path="hostel/reports" element={<HostelReportsPage />} />
-                
-                {/* Student Portal (nested inside for layout) */}
-                <Route path="student/homework" element={<StudentHomeworkListPage />} />
-                <Route path="student/homework/:homeworkId" element={<StudentHomeworkDetailPage />} />
-                <Route path="student/certificates" element={<MyCertificatesPage />} />
+                  <Route path="attendance" element={<RequireScope requiredScopes={['school:admin']}><AttendancePage /></RequireScope>} />
+                  <Route path="attendance/records" element={<RequireScope requiredScopes={['school:admin']}><AttendanceRecordsPage /></RequireScope>} />
+                  <Route path="attendance/exports" element={<RequireScope requiredScopes={['school:admin']}><AttendanceExportsPage /></RequireScope>} />
+                  
+                  <Route path="courses" element={<RequireScope requiredScopes={['lms:admin']}><PlaceholderPage title="Courses" /></RequireScope>} />
+                  <Route path="library" element={<RequireScope requiredScopes={['school:admin', 'lms:admin', 'student']}><LibraryPage /></RequireScope>} />
+                  <Route path="library/digital/view" element={<RequireScope requiredScopes={['school:admin', 'lms:admin']}><LibraryViewerPage /></RequireScope>} />
+                  
+                  {/* Catch-Up Module Routes */}
+                  <Route path="library/catchup" element={<RequireScope requiredScopes={['school:admin', 'student']}><CatchUpListPage /></RequireScope>} />
+                  <Route path="library/catchup/view/:contentId" element={<RequireScope requiredScopes={['school:admin', 'student']}><CatchUpViewerPage /></RequireScope>} />
 
-                {/* CMS */}
-                <Route path="cms" element={<RequireScope requiredScopes={['cms:admin']} />}>
-                    <Route index element={<Navigate to="dashboard" replace />} />
-                    <Route path="dashboard" element={<CmsDashboardPage />} />
-                    <Route path="pages" element={<PagesListPage />} />
-                    <Route path="pages/:pageId" element={<PageEditorPage />} />
-                    <Route path="menus" element={<MenusPage />} />
-                    <Route path="news" element={<NewsListPage />} />
-                    <Route path="events" element={<EventsListPage />} />
-                    <Route path="media" element={<MediaLibraryPage />} />
-                    <Route path="settings" element={<CmsSettingsPage />} />
+                  <Route path="fees" element={<RequireScope requiredScopes={['school:admin']}><FeesPage /></RequireScope>} />
+                  <Route path="fees/payments" element={<RequireScope requiredScopes={['school:admin']}><FeesPaymentsPage /></RequireScope>} />
+
+                  {/* Transport Module Routes */}
+                  <Route path="transport" element={<RequireScope requiredScopes={['school:admin']}><Navigate to="vehicles" replace /></RequireScope>} />
+                  <Route path="transport/vehicles" element={<RequireScope requiredScopes={['school:admin']}><VehiclesPage /></RequireScope>} />
+                  <Route path="transport/trips" element={<RequireScope requiredScopes={['school:admin']}><TripsPage /></RequireScope>} />
+                  <Route path="transport/boarding" element={<RequireScope requiredScopes={['school:admin']}><BoardingPage /></RequireScope>} />
+
+                  {/* Admin Module Routes */}
+                  <Route path="admin/audit" element={<RequireScope requiredScopes={['school:admin']}><AuditTrailPage /></RequireScope>} />
+                  <Route path="admin/activity" element={<RequireScope requiredScopes={['school:admin']}><UserActivityPage /></RequireScope>} />
+
                 </Route>
-
-                 {/* Certificates */}
-                <Route path="certificates" element={<RequireScope requiredScopes={['certificates:admin']} />}>
-                    <Route index element={<Navigate to="dashboard" replace />} />
-                    <Route path="dashboard" element={<CertificatesDashboardPage />} />
-                    <Route path="templates" element={<TemplatesListPage />} />
-                    <Route path="templates/:templateId" element={<TemplateDesignerPage />} />
-                    <Route path="issue" element={<BatchIssuancePage />} />
-                    <Route path="issues" element={<ManageIssuesPage />} />
-                </Route>
-
-                {/* Data & Analytics */}
-                <Route path="analytics" element={<RequireScope requiredScopes={['school:admin']} />}>
-                    <Route index element={<Navigate to="dashboard" replace />} />
-                    <Route path="dashboard" element={<AnalyticsDashboardPage />} />
-                    <Route path="connectors" element={<BiConnectorsPage />} />
-                    <Route path="exports" element={<DataExportsPage />} />
-                </Route>
-
-                {/* System Health */}
-                <Route path="system-health" element={<RequireScope requiredScopes={['school:admin']} />}>
-                    <Route index element={<Navigate to="slo-dashboard" replace />} />
-                    <Route path="slo-dashboard" element={<SloDashboardPage />} />
-                    <Route path="alerting" element={<AlertingPage />} />
-                    <Route path="incidents" element={<IncidentsPage />} />
-                    <Route path="releases" element={<FeatureFlagsPage />} />
-                </Route>
-
-                {/* Admin */}
-                <Route path="admin" element={<RequireScope requiredScopes={['school:admin']} />}>
-                    <Route index element={<Navigate to="audit-trail" replace />} />
-                    <Route path="audit-trail" element={<AuditTrailPage />} />
-                    <Route path="user-activity" element={<UserActivityPage />} />
-                    <Route path="roles" element={<RolesPage />} />
-                </Route>
-                
-                <Route path="*" element={<PlaceholderPage title="Not Found" />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ToastProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+                <Route path="*" element={<Navigate to="/school/site_123" replace />} />
+              </Routes>
+            </React.Suspense>
+          </ErrorBoundary>
+        </HashRouter>
+      </ToastProvider>
+    </AuthProvider>
   );
-};
+}
 
 export default App;

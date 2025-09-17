@@ -1,1 +1,0 @@
-full contents of src/pages/online-exams/TakeExamPage.tsx

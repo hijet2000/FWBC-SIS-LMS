@@ -1,1 +1,0 @@
-full contents of src/components/behaviour/IncidentDetailDrawer.tsx

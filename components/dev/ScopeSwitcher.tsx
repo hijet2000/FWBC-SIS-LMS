@@ -17,7 +17,6 @@ const PRESETS = {
     sis: { name: 'SIS-Only Admin', scopes: ['school:admin', 'homework:teacher'] },
     lms: { name: 'LMS-Only Admin', scopes: ['lms:admin'] },
     student: { name: 'Student', scopes: ['student', 'homework:student'] },
-    parent: { name: 'Parent', scopes: ['portal:parent'] },
 };
 
 const ScopeSwitcher: React.FC = () => {
@@ -92,7 +91,6 @@ const ScopeSwitcher: React.FC = () => {
                 <option value="sis">{PRESETS.sis.name}</option>
                 <option value="lms">{PRESETS.lms.name}</option>
                 <option value="student">{PRESETS.student.name}</option>
-                <option value="parent">{PRESETS.parent.name}</option>
                 {currentPresetKey === 'custom' && <option value="custom" disabled>Custom</option>}
             </select>
         </div>

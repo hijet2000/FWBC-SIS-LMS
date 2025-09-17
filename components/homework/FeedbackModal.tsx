@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import type { Submission, Feedback, User } from '../../types';
 import { saveFeedback, getSubmission } from '../../lib/homeworkService';
 import Modal from '../ui/Modal';
-import { useToast } from '../../contexts/ToastContext';
 
 interface FeedbackModalProps {
     isOpen: boolean;
@@ -14,7 +13,6 @@ interface FeedbackModalProps {
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSaveSuccess, submission, studentName, actor }) => {
-    const { addToast } = useToast();
     const [fullSubmission, setFullSubmission] = useState<(Submission & { feedback?: Feedback }) | null>(null);
     const [formData, setFormData] = useState({ score: '', comments: '' });
     const [loading, setLoading] = useState(true);
@@ -45,7 +43,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSaveSu
                 comments: formData.comments,
             };
             await saveFeedback(submission.id, payload, actor);
-            addToast(`Feedback sent to ${studentName}. They will be notified.`, 'success');
             onSaveSuccess();
         } catch {
             setError('Failed to save feedback.');

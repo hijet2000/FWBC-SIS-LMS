@@ -5,21 +5,8 @@ import { useToast } from '../../contexts/ToastContext';
 import * as homeworkService from '../../lib/homeworkService';
 import { getClasses } from '../../lib/schoolService';
 import { listSubjects } from '../../lib/academicsService';
-import type { Homework, SchoolClass, Subject, HomeworkDashboardStats } from '../../types';
+import type { Homework, SchoolClass, Subject } from '../../types';
 import AssignHomeworkModal from '../../components/homework/AssignHomeworkModal';
-
-const KpiCard: React.FC<{ title: string; value: number; className?: string }> = ({ title, value, className = '' }) => (
-    <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-        <p className={`mt-1 text-3xl font-bold ${className}`}>{value}</p>
-    </div>
-);
-
-const getISODateDaysAgo = (days: number): string => {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toISOString().split('T')[0];
-};
 
 const HomeworkListPage: React.FC = () => {
     const { siteId } = useParams<{ siteId: string }>();
@@ -30,15 +17,12 @@ const HomeworkListPage: React.FC = () => {
     const [homework, setHomework] = useState<Homework[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [stats, setStats] = useState<HomeworkDashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
     const filters = useMemo(() => ({
         classId: searchParams.get('classId') || undefined,
         subjectId: searchParams.get('subjectId') || undefined,
-        from: searchParams.get('from') || undefined,
-        to: searchParams.get('to') || undefined,
     }), [searchParams]);
 
     const fetchData = () => {
@@ -46,13 +30,11 @@ const HomeworkListPage: React.FC = () => {
         Promise.all([
             homeworkService.listHomework(filters),
             getClasses(),
-            listSubjects(),
-            homeworkService.getHomeworkDashboardStats()
-        ]).then(([hwData, classData, subjectData, statsData]) => {
+            listSubjects()
+        ]).then(([hwData, classData, subjectData]) => {
             setHomework(hwData);
             setClasses(classData);
             setSubjects(subjectData);
-            setStats(statsData);
         }).catch(() => {
             addToast('Failed to load homework data.', 'error');
         }).finally(() => {
@@ -64,7 +46,7 @@ const HomeworkListPage: React.FC = () => {
         fetchData();
     }, [filters, addToast]);
 
-    const handleFilterChange = (key: 'classId' | 'subjectId' | 'from' | 'to', value: string) => {
+    const handleFilterChange = (key: 'classId' | 'subjectId', value: string) => {
         setSearchParams(prev => {
             const newParams = new URLSearchParams(prev);
             if (value) {
@@ -91,15 +73,9 @@ const HomeworkListPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-gray-800">Homework</h1>
                 <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700">Assign Homework</button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <KpiCard title="Due Today" value={stats?.dueToday ?? 0} className="text-indigo-600" />
-                <KpiCard title="Overdue Submissions" value={stats?.overdueSubmissions ?? 0} className="text-red-600" />
-                <KpiCard title="Needs Marking" value={stats?.needsMarking ?? 0} className="text-yellow-600" />
-            </div>
             
-            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <select value={filters.classId || ''} onChange={(e) => handleFilterChange('classId', e.target.value)} className="w-full rounded-md border-gray-300">
                         <option value="">All Classes</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -108,14 +84,6 @@ const HomeworkListPage: React.FC = () => {
                         <option value="">All Subjects</option>
                         {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
-                     <div>
-                        <label htmlFor="from-date" className="sr-only">From</label>
-                        <input type="date" id="from-date" value={filters.from || ''} onChange={e => handleFilterChange('from', e.target.value)} className="w-full rounded-md border-gray-300" />
-                    </div>
-                    <div>
-                        <label htmlFor="to-date" className="sr-only">To</label>
-                        <input type="date" id="to-date" value={filters.to || ''} onChange={e => handleFilterChange('to', e.target.value)} className="w-full rounded-md border-gray-300" />
-                    </div>
                 </div>
             </div>
 

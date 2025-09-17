@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { listEnquiries, listApplications } from '../../lib/admissionsService';
 import type { Enquiry, Application, ApplicationStatus } from '../../types';
@@ -34,7 +33,8 @@ const AdmissionsDashboard: React.FC = () => {
 
     const kpis = useMemo(() => {
         const totalEnquiries = enquiries.length;
-        // FIX: Active enquiries are those that are not yet 'Converted' or 'Closed'.
+        // The `EnquiryStatus` type does not have an 'Active' state.
+        // Active enquiries are those that are not yet 'Converted' or 'Closed'.
         const activeEnquiries = enquiries.filter(e => e.status !== 'Converted' && e.status !== 'Closed').length;
         const totalApps = applications.length;
         const approvedApps = applications.filter(a => a.status === 'Approved').length;
@@ -55,7 +55,6 @@ const AdmissionsDashboard: React.FC = () => {
         // for applications with statuses not displayed on the dashboard.
         const counts: Partial<Record<ApplicationStatus, number>> = { New: 0, Screening: 0, Approved: 0, Rejected: 0, Waitlist: 0 };
         applications.forEach(app => {
-            // FIX: Use hasOwnProperty to correctly increment counts, as a count of 0 is falsy.
             if (counts.hasOwnProperty(app.status)) {
                 counts[app.status]!++;
             }

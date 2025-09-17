@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import * as admissionsService from '../../lib/admissionsService';
 import { getClasses, getStudent } from '../../lib/schoolService'; // Assuming getStudent exists
 import { listTeachers } from '../../lib/academicsService';
-import type { Application, SchoolClass, Teacher, ApplicationStatus, GuardianDetails, ApplicantDetails } from '../../types';
+import type { Application, SchoolClass, Teacher, ApplicationStatus } from '../../types';
 
 const DetailCard: React.FC<{ title: string; children: React.ReactNode; }> = ({ title, children }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -13,14 +13,6 @@ const DetailCard: React.FC<{ title: string; children: React.ReactNode; }> = ({ t
         <div className="space-y-3">{children}</div>
     </div>
 );
-
-const InfoRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
-    <div className="grid grid-cols-3 gap-4 text-sm">
-        <span className="font-medium text-gray-500 col-span-1">{label}</span>
-        <span className="text-gray-800 col-span-2">{value}</span>
-    </div>
-);
-
 
 const ApplicationDetailPage: React.FC = () => {
     const { applicationId } = useParams<{ applicationId: string }>();
@@ -99,23 +91,6 @@ const ApplicationDetailPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <DetailCard title="Applicant Details">
-                        <InfoRow label="Full Name" value={app.applicantDetails.fullName} />
-                        <InfoRow label="Date of Birth" value={app.applicantDetails.dob} />
-                        <InfoRow label="Gender" value={app.applicantDetails.gender} />
-                        <InfoRow label="Nationality" value={app.applicantDetails.nationality} />
-                        <InfoRow label="Previous School" value={app.applicantDetails.priorSchool} />
-                    </DetailCard>
-                     <DetailCard title="Guardian Information">
-                        {app.guardians.map((g, i) => (
-                            <div key={i} className="space-y-3 pt-3 first:pt-0 border-t first:border-t-0">
-                                <InfoRow label="Name" value={`${g.name} (${g.relationship})`} />
-                                <InfoRow label="Email" value={<a href={`mailto:${g.email}`} className="text-indigo-600 hover:underline">{g.email}</a>} />
-                                <InfoRow label="Phone" value={g.phone} />
-                                <InfoRow label="Address" value={g.address} />
-                            </div>
-                        ))}
-                    </DetailCard>
                     <DetailCard title="Screening Checklist">
                         {Object.entries(app.screeningChecklist).map(([key, value]) => (
                             <div key={key} className="flex items-center">
