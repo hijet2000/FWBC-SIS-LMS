@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { listEnquiries, listApplications } from '../../lib/admissionsService';
 import type { Enquiry, Application, ApplicationStatus } from '../../types';

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Trip, Vehicle, Driver, TransportRoute, TripStatus } from '../../types';
