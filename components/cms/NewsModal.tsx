@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import type { User } from '../../types';
+import type { User, NewsArticle } from '../../types';
 import { saveNews } from '../../lib/cmsService';
 import Modal from '../ui/Modal';
 
-const NewsModal: React.FC<{ isOpen: boolean, onClose: () => void, onSave: () => void, initialData: any, actor: User }> = ({ isOpen, onClose, onSave, initialData, actor }) => {
-    const [article, setArticle] = useState({ title: '', content: '', status: 'Draft' });
+const NewsModal: React.FC<{ isOpen: boolean, onClose: () => void, onSave: () => void, initialData: NewsArticle | null, actor: User }> = ({ isOpen, onClose, onSave, initialData, actor }) => {
+    const [article, setArticle] = useState({ title: '', content: '', status: 'Draft' as NewsArticle['status'] });
 
     useEffect(() => {
         if (initialData) {
@@ -25,9 +25,9 @@ const NewsModal: React.FC<{ isOpen: boolean, onClose: () => void, onSave: () => 
         <Modal isOpen={isOpen} onClose={onClose} title={initialData ? 'Edit News Article' : 'New News Article'}>
             <form onSubmit={handleSubmit}>
                 <div className="p-6 space-y-4">
-                    <input value={article.title} onChange={e => setArticle({...article, title: e.target.value})} placeholder="Title" className="w-full" required/>
-                    <textarea value={article.content} onChange={e => setArticle({...article, content: e.target.value})} placeholder="Content (HTML supported)" className="w-full" rows={10}/>
-                    <select value={article.status} onChange={e => setArticle({...article, status: e.target.value})} className="w-full">
+                    <input value={article.title} onChange={e => setArticle({...article, title: e.target.value})} placeholder="Title" className="w-full rounded-md border-gray-300" required/>
+                    <textarea value={article.content} onChange={e => setArticle({...article, content: e.target.value})} placeholder="Content (HTML supported)" className="w-full rounded-md border-gray-300" rows={10}/>
+                    <select value={article.status} onChange={e => setArticle({...article, status: e.target.value as NewsArticle['status']})} className="w-full rounded-md border-gray-300">
                         <option value="Draft">Draft</option>
                         <option value="Published">Published</option>
                     </select>

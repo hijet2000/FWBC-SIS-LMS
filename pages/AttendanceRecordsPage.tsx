@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // FIX: Import export functions from attendanceService, not transportService.
@@ -35,7 +37,7 @@ const AttendanceRecordsPage: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // FIX: Fetch all students to ensure the studentMap is complete.
+                // Fetch all students to ensure the studentMap is complete.
                 const [classesData, studentsData] = await Promise.all([getClasses(), getStudents({ limit: 1000 })]);
                 setClasses(classesData);
                 // FIX: Pass the `students` array from the response object to setStudents.
@@ -108,8 +110,7 @@ const AttendanceRecordsPage: React.FC = () => {
     const handleServerExport = async (exportFn: () => Promise<{ url: string }>, type: string) => {
         setExporting(type);
         try {
-            const result = await exportFn();
-            window.open(result.url, '_blank');
+            await exportFn();
         } catch {
             alert(`Failed to generate ${type} export from server.`);
         } finally {
@@ -151,11 +152,9 @@ const AttendanceRecordsPage: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Export Options</h2>
                 <div className="flex flex-wrap gap-2">
                     <button onClick={handleClientCsvExport} disabled={!isDateRangeValid || loading} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400">Export Filtered to CSV (Client)</button>
-                    {/* FIX: Use exportRecordsCSV from attendanceService instead of transportService. */}
                     <button onClick={() => handleServerExport(exportRecordsCSV, 'CSV')} disabled={!isDateRangeValid || !!exporting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400">
                         {exporting === 'CSV' ? 'Generating...' : 'Export to CSV (Server)'}
                     </button>
-                    {/* FIX: Use exportRecordsPDF from attendanceService instead of transportService. */}
                     <button onClick={() => handleServerExport(exportRecordsPDF, 'PDF')} disabled={!isDateRangeValid || !!exporting} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400">
                          {exporting === 'PDF' ? 'Generating...' : 'Export to PDF (Server)'}
                     </button>

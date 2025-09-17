@@ -1,5 +1,5 @@
 {
-  "name": "FWBC SIS/LMS Foundation",
+  "name": "FWBC SIS/LMS ",
   "description": "A foundational Student Information System (SIS) and Learning Management System (LMS) for school administrators, built with React, TypeScript, and Tailwind CSS.",
   "requestFramePermissions": [
     "camera"

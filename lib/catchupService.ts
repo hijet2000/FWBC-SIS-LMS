@@ -1,4 +1,6 @@
-import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer } from '../types';
+
+// Import LiveClassSession
+import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer, LiveClassSession } from '../types';
 import { listSubjects } from './academicsService';
 
 // --- MOCK DATA STORE ---
@@ -124,3 +126,21 @@ export const saveCatchupAttendance = async (siteId: string, contentId: string, s
     console.log(`%c[Mock Attendance] Catch-up for ${studentId} on ${contentId} marked as complete.`, "color: green; font-weight: bold;", details);
     return;
 };
+
+// FIX: Add missing function to create a catchup item from a live class session
+export const createCatchupFromLiveClass = async (session: LiveClassSession): Promise<CatchupItem> => {
+    await delay(200);
+    const newCatchup: CatchupItem = {
+        id: `cu-live-${session.id}`,
+        title: `Recording: ${session.title}`,
+        subjectId: session.subjectId,
+        classId: session.classId,
+        kind: 'VIDEO',
+        url: session.recordingUrl || 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // Fallback URL
+        durationSec: session.endTime && session.startTime ? (new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 1000 : 3600,
+        teacherId: session.teacherId,
+        publishedAt: new Date().toISOString().split('T')[0],
+    };
+    MOCK_CATCHUP_ITEMS.push(newCatchup);
+    return newCatchup;
+}

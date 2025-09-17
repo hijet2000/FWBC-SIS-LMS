@@ -33,7 +33,6 @@ export interface Student {
   name: string;
   admissionNo: string;
   classId: string;
-  // FIX: Added missing gender property
   gender: 'Male' | 'Female' | 'Other';
   roll?: string;
   contact: {
@@ -455,6 +454,7 @@ export interface OnlineAdmissionsSettings {
 export interface CommunicationTemplate {
     id: string;
     name: string;
+    channel: CommunicationChannel;
     subject: string;
     body: string;
 }
@@ -529,7 +529,7 @@ export interface AlertSettings {
 }
 
 // --- Admin & Security ---
-export type AuditModule = 'AUTH' | 'STUDENTS' | 'ACADEMICS' | 'ATTENDANCE' | 'FEES' | 'LMS' | 'HOMEWORK' | 'TRANSPORT' | 'SYSTEM' | 'ADMISSIONS' | 'FRONTOFFICE' | 'LIBRARY' | 'ROLES' | 'HOSTEL';
+export type AuditModule = 'AUTH' | 'STUDENTS' | 'ACADEMICS' | 'ATTENDANCE' | 'FEES' | 'LMS' | 'HOMEWORK' | 'TRANSPORT' | 'SYSTEM' | 'ADMISSIONS' | 'FRONTOFFICE' | 'LIBRARY' | 'ROLES' | 'HOSTEL' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASSES' | 'COMMUNICATIONS';
 export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'ROLE_CHANGE' | 'CONVERT' | 'APPROVE' | 'GRADE';
 
 export interface AuditEvent {
@@ -703,7 +703,6 @@ export interface CurfewException {
     approvedByUserId: string;
 }
 
-// FIX: Added HostelPolicy interface
 export interface HostelPolicy {
     curfewTime: string; // "HH:mm"
     lateThresholdMin: number;
@@ -711,4 +710,194 @@ export interface HostelPolicy {
     maxVisitorsPerDay: number;
     idRequiredForVisitors: boolean;
     maxOverstayMinutes: number;
+}
+
+// --- CMS ---
+export interface Page {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    status: 'Draft' | 'Published';
+    lastModified: string; // ISO
+}
+
+export interface PageVersion {
+    versionId: string;
+    content: string;
+    savedAt: string; // ISO
+    savedBy: string;
+}
+
+export interface MenuItem {
+    title: string;
+    url: string;
+}
+
+export interface Menu {
+    id: string;
+    name: string;
+    items: MenuItem[];
+}
+
+export interface NewsArticle {
+    id: string;
+    title: string;
+    slug: string;
+    content: string;
+    author: string;
+    status: 'Draft' | 'Published';
+    publishedAt: string; // ISO
+}
+
+export interface Event {
+    id: string;
+    title: string;
+    description: string;
+    startDate: string; // ISO or YYYY-MM-DD
+    endDate?: string;
+    location?: string;
+    isAllDay: boolean;
+}
+
+export interface MediaAsset {
+    id: string;
+    fileName: string;
+    url: string;
+    type: string; // MIME type
+    size: number; // in bytes
+    uploadedAt: string; // ISO
+}
+
+export interface CmsSettings {
+    siteTitle: string;
+    tagline: string;
+    maintenanceMode: boolean;
+}
+
+
+// --- Certificates ---
+export type TemplateSize = 'A4_Portrait' | 'A4_Landscape' | 'ID_Card_CR80';
+
+export interface DesignElement {
+    id: string;
+    type: 'TEXT' | 'IMAGE' | 'QR_CODE';
+    content: string; // For TEXT: the text itself (can include placeholders); for IMAGE: asset URL/key; for QR: the field to encode (e.g., 'verifyUrl')
+    x: number; // position in mm
+    y: number; // position in mm
+    width: number; // in mm
+    height: number; // in mm
+    fontSize?: number; // in pt
+    fontWeight?: 'normal' | 'bold';
+    textAlign?: 'left' | 'center' | 'right';
+    color?: string;
+}
+
+export interface CertificateTemplate {
+    id: string;
+    name: string;
+    type: 'Certificate' | 'ID_Card';
+    size: TemplateSize;
+    frontDesign: {
+        backgroundColor: string;
+        elements: DesignElement[];
+    };
+    backDesign?: {
+        backgroundColor: string;
+        elements: DesignElement[];
+    };
+}
+
+export type IssueStatus = 'Issued' | 'Revoked' | 'Expired';
+
+export interface IssuedCertificate {
+    id: string; // The unique ID of this specific issuance
+    serialNumber: string; // The public-facing serial number (e.g., CERT-2025-FWBC-000001)
+    qrToken: string; // A unique, opaque token for QR code verification
+    templateId: string;
+    studentId: string;
+    studentName: string; // Denormalized for quick access
+    status: IssueStatus;
+    issueDate: string; // YYYY-MM-DD
+    expiryDate?: string; // YYYY-MM-DD for ID cards
+    details: Record<string, string>; // Mapped data for placeholders, e.g., { "class.name": "Form 1" }
+    revocation?: {
+        reason: string;
+        revokedAt: string; // ISO
+        revokedBy: string;
+    };
+}
+
+// --- Live Classes ---
+export type LiveClassProvider = 'Zoom' | 'Google Meet' | 'Self-hosted';
+export type LiveClassStatus = 'Scheduled' | 'In Progress' | 'Finished' | 'Cancelled';
+
+export interface LiveClassSession {
+    id: string;
+    title: string;
+    classId: string;
+    subjectId: string;
+    teacherId: string;
+    provider: LiveClassProvider;
+    startTime: string; // ISO
+    endTime: string; // ISO
+    status: LiveClassStatus;
+    joinUrl: string;
+    isRecordingPublished: boolean;
+    recordingUrl?: string;
+    catchupId?: string;
+}
+
+export interface LiveIntegration {
+    provider: LiveClassProvider;
+    connected: boolean;
+    health: 'OK' | 'Error' | 'Degraded';
+    lastSync: string; // ISO
+}
+
+export interface LiveClassAttendance {
+    sessionId: string;
+    studentId: string;
+    minutesAttended: number;
+    attendancePercentage: number;
+    isLate: boolean;
+    isOverridden: boolean;
+    overrideReason?: string;
+}
+
+// --- Communications ---
+export type CommunicationChannel = 'Email' | 'SMS' | 'Portal';
+export type CampaignStatus = 'Draft' | 'Queued' | 'Sending' | 'Sent' | 'Cancelled';
+export type MessageStatus = 'Queued' | 'Sent' | 'Delivered' | 'Failed' | 'Opened';
+
+export interface AudienceRule {
+    field: 'classId' | 'feeStatus';
+    condition: 'is' | 'isNot';
+    value: string;
+}
+
+export interface Audience {
+    id: string;
+    name: string;
+    description: string;
+    rules: AudienceRule[];
+}
+
+export interface Campaign {
+    id: string;
+    name: string;
+    audienceId: string;
+    templateId: string;
+    status: CampaignStatus;
+    createdAt: string; // ISO
+}
+
+export interface Message {
+    id: string;
+    campaignId: string;
+    recipientId: string; // studentId or guardianId
+    channel: CommunicationChannel;
+    status: MessageStatus;
+    sentAt?: string; // ISO
+    failedReason?: string;
 }

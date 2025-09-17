@@ -1,0 +1,1 @@
+full contents of src/pages/academics/reports/ReportEditorPage.tsx

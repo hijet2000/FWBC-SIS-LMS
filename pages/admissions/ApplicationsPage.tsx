@@ -6,6 +6,7 @@ import { listApplications, updateApplication } from '../../lib/admissionsService
 import { getClasses } from '../../lib/schoolService';
 import type { Application, ApplicationStatus, SchoolClass } from '../../types';
 import KanbanBoard from '../../components/admissions/KanbanBoard';
+import KanbanSkeleton from '../../components/admissions/KanbanSkeleton';
 
 const ApplicationsPage: React.FC = () => {
     const { user } = useAuth();
@@ -71,6 +72,27 @@ const ApplicationsPage: React.FC = () => {
         );
     }, [applications, filters]);
 
+    const renderContent = () => {
+        if (loading) {
+            if (view === 'list') return <KanbanSkeleton />;
+            return <p className="p-8 text-center text-gray-500">Loading...</p>;
+        }
+
+        if (view === 'table') {
+            return (
+                <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <p className="p-8 text-center text-gray-500">Table view is under construction. Please use List view.</p>
+                </div>
+            );
+        }
+
+        if (view === 'list') {
+            return <KanbanBoard applications={filteredApplications} onStatusChange={handleStatusChange} classMap={classMap} />;
+        }
+        return null;
+    };
+
+
     return (
         <div className="space-y-6 flex flex-col h-full">
             <h1 className="text-3xl font-bold text-gray-800">Applications</h1>
@@ -93,15 +115,7 @@ const ApplicationsPage: React.FC = () => {
             </div>
             
             <div className="flex-grow overflow-auto">
-                {loading ? <p>Loading applications...</p> :
-                    view === 'table' ? (
-                        <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                             <p className="p-8 text-center text-gray-500">Table view is under construction. Please use List view.</p>
-                        </div>
-                    ) : (
-                        <KanbanBoard applications={filteredApplications} onStatusChange={handleStatusChange} classMap={classMap} />
-                    )
-                }
+                {renderContent()}
             </div>
         </div>
     );

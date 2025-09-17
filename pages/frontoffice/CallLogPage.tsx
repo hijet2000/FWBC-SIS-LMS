@@ -60,7 +60,6 @@ const CallLogPage: React.FC = () => {
         if (!user || !quickLog.notes.trim()) return;
         
         try {
-            // FIX: The createCallLog function's input type requires ownerUserId. Added it to the payload.
             const newLog = await admissionsService.createCallLog({
                 ...quickLog,
                 callAt: new Date().toISOString(),

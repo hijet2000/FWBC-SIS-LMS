@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Trip, Vehicle, Driver, TransportRoute, TripStatus } from '../../types';
 import { listTrips, listVehicles, listDrivers, listRoutes, updateTrip } from '../../lib/transportService';
-import Toast from '../../components/ui/Toast';
+// FIX: Use the global toast context instead of local state for notifications.
+import { useToast } from '../../contexts/ToastContext';
 import TripModal from '../../components/transport/TripModal';
 import { transportKeys } from '../../lib/queryKeys';
 
@@ -20,7 +21,8 @@ const TripsPage: React.FC = () => {
     // UI State
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    // FIX: Use the global toast context.
+    const { addToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
     
@@ -100,7 +102,8 @@ const TripsPage: React.FC = () => {
     const handleSaveSuccess = (message: string) => {
         setIsModalOpen(false);
         fetchData(true);
-        setToast({ message, type: 'success' });
+        // FIX: Use addToast instead of setToast.
+        addToast(message, 'success');
     };
 
     const handleStatusChange = async (trip: Trip, newStatus: TripStatus) => {
@@ -113,10 +116,12 @@ const TripsPage: React.FC = () => {
                 updatePayload.endTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
             }
             await updateTrip('site_123', trip.id, updatePayload);
-            setToast({ message: `Trip status updated to ${newStatus}.`, type: 'success' });
+            // FIX: Use addToast instead of setToast.
+            addToast(`Trip status updated to ${newStatus}.`, 'success');
             fetchData(true);
         } catch {
-            setToast({ message: 'Failed to update trip status.', type: 'error' });
+            // FIX: Use addToast instead of setToast.
+            addToast('Failed to update trip status.', 'error');
         }
     };
     
@@ -143,7 +148,6 @@ const TripsPage: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-800">Transport — Trips</h1>
                 <button onClick={() => handleOpenModal()} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700">Add Trip</button>

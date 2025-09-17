@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 const ActionCard: React.FC<{ title: string, description: string, to: string }> = ({ title, description, to }) => (
-    <Link to={to} className="block bg-white p-6 rounded-lg shadow-sm border hover:shadow-md hover:border-indigo-500">
+    <Link to={to} className="block bg-white p-6 rounded-lg shadow-sm border hover:shadow-md hover:border-indigo-500 transition-all">
         <h3 className="font-semibold text-lg text-gray-800">{title}</h3>
         <p className="mt-1 text-sm text-gray-500">{description}</p>
     </Link>

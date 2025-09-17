@@ -10,7 +10,7 @@ const PublicHomePage: React.FC = () => {
             </div>
             <div className="max-w-4xl mx-auto py-12 px-4">
                 <h2 className="text-3xl font-bold text-center">Latest News</h2>
-                {/* News items would be fetched and rendered here */}
+                <p className="text-center text-gray-600 mt-4">News articles fetched from the CMS would appear here.</p>
             </div>
         </div>
     );

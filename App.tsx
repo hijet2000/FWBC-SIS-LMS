@@ -56,6 +56,7 @@ import StudentHomeworkDetailPage from './pages/student/HomeworkDetailPage';
 import ParentPortalPage from './pages/parent/ParentPortalPage';
 import AuditTrailPage from './pages/admin/AuditTrailPage';
 import UserActivityPage from './pages/admin/UserActivityPage';
+// The RolesPage was moved to the admin folder, so the import path is updated.
 import RolesPage from './pages/admin/RolesPage';
 import ApplyPage from './pages/public/ApplyPage';
 import StatusPage from './pages/public/StatusPage';
@@ -70,6 +71,43 @@ import HostelVisitorsPage from './pages/hostel/HostelVisitorsPage';
 import HostelCurfewPage from './pages/hostel/HostelCurfewPage';
 import HostelReportsPage from './pages/hostel/HostelReportsPage';
 
+// CMS Pages
+import CmsDashboardPage from './pages/cms/CmsDashboardPage';
+import PagesListPage from './pages/cms/PagesListPage';
+import PageEditorPage from './pages/cms/PageEditorPage';
+import MenusPage from './pages/cms/MenusPage';
+import NewsListPage from './pages/cms/NewsListPage';
+import EventsListPage from './pages/cms/EventsListPage';
+import MediaLibraryPage from './pages/cms/MediaLibraryPage';
+import CmsSettingsPage from './pages/cms/CmsSettingsPage';
+
+// Public Site Pages
+import PublicLayout from './pages/public/site/PublicLayout';
+import PublicHomePage from './pages/public/site/PublicHomePage';
+import PublicPage from './pages/public/site/PublicPage';
+import PublicNewsIndexPage from './pages/public/site/PublicNewsIndexPage';
+import PublicNewsArticlePage from './pages/public/site/PublicNewsArticlePage';
+
+// Certificate Pages
+import CertificatesDashboardPage from './pages/certificates/CertificatesDashboardPage';
+import TemplatesListPage from './pages/certificates/TemplatesListPage';
+import TemplateDesignerPage from './pages/certificates/TemplateDesignerPage';
+import BatchIssuancePage from './pages/certificates/BatchIssuancePage';
+import ManageIssuesPage from './pages/certificates/ManageIssuesPage';
+import VerifyPage from './pages/public/VerifyPage';
+import MyCertificatesPage from './pages/student/MyCertificatesPage';
+
+// Data & Analytics Pages
+import AnalyticsDashboardPage from './pages/analytics/AnalyticsDashboardPage';
+import BiConnectorsPage from './pages/analytics/BiConnectorsPage';
+import DataExportsPage from './pages/analytics/DataExportsPage';
+
+// System Health / Observability Pages
+import SloDashboardPage from './pages/system-health/SloDashboardPage';
+import AlertingPage from './pages/system-health/AlertingPage';
+import IncidentsPage from './pages/system-health/IncidentsPage';
+import FeatureFlagsPage from './pages/system-health/FeatureFlagsPage';
+
 
 const App: React.FC = () => {
   return (
@@ -81,6 +119,15 @@ const App: React.FC = () => {
               {/* Public Routes */}
               <Route path="/apply/:siteId" element={<ApplyPage />} />
               <Route path="/status" element={<StatusPage />} />
+              <Route path="/verify/:serialNumber" element={<VerifyPage />} />
+
+              {/* Public Site Routes */}
+              <Route path="/site/:siteId" element={<PublicLayout />}>
+                <Route index element={<PublicHomePage />} />
+                <Route path="news" element={<PublicNewsIndexPage />} />
+                <Route path="news/:slug" element={<PublicNewsArticlePage />} />
+                <Route path=":slug" element={<PublicPage />} />
+              </Route>
 
               {/* Parent Portal Route */}
               <Route path="/parent-portal/:studentId" element={<ParentPortalPage />} />
@@ -161,6 +208,47 @@ const App: React.FC = () => {
                 {/* Student Portal (nested inside for layout) */}
                 <Route path="student/homework" element={<StudentHomeworkListPage />} />
                 <Route path="student/homework/:homeworkId" element={<StudentHomeworkDetailPage />} />
+                <Route path="student/certificates" element={<MyCertificatesPage />} />
+
+                {/* CMS */}
+                <Route path="cms" element={<RequireScope requiredScopes={['cms:admin']} />}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<CmsDashboardPage />} />
+                    <Route path="pages" element={<PagesListPage />} />
+                    <Route path="pages/:pageId" element={<PageEditorPage />} />
+                    <Route path="menus" element={<MenusPage />} />
+                    <Route path="news" element={<NewsListPage />} />
+                    <Route path="events" element={<EventsListPage />} />
+                    <Route path="media" element={<MediaLibraryPage />} />
+                    <Route path="settings" element={<CmsSettingsPage />} />
+                </Route>
+
+                 {/* Certificates */}
+                <Route path="certificates" element={<RequireScope requiredScopes={['certificates:admin']} />}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<CertificatesDashboardPage />} />
+                    <Route path="templates" element={<TemplatesListPage />} />
+                    <Route path="templates/:templateId" element={<TemplateDesignerPage />} />
+                    <Route path="issue" element={<BatchIssuancePage />} />
+                    <Route path="issues" element={<ManageIssuesPage />} />
+                </Route>
+
+                {/* Data & Analytics */}
+                <Route path="analytics" element={<RequireScope requiredScopes={['school:admin']} />}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<AnalyticsDashboardPage />} />
+                    <Route path="connectors" element={<BiConnectorsPage />} />
+                    <Route path="exports" element={<DataExportsPage />} />
+                </Route>
+
+                {/* System Health */}
+                <Route path="system-health" element={<RequireScope requiredScopes={['school:admin']} />}>
+                    <Route index element={<Navigate to="slo-dashboard" replace />} />
+                    <Route path="slo-dashboard" element={<SloDashboardPage />} />
+                    <Route path="alerting" element={<AlertingPage />} />
+                    <Route path="incidents" element={<IncidentsPage />} />
+                    <Route path="releases" element={<FeatureFlagsPage />} />
+                </Route>
 
                 {/* Admin */}
                 <Route path="admin" element={<RequireScope requiredScopes={['school:admin']} />}>

@@ -1,0 +1,1 @@
+full contents of src/pages/academics/analytics/AnalyticsSettingsPage.tsx

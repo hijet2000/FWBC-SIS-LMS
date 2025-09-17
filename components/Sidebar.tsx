@@ -34,9 +34,14 @@ const Sidebar: React.FC = () => {
   const isFrontOffice = hasScope('frontoffice:admin');
   const isTeacher = hasScope('homework:teacher');
   const isStudent = hasScope('student');
+  const isCmsAdmin = hasScope('cms:admin');
+  const isCertsAdmin = hasScope('certificates:admin');
+  const isTransportAdmin = hasScope('transport:admin');
+  const isHostelAdmin = hasScope('hostel:admin');
+
 
   return (
-    <aside className="hidden md:block w-64 bg-white border-r border-gray-200 p-4">
+    <aside className="hidden md:block w-64 bg-white border-r border-gray-200 p-4 overflow-y-auto">
       <nav className="grid items-start text-sm font-medium space-y-2">
         <NavItem to={`/school/${siteId}/dashboard`} end>Dashboard</NavItem>
         
@@ -93,16 +98,100 @@ const Sidebar: React.FC = () => {
                  </div>
             </div>
         )}
+
+        {isAdmin && (
+            <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Library</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/library/digital`}>Digital Assets</NavItem>
+                    <NavItem to={`/school/${siteId}/library/catchup`}>Catch-Up</NavItem>
+                    <NavItem to={`/school/${siteId}/library/physical/catalog`}>Catalog</NavItem>
+                    <NavItem to={`/school/${siteId}/library/physical/circulation`}>Circulation</NavItem>
+                 </div>
+            </div>
+        )}
+
+        {isTransportAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Transport</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/transport/vehicles`}>Vehicles</NavItem>
+                    <NavItem to={`/school/${siteId}/transport/trips`}>Trips</NavItem>
+                    <NavItem to={`/school/${siteId}/transport/boarding`}>Boarding</NavItem>
+                 </div>
+            </div>
+        )}
+
+        {isHostelAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Hostel</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/hostel/dashboard`}>Dashboard</NavItem>
+                    <NavItem to={`/school/${siteId}/hostel/allocations`}>Allocations</NavItem>
+                    <NavItem to={`/school/${siteId}/hostel/structure`}>Structure</NavItem>
+                 </div>
+            </div>
+        )}
+
+
+        {isCertsAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Certificates</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/certificates/dashboard`}>Dashboard</NavItem>
+                    <NavItem to={`/school/${siteId}/certificates/templates`}>Templates</NavItem>
+                    <NavItem to={`/school/${siteId}/certificates/issue`}>Issue Batch</NavItem>
+                    <NavItem to={`/school/${siteId}/certificates/issues`}>Manage Issues</NavItem>
+                 </div>
+            </div>
+        )}
         
          {isStudent && (
              <div>
                  <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">My Portal</h3>
                  <div className="mt-1 space-y-1">
                     <NavItem to={`/school/${siteId}/student/homework`}>Homework</NavItem>
+                    <NavItem to={`/school/${siteId}/student/certificates`}>My Certificates</NavItem>
+                 </div>
+            </div>
+        )}
+
+        {isCmsAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">CMS</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/cms/dashboard`}>Dashboard</NavItem>
+                    <NavItem to={`/school/${siteId}/cms/pages`}>Pages</NavItem>
+                    <NavItem to={`/school/${siteId}/cms/news`}>News</NavItem>
+                    <NavItem to={`/school/${siteId}/cms/events`}>Events</NavItem>
+                    <NavItem to={`/school/${siteId}/cms/media`}>Media Library</NavItem>
                  </div>
             </div>
         )}
         
+        {isAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Data & Analytics</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/analytics/dashboard`}>Dashboard</NavItem>
+                    <NavItem to={`/school/${siteId}/analytics/connectors`}>BI Connectors</NavItem>
+                    <NavItem to={`/school/${siteId}/analytics/exports`}>Data Exports</NavItem>
+                 </div>
+            </div>
+        )}
+        
+        {isAdmin && (
+             <div>
+                 <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">System Health</h3>
+                 <div className="mt-1 space-y-1">
+                    <NavItem to={`/school/${siteId}/system-health/slo-dashboard`}>SLO Dashboard</NavItem>
+                    <NavItem to={`/school/${siteId}/system-health/alerting`}>Alerting</NavItem>
+                    <NavItem to={`/school/${siteId}/system-health/incidents`}>Incidents</NavItem>
+                    <NavItem to={`/school/${siteId}/system-health/releases`}>Releases</NavItem>
+                 </div>
+            </div>
+        )}
+
         {isAdmin && (
              <div>
                  <h3 className="px-3 text-xs font-semibold uppercase text-gray-400">Admin</h3>

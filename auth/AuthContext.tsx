@@ -19,7 +19,11 @@ const MOCK_USER: User = {
     'lms:admin', 
     'lms:courses:write',
     'homework:teacher',
-    'homework:student'
+    'homework:student',
+    'cms:admin',
+    'certificates:admin',
+    'transport:admin',
+    'hostel:admin',
   ],
 };
 

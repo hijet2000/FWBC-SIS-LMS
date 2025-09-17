@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link, useParams } from 'react-router-dom';
 import { getClasses, getStudents } from '../lib/schoolService';
@@ -91,9 +92,16 @@ const StudentsPage: React.FC = () => {
 
     // Fetch classes on mount
     useEffect(() => {
-        getClasses()
-            .then(data => setClasses(data))
-            .catch(() => addToast('Could not load class information.', 'error'));
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Failed to fetch classes:", error);
+                addToast('Could not load class information. Please try refreshing the page.', 'error');
+            }
+        };
+        fetchClasses();
     }, [addToast]);
 
     // Update URL when debounced search term changes, resetting to page 1
@@ -114,20 +122,24 @@ const StudentsPage: React.FC = () => {
 
     // Fetch filtered & paginated students when query key changes
     useEffect(() => {
-        setLoading(true);
+        const fetchStudents = async () => {
+            setLoading(true);
+            try {
+                const [,, queryFilters] = queryKey;
+                const cleanFilters = Object.fromEntries(Object.entries(queryFilters).filter(([, v]) => v !== undefined));
 
-        const [,, queryFilters] = queryKey;
-        const cleanFilters = Object.fromEntries(Object.entries(queryFilters).filter(([, v]) => v !== undefined));
-
-        getStudents(cleanFilters)
-            .then(({ students: paginatedStudents, total }) => {
+                const { students: paginatedStudents, total } = await getStudents(cleanFilters);
                 setStudents(paginatedStudents);
                 setTotalStudents(total);
                 setTotalPages(Math.ceil(total / STUDENTS_PER_PAGE));
-            })
-            .catch(() => addToast('An error occurred while fetching students.', 'error'))
-            .finally(() => setLoading(false));
-
+            } catch (error) {
+                console.error("Failed to fetch students:", error);
+                addToast('An error occurred while fetching students. Please check your connection and try again.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStudents();
     }, [queryKey, addToast]);
     
     const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

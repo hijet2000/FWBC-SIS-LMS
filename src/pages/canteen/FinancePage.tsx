@@ -1,0 +1,1 @@
+full contents of src/pages/canteen/FinancePage.tsx

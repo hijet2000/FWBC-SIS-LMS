@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { listMedia, uploadMedia } from '../../lib/cmsService';
 import { useDropzone } from 'react-dropzone';
+import { MediaAsset } from '../../types';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -17,7 +18,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 const MediaLibraryPage: React.FC = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
-    const [media, setMedia] = useState<any[]>([]);
+    const [media, setMedia] = useState<MediaAsset[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(() => {
@@ -43,10 +44,11 @@ const MediaLibraryPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold">Media Library</h1>
-            <div {...getRootProps()} className={`p-8 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'}`}>
+            <div {...getRootProps()} className={`p-8 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}`}>
                 <input {...getInputProps()} />
                 <p>Drag 'n' drop some files here, or click to select files</p>
             </div>
+            {loading ? <p>Loading media...</p> :
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {media.map(item => (
                     <div key={item.id} className="bg-white p-2 rounded-lg shadow-sm border">
@@ -54,11 +56,12 @@ const MediaLibraryPage: React.FC = () => {
                             <img src={item.url} alt={item.fileName} className="w-full h-24 object-cover rounded-md" /> :
                             <div className="w-full h-24 bg-gray-100 flex items-center justify-center rounded-md font-bold text-gray-500">{item.type.split('/')[1]}</div>
                         }
-                        <p className="text-xs mt-2 truncate">{item.fileName}</p>
+                        <p className="text-xs mt-2 truncate font-medium" title={item.fileName}>{item.fileName}</p>
                         <p className="text-xs text-gray-400">{formatBytes(item.size)}</p>
                     </div>
                 ))}
             </div>
+            }
         </div>
     );
 };
