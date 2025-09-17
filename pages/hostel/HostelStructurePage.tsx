@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../../contexts/ToastContext';
 import * as hostelService from '../../lib/hostelService';
 import { useAuth } from '../../auth/AuthContext';
 import type { Hostel, HostelFloor, HostelRoom, Bed } from '../../types';
 import RoomModal from '../../components/hostel/RoomModal';
+import Modal from '../../components/ui/Modal';
 
 const HostelStructurePage: React.FC = () => {
     const { addToast } = useToast();
     const { user } = useAuth();
     const [structure, setStructure] = useState<{ hostels: Hostel[], floors: HostelFloor[], rooms: HostelRoom[], beds: Bed[] } | null>(null);
     const [loading, setLoading] = useState(true);
-    const [editingRoom, setEditingRoom] = useState<HostelRoom | null>(null);
+    const [editingRoom, setEditingRoom] = useState<Partial<HostelRoom> | null>(null);
+    const [deletingRoom, setDeletingRoom] = useState<HostelRoom | null>(null);
 
     const fetchData = useCallback(() => {
         setLoading(true);
@@ -31,11 +33,28 @@ const HostelStructurePage: React.FC = () => {
         addToast(`Bed ${bed.name} status set to ${newStatus}.`, 'success');
         fetchData();
     };
+    
+    const handleOpenCreateModal = (floorId: string) => {
+        setEditingRoom({ floorId });
+    };
 
-    const handleRoomSave = () => {
+    const handleRoomSaveSuccess = (message: string) => {
         setEditingRoom(null);
-        addToast('Room updated successfully.', 'success');
+        addToast(message, 'success');
         fetchData();
+    };
+    
+    const handleConfirmDelete = async () => {
+        if (!deletingRoom || !user) return;
+        try {
+            await hostelService.deleteRoom(deletingRoom.id, user);
+            addToast(`Room ${deletingRoom.name} deleted successfully.`, 'success');
+            fetchData();
+        } catch (error: any) {
+            addToast(error.message || 'Failed to delete room.', 'error');
+        } finally {
+            setDeletingRoom(null);
+        }
     };
 
     if (loading) return <p>Loading structure...</p>;
@@ -52,19 +71,26 @@ const HostelStructurePage: React.FC = () => {
                         <div className="mt-4 space-y-4">
                             {structure.floors.filter(f => f.hostelId === hostel.id).map(floor => (
                                 <div key={floor.id} className="pl-4">
-                                    <h3 className="font-semibold text-gray-800">{floor.name}</h3>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="font-semibold text-gray-800">{floor.name}</h3>
+                                        <button onClick={() => handleOpenCreateModal(floor.id)} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">+ Add Room</button>
+                                    </div>
                                     <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {structure.rooms.filter(r => r.floorId === floor.id).map(room => (
                                             <div key={room.id} className="p-3 bg-gray-50 border rounded-md">
                                                 <div className="flex justify-between items-center">
                                                     <h4 className="font-bold">Room {room.name}</h4>
-                                                    <button onClick={() => setEditingRoom(room)} className="text-xs text-indigo-600">Edit</button>
+                                                    <div className="space-x-2">
+                                                        <button onClick={() => setEditingRoom(room)} className="text-xs text-indigo-600">Edit</button>
+                                                        <button onClick={() => setDeletingRoom(room)} className="text-xs text-red-600">Delete</button>
+                                                    </div>
                                                 </div>
                                                 <p className="text-xs text-gray-500">{room.capacity}-person {room.roomType}</p>
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {structure.beds.filter(b => b.roomId === room.id).map(bed => (
                                                         <button key={bed.id} onClick={() => handleBedToggle(bed)} title={`Click to ${bed.status === 'Available' ? 'Block' : 'Unblock'}`}
-                                                            className={`px-2 py-1 text-xs rounded-full ${bed.status === 'Available' ? 'bg-green-100 text-green-800' : bed.status === 'Occupied' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                                                            className={`px-2 py-1 text-xs rounded-full ${bed.status === 'Available' ? 'bg-green-100 text-green-800' : bed.status === 'Occupied' ? 'bg-blue-100 text-blue-800 cursor-not-allowed' : 'bg-red-100 text-red-800'}`}
+                                                            disabled={bed.status === 'Occupied'}>
                                                             {bed.name}
                                                         </button>
                                                     ))}
@@ -83,10 +109,22 @@ const HostelStructurePage: React.FC = () => {
                 <RoomModal 
                     isOpen={!!editingRoom}
                     onClose={() => setEditingRoom(null)}
-                    onSave={handleRoomSave}
-                    room={editingRoom}
+                    onSaveSuccess={handleRoomSaveSuccess}
+                    initialData={editingRoom}
                     actor={user}
                 />
+            )}
+            
+            {deletingRoom && (
+                 <Modal isOpen={!!deletingRoom} onClose={() => setDeletingRoom(null)} title="Confirm Deletion">
+                    <div className="p-6">
+                        <p>Are you sure you want to delete Room {deletingRoom.name}? This action cannot be undone and is only possible if the room is empty.</p>
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button onClick={() => setDeletingRoom(null)} className="px-4 py-2 border rounded-md">Cancel</button>
+                            <button onClick={handleConfirmDelete} className="px-4 py-2 text-white bg-red-600 rounded-md">Delete Room</button>
+                        </div>
+                    </div>
+                 </Modal>
             )}
         </div>
     );

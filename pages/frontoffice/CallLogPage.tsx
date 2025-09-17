@@ -64,7 +64,6 @@ const CallLogPage: React.FC = () => {
             const newLog = await admissionsService.createCallLog({
                 ...quickLog,
                 callAt: new Date().toISOString(),
-                ownerUserId: user.id,
             }, user);
             
             if (newLog.topic === 'Safeguarding') {

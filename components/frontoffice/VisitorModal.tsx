@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import React, { useState } from 'react';
 import type { VisitorLog, Teacher, User } from '../../types';
 import { createVisitorLog } from '../../lib/admissionsService';

@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import * as admissionsService from '../../lib/admissionsService';

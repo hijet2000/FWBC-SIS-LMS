@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import type { Application, ApplicationStatus, Enquiry, EnquiryStatus, FollowUp, VisitorLog, CallLog, Postal, Handover, User, SeatAllocation, CallDirection, CallTopic, PublicApplicationView, OnlineAdmissionsSettings, CommunicationTemplate } from '../types';
 import { logAuditEvent } from './auditService';
 import { createStudentFromApplication } from './schoolService';

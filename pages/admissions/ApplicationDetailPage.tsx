@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';

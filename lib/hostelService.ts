@@ -1,10 +1,15 @@
-import type { Hostel, HostelFloor, HostelRoom, Bed, Allocation, HostelVisitor, CurfewCheck, User, Student } from '../types';
+import type { Hostel, HostelFloor, HostelRoom, Bed, Allocation, HostelVisitor, CurfewCheck, User, Student, CurfewException, HostelPolicy } from '../types';
 import { getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';
 
 // --- MOCK DATA STORE ---
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 const getISODateMinutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60 * 1000).toISOString();
+const getISODateDaysFromNow = (days: number): string => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+};
 
 const MOCK_HOSTELS: Hostel[] = [
     { id: 'H1', name: 'Founders Hall', type: 'Boys' },
@@ -17,7 +22,7 @@ const MOCK_FLOORS: HostelFloor[] = [
     { id: 'F3', hostelId: 'H2', name: 'Ground Floor' },
 ];
 
-const MOCK_ROOMS: HostelRoom[] = [
+let MOCK_ROOMS: HostelRoom[] = [
     { id: 'R101', floorId: 'F1', name: '101', capacity: 4, roomType: 'Standard' },
     { id: 'R102', floorId: 'F1', name: '102', capacity: 4, roomType: 'Standard' },
     { id: 'R201', floorId: 'F2', name: '201', capacity: 2, roomType: 'Premium' },
@@ -51,6 +56,19 @@ let MOCK_VISITORS: HostelVisitor[] = [
 ];
 
 let MOCK_CURFEW_CHECKS: CurfewCheck[] = [];
+let MOCK_CURFEW_EXCEPTIONS: CurfewException[] = [
+    { id: 'CE1', studentId: 's01', fromDate: getTodayDateString(), toDate: getISODateDaysFromNow(2), reason: 'Family event', approvedByUserId: 'user-evelyn-reed' },
+];
+
+// FIX: Add mock policy data
+let MOCK_POLICY: HostelPolicy = {
+    curfewTime: "22:00",
+    lateThresholdMin: 15,
+    genderRule: 'Warn',
+    maxVisitorsPerDay: 2,
+    idRequiredForVisitors: false,
+    maxOverstayMinutes: 30,
+};
 
 // --- MOCK API ---
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -73,22 +91,126 @@ export const updateBedStatus = async (bedId: string, status: 'Available' | 'Bloc
     }
 };
 
-export const updateRoom = async (roomId: string, update: Partial<HostelRoom>, actor: User) => {
-    await delay(400);
-    const room = MOCK_ROOMS.find(r => r.id === roomId);
-    if (room) {
-        Object.assign(room, update);
+export const createRoom = async (roomData: Omit<HostelRoom, 'id'>, actor: User): Promise<HostelRoom> => {
+    await delay(500);
+    const newRoom: HostelRoom = {
+        ...roomData,
+        id: `R-${Date.now()}`
+    };
+    MOCK_ROOMS.push(newRoom);
+
+    // Auto-create beds
+    const bedLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    for (let i = 0; i < newRoom.capacity; i++) {
+        const newBed: Bed = {
+            id: `B-${newRoom.id}-${bedLetters[i]}`,
+            roomId: newRoom.id,
+            name: bedLetters[i],
+            status: 'Available'
+        };
+        MOCK_BEDS.push(newBed);
     }
+
+    logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'CREATE', module: 'HOSTEL', entityType: 'Room', entityId: newRoom.id, entityDisplay: `Room ${newRoom.name}`, after: newRoom });
+    return newRoom;
 };
 
+export const updateRoom = async (roomId: string, update: Partial<Omit<HostelRoom, 'id' | 'floorId' | 'name'>>, actor: User): Promise<HostelRoom> => {
+    await delay(400);
+    const room = MOCK_ROOMS.find(r => r.id === roomId);
+    if (!room) throw new Error("Room not found");
+
+    const before = { ...room };
+    Object.assign(room, update);
+    
+    // Adjust beds if capacity changes
+    const currentBeds = MOCK_BEDS.filter(b => b.roomId === roomId);
+    if (update.capacity !== undefined && update.capacity > currentBeds.length) {
+        // Add beds
+        const bedLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        for (let i = currentBeds.length; i < update.capacity; i++) {
+            const newBed: Bed = { id: `B-${roomId}-${bedLetters[i]}`, roomId, name: bedLetters[i], status: 'Available' };
+            MOCK_BEDS.push(newBed);
+        }
+    } else if (update.capacity !== undefined && update.capacity < currentBeds.length) {
+        // Remove beds, but only available ones
+        const bedsToRemove = currentBeds.length - update.capacity;
+        const availableBeds = currentBeds.filter(b => b.status === 'Available');
+        if (availableBeds.length < bedsToRemove) {
+            throw new Error("Cannot reduce capacity, not enough available beds to remove.");
+        }
+        const bedsToDelete = availableBeds.slice(-bedsToRemove);
+        MOCK_BEDS = MOCK_BEDS.filter(b => !bedsToDelete.some(bd => bd.id === b.id));
+    }
+
+
+    logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'HOSTEL', entityType: 'Room', entityId: roomId, entityDisplay: `Room ${room.name}`, before, after: room });
+    return room;
+};
+
+export const deleteRoom = async (roomId: string, actor: User): Promise<void> => {
+    await delay(600);
+    const roomBeds = MOCK_BEDS.filter(b => b.roomId === roomId);
+    const isOccupied = roomBeds.some(b => b.status === 'Occupied');
+
+    if (isOccupied) {
+        throw new Error("Cannot delete room with allocated students.");
+    }
+    
+    const before = MOCK_ROOMS.find(r => r.id === roomId);
+    MOCK_ROOMS = MOCK_ROOMS.filter(r => r.id !== roomId);
+    MOCK_BEDS = MOCK_BEDS.filter(b => b.roomId !== roomId);
+    
+    logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'DELETE', module: 'HOSTEL', entityType: 'Room', entityId: roomId, entityDisplay: `Room ${before?.name}`, before });
+};
+
+
+// FIX: Update function to return all data required by the dashboard.
 export const getDashboardStats = async () => {
     await delay(400);
     const totalBeds = MOCK_BEDS.length;
     const occupied = MOCK_ALLOCATIONS.filter(a => !a.checkOutDate).length;
+
+    // Calculate occupancy by hostel
+    const occupancyByHostel: { hostel: Hostel, occupied: number, capacity: number }[] = [];
+    for (const hostel of MOCK_HOSTELS) {
+        const floorsInHostel = MOCK_FLOORS.filter(f => f.hostelId === hostel.id).map(f => f.id);
+        const roomsInHostel = MOCK_ROOMS.filter(r => floorsInHostel.includes(r.floorId));
+        const capacity = roomsInHostel.reduce((sum, room) => sum + room.capacity, 0);
+        
+        const roomIds = roomsInHostel.map(r => r.id);
+        const bedsInHostel = MOCK_BEDS.filter(b => roomIds.includes(b.roomId));
+        const bedIds = bedsInHostel.map(b => b.id);
+        const occupiedInHostel = MOCK_ALLOCATIONS.filter(a => !a.checkOutDate && bedIds.includes(a.bedId)).length;
+        
+        occupancyByHostel.push({ hostel, occupied: occupiedInHostel, capacity });
+    }
+    
+    // Calculate curfew summary for today
+    const today = getTodayDateString();
+    const todayChecks = MOCK_CURFEW_CHECKS.filter(c => c.date === today);
+    const absent = todayChecks.filter(c => c.status === 'Absent').length;
+    const totalResidents = MOCK_ALLOCATIONS.filter(a => !a.checkOutDate).length; // simple way to get total residents
+
+    // Calculate alerts
+    let overCapacityCount = 0;
+    occupancyByHostel.forEach(h => {
+        if (h.occupied > h.capacity) {
+            overCapacityCount++;
+        }
+    });
+    const alerts = {
+        overCapacity: overCapacityCount,
+        blockedBeds: MOCK_BEDS.filter(b => b.status === 'Blocked').length
+    };
+
     return {
         occupancyRate: totalBeds > 0 ? (occupied / totalBeds) * 100 : 0,
         availableBeds: MOCK_BEDS.filter(b => b.status === 'Available').length,
         visitorsIn: MOCK_VISITORS.filter(v => !v.timeOut).length,
+        occupancyByHostel,
+        curfewSummary: { date: today, absent, total: totalResidents },
+        alerts,
     };
 };
 
@@ -179,6 +301,46 @@ export const saveCurfewChecks = async (checks: Omit<CurfewCheck, 'id'>[], actor:
     MOCK_CURFEW_CHECKS.push(...newChecks);
 };
 
+export const listCurfewExceptions = async (): Promise<CurfewException[]> => {
+    await delay(300);
+    return [...MOCK_CURFEW_EXCEPTIONS];
+};
+
+export const createCurfewException = async (exception: Omit<CurfewException, 'id'>, actor: User): Promise<CurfewException> => {
+    await delay(500);
+    const newException: CurfewException = { ...exception, id: `CE-${Date.now()}` };
+    MOCK_CURFEW_EXCEPTIONS.push(newException);
+    logAuditEvent({
+        actorId: actor.id,
+        actorName: actor.name,
+        action: 'CREATE',
+        module: 'HOSTEL',
+        entityType: 'CurfewException',
+        entityId: newException.id,
+        entityDisplay: `Exception for student ${exception.studentId}`,
+        after: newException
+    });
+    return newException;
+};
+
+export const deleteCurfewException = async (exceptionId: string, actor: User): Promise<void> => {
+    await delay(400);
+    const index = MOCK_CURFEW_EXCEPTIONS.findIndex(e => e.id === exceptionId);
+    if (index > -1) {
+        const deleted = MOCK_CURFEW_EXCEPTIONS.splice(index, 1);
+        logAuditEvent({
+            actorId: actor.id,
+            actorName: actor.name,
+            action: 'DELETE',
+            module: 'HOSTEL',
+            entityType: 'CurfewException',
+            entityId: exceptionId,
+            entityDisplay: `Exception for student ${deleted[0].studentId}`,
+            before: deleted[0]
+        });
+    }
+};
+
 export const getOccupancyReport = async () => {
     await delay(600);
     const report: { hostelId: string, name: string, capacity: number, occupied: number }[] = [];
@@ -208,4 +370,28 @@ export const getAllocationForStudent = async (studentId: string): Promise<{ allo
     const hostel = MOCK_HOSTELS.find(h => h.id === floor.hostelId)!;
     
     return { allocation, bed, room, hostel };
+};
+
+// FIX: Add getPolicies function
+export const getPolicies = async (): Promise<HostelPolicy> => {
+    await delay(200);
+    return { ...MOCK_POLICY };
+};
+
+// FIX: Add updatePolicies function
+export const updatePolicies = async (policy: HostelPolicy, actor: User): Promise<void> => {
+    await delay(500);
+    const before = { ...MOCK_POLICY };
+    MOCK_POLICY = policy;
+    logAuditEvent({
+        actorId: actor.id,
+        actorName: actor.name,
+        action: 'UPDATE',
+        module: 'HOSTEL',
+        entityType: 'Policy',
+        entityId: 'hostel-policy',
+        entityDisplay: 'Hostel Policies',
+        before,
+        after: policy
+    });
 };

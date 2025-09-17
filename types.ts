@@ -33,6 +33,8 @@ export interface Student {
   name: string;
   admissionNo: string;
   classId: string;
+  // FIX: Added missing gender property
+  gender: 'Male' | 'Female' | 'Other';
   roll?: string;
   contact: {
     email: string;
@@ -699,4 +701,14 @@ export interface CurfewException {
     toDate: string; // YYYY-MM-DD
     reason: string;
     approvedByUserId: string;
+}
+
+// FIX: Added HostelPolicy interface
+export interface HostelPolicy {
+    curfewTime: string; // "HH:mm"
+    lateThresholdMin: number;
+    genderRule: 'Enforce' | 'Warn' | 'Ignore';
+    maxVisitorsPerDay: number;
+    idRequiredForVisitors: boolean;
+    maxOverstayMinutes: number;
 }

@@ -11,17 +11,17 @@ let MOCK_CLASSES: SchoolClass[] = [
 
 let MOCK_STUDENTS: Student[] = [
   // Class 1
-  { id: 's01', name: 'Alice Johnson', admissionNo: 'ADM-2025-001', classId: 'c1', roll: '1', contact: { email: 'alice.j@example.com', phone: '555-0101' }, address: { line1: '123 Maple St', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s01` },
-  { id: 's02', name: 'Bob Williams', admissionNo: 'ADM-2025-002', classId: 'c1', roll: '2', contact: { email: 'bob.w@example.com', phone: '555-0102' }, address: { line1: '456 Oak Ave', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s02` },
-  { id: 's03', name: 'Charlie Brown', admissionNo: 'ADM-2025-003', classId: 'c1', roll: '3', contact: { email: 'charlie.b@example.com', phone: '555-0103' }, address: { line1: '789 Pine Ln', city: 'Springfield', postcode: '12345' } },
-  { id: 's04', name: 'Diana Miller', admissionNo: 'ADM-2025-004', classId: 'c1', roll: '4', contact: { email: 'diana.m@example.com', phone: '555-0104' }, address: { line1: '101 Elm Ct', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s04` },
-  { id: 's05', name: 'Ethan Davis', admissionNo: 'ADM-2025-005', classId: 'c1', roll: '5', contact: { email: 'ethan.d@example.com', phone: '555-0105' }, address: { line1: '212 Birch Rd', city: 'Springfield', postcode: '12345' } },
+  { id: 's01', name: 'Alice Johnson', admissionNo: 'ADM-2025-001', classId: 'c1', gender: 'Female', roll: '1', contact: { email: 'alice.j@example.com', phone: '555-0101' }, address: { line1: '123 Maple St', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s01` },
+  { id: 's02', name: 'Bob Williams', admissionNo: 'ADM-2025-002', classId: 'c1', gender: 'Male', roll: '2', contact: { email: 'bob.w@example.com', phone: '555-0102' }, address: { line1: '456 Oak Ave', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s02` },
+  { id: 's03', name: 'Charlie Brown', admissionNo: 'ADM-2025-003', classId: 'c1', gender: 'Male', roll: '3', contact: { email: 'charlie.b@example.com', phone: '555-0103' }, address: { line1: '789 Pine Ln', city: 'Springfield', postcode: '12345' } },
+  { id: 's04', name: 'Diana Miller', admissionNo: 'ADM-2025-004', classId: 'c1', gender: 'Female', roll: '4', contact: { email: 'diana.m@example.com', phone: '555-0104' }, address: { line1: '101 Elm Ct', city: 'Springfield', postcode: '12345' }, photoUrl: `https://i.pravatar.cc/150?u=s04` },
+  { id: 's05', name: 'Ethan Davis', admissionNo: 'ADM-2025-005', classId: 'c1', gender: 'Male', roll: '5', contact: { email: 'ethan.d@example.com', phone: '555-0105' }, address: { line1: '212 Birch Rd', city: 'Springfield', postcode: '12345' } },
   // Class 2
-  { id: 's06', name: 'Fiona Garcia', admissionNo: 'ADM-2025-006', classId: 'c2', roll: '1', contact: { email: 'fiona.g@example.com', phone: '555-0106' }, address: { line1: '323 Cedar Blvd', city: 'Shelbyville', postcode: '54321' }, photoUrl: `https://i.pravatar.cc/150?u=s06` },
-  { id: 's07', name: 'George Rodriguez', admissionNo: 'ADM-2025-007', classId: 'c2', roll: '2', contact: { email: 'george.r@example.com', phone: '555-0107' }, address: { line1: '434 Spruce Dr', city: 'Shelbyville', postcode: '54321' } },
-  { id: 's08', name: 'Hannah Martinez', admissionNo: 'ADM-2025-008', classId: 'c2', roll: '3', contact: { email: 'hannah.m@example.com', phone: '555-0108' }, address: { line1: '545 Redwood Pkwy', city: 'Shelbyville', postcode: '54321' }, photoUrl: `https://i.pravatar.cc/150?u=s08` },
-  { id: 's09', name: 'Ian Hernandez', admissionNo: 'ADM-2025-009', classId: 'c2', roll: '4', contact: { email: 'ian.h@example.com', phone: '555-0109' }, address: { line1: '656 Aspen Way', city: 'Shelbyville', postcode: '54321' } },
-  { id: 's10', name: 'Jane Lopez', admissionNo: 'ADM-2025-010', classId: 'c2', roll: '5', contact: { email: 'jane.l@example.com', phone: '555-0110' }, address: { line1: '767 Sequoia St', city: 'Shelbyville', postcode: '54321' } },
+  { id: 's06', name: 'Fiona Garcia', admissionNo: 'ADM-2025-006', classId: 'c2', gender: 'Female', roll: '1', contact: { email: 'fiona.g@example.com', phone: '555-0106' }, address: { line1: '323 Cedar Blvd', city: 'Shelbyville', postcode: '54321' }, photoUrl: `https://i.pravatar.cc/150?u=s06` },
+  { id: 's07', name: 'George Rodriguez', admissionNo: 'ADM-2025-007', classId: 'c2', gender: 'Male', roll: '2', contact: { email: 'george.r@example.com', phone: '555-0107' }, address: { line1: '434 Spruce Dr', city: 'Shelbyville', postcode: '54321' } },
+  { id: 's08', name: 'Hannah Martinez', admissionNo: 'ADM-2025-008', classId: 'c2', gender: 'Female', roll: '3', contact: { email: 'hannah.m@example.com', phone: '555-0108' }, address: { line1: '545 Redwood Pkwy', city: 'Shelbyville', postcode: '54321' }, photoUrl: `https://i.pravatar.cc/150?u=s08` },
+  { id: 's09', name: 'Ian Hernandez', admissionNo: 'ADM-2025-009', classId: 'c2', gender: 'Male', roll: '4', contact: { email: 'ian.h@example.com', phone: '555-0109' }, address: { line1: '656 Aspen Way', city: 'Shelbyville', postcode: '54321' } },
+  { id: 's10', name: 'Jane Lopez', admissionNo: 'ADM-2025-010', classId: 'c2', gender: 'Female', roll: '5', contact: { email: 'jane.l@example.com', phone: '555-0110' }, address: { line1: '767 Sequoia St', city: 'Shelbyville', postcode: '54321' } },
 ];
 
 
@@ -124,6 +124,7 @@ export const createStudentFromApplication = (app: Application): Student => {
         name: app.applicantDetails.fullName || app.applicantName,
         admissionNo,
         classId: app.desiredClassId,
+        gender: app.applicantDetails.gender,
         contact: {
             email: app.guardians[0]?.email || '',
             phone: app.guardians[0]?.phone || '',
