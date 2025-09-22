@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -47,6 +46,11 @@ const CreditCardIcon: React.FC<{ className?: string }> = ({ className }) => (
 const ReceiptIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l2-2 4 4 4-4-2-2m-2 4V3M4 6h16M4 10h16M4 14h16M4 18h16" />
+    </svg>
+);
+const CurrencyDollarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 16v-1m0-1v.01M12 16c-1.11 0-2.08-.402-2.599-1M12 16V7m0 9h.01M12 8h.01M15 21h-6a2 2 0 01-2-2V5a2 2 0 012-2h6a2 2 0 012 2v14a2 2 0 01-2 2z" />
     </svg>
 );
 const BusIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -103,18 +107,8 @@ const OfficeBuildingIcon: React.FC<{ className?: string }> = ({ className }) => 
 );
 const CogIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-);
-const ArchiveBoxIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-  </svg>
-);
-const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
 const BellIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -122,10 +116,25 @@ const BellIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
 );
-const GlobeAltIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A11.953 11.953 0 0112 13.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 003 12c0 .778.099 1.533.284 2.253m0 0c1.393 2.129 3.65 3.541 6.16 3.931" />
+const ArchiveIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h14" />
   </svg>
+);
+const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.293l.586-.586a2 2 0 012.828 0l.586.586M12 21a9 9 0 100-18 9 9 0 000 18z" />
+  </svg>
+);
+const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+);
+const GiftIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4H5z" />
+    </svg>
 );
 
 // --- Navigation Components ---
@@ -164,13 +173,16 @@ const CollapsibleNavSection: React.FC<CollapsibleNavSectionProps> = ({ title, ic
 
   const isChildActive = useMemo(() => {
     let isActive = false;
+    // FIX: Add generic type to React.isValidElement to fix property access errors.
     React.Children.forEach(children, (child) => {
-      // FIX: Add a type assertion to safely access the 'to' property on child props,
-      // as TypeScript cannot infer the type of props on children passed via React.Children.
-      if (React.isValidElement(child)) {
-        const props = child.props as { to?: string };
-        if (props.to && location.pathname.startsWith(props.to)) {
+      if (React.isValidElement<NavItemProps>(child) && child.props.to) {
+        // Check if the current path starts with the link's path.
+        // For the dashboard link, we need an exact match, which `end` prop on NavLink handles.
+        if (location.pathname.startsWith(child.props.to) && child.props.to !== `/school/${useParams().siteId}`) {
           isActive = true;
+        }
+        if(location.pathname === child.props.to) {
+            isActive = true;
         }
       }
     });
@@ -243,6 +255,8 @@ const Sidebar: React.FC = () => {
                  {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/planner`} icon={<CalendarIcon className="h-4 w-4" />} label="Planner" />}
                  {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/class`} icon={<TableIcon className="h-4 w-4" />} label="Class Timetables" />}
                  {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/teacher`} icon={<TableIcon className="h-4 w-4" />} label="Teacher Timetables" />}
+                 {hasAnyScope(['school:admin', 'homework:teacher']) && <NavItem to={`/school/${siteId}/academics/live-classes`} icon={<FilmIcon className="h-4 w-4" />} label="Live Classes" />}
+                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/integrations`} icon={<CogIcon className="h-4 w-4" />} label="Integrations" />}
             </CollapsibleNavSection>
         )}
         
@@ -270,9 +284,18 @@ const Sidebar: React.FC = () => {
         )}
 
         {hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="Fees" icon={<CreditCardIcon className="h-4 w-4" />}>
+            <CollapsibleNavSection title="Student Fees" icon={<CreditCardIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/fees`} icon={<CreditCardIcon className="h-4 w-4" />} label="Structures" />
                 <NavItem to={`/school/${siteId}/fees/payments`} icon={<ReceiptIcon className="h-4 w-4" />} label="Payments" />
+            </CollapsibleNavSection>
+        )}
+
+        {hasAnyScope(['finance:admin']) && (
+            <CollapsibleNavSection title="Finance" icon={<CurrencyDollarIcon className="h-4 w-4" />}>
+                <NavItem to={`/school/${siteId}/finance/dashboard`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
+                <NavItem to={`/school/${siteId}/finance/ledger`} icon={<TableIcon className="h-4 w-4" />} label="Ledger" />
+                <NavItem to={`/school/${siteId}/finance/config`} icon={<CogIcon className="h-4 w-4" />} label="Categories & Payees" />
+                <NavItem to={`/school/${siteId}/finance/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />
             </CollapsibleNavSection>
         )}
         
@@ -296,16 +319,6 @@ const Sidebar: React.FC = () => {
                 <NavItem to={`/school/${siteId}/hostel/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
             </CollapsibleNavSection>
         )}
-
-        {hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="Inventory" icon={<ArchiveBoxIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/inventory/items`} icon={<ArchiveBoxIcon className="h-4 w-4" />} label="Items" />
-                <NavItem to={`/school/${siteId}/inventory/stock`} icon={<ClipboardIcon className="h-4 w-4" />} label="Stock" />
-                <NavItem to={`/school/${siteId}/inventory/requests`} icon={<ClipboardIcon className="h-4 w-4" />} label="Requests" />
-                <NavItem to={`/school/${siteId}/inventory/suppliers`} icon={<UsersIcon className="h-4 w-4" />} label="Suppliers" />
-                <NavItem to={`/school/${siteId}/inventory/assets`} icon={<IdentificationIcon className="h-4 w-4" />} label="Assets" />
-            </CollapsibleNavSection>
-        )}
         
         {hasAnyScope(['school:admin']) && (
             <CollapsibleNavSection title="Transport" icon={<BusIcon className="h-4 w-4" />}>
@@ -315,33 +328,51 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['lms:admin', 'school:admin', 'student', 'homework:student', 'homework:parent']) && (
-             <CollapsibleNavSection title="LMS" icon={<LibraryIcon className="h-4 w-4" />}>
+        {hasAnyScope(['inventory:admin']) && (
+          <CollapsibleNavSection title="Inventory" icon={<ArchiveIcon className="h-4 w-4" />}>
+            <NavItem to={`/school/${siteId}/inventory/items`} icon={<BookIcon className="h-4 w-4" />} label="Items" />
+            <NavItem to={`/school/${siteId}/inventory/stock`} icon={<TableIcon className="h-4 w-4" />} label="Stock" />
+            <NavItem to={`/school/${siteId}/inventory/suppliers`} icon={<UsersIcon className="h-4 w-4" />} label="Suppliers" />
+            <NavItem to={`/school/${siteId}/inventory/requests`} icon={<ClipboardIcon className="h-4 w-4" />} label="Requests" />
+            <NavItem to={`/school/${siteId}/inventory/assets`} icon={<IdentificationIcon className="h-4 w-4" />} label="Assets" />
+          </CollapsibleNavSection>
+        )}
+
+        {hasAnyScope(['alumni:admin']) && (
+          <CollapsibleNavSection title="Alumni" icon={<UsersIcon className="h-4 w-4" />}>
+            <NavItem to={`/school/${siteId}/alumni/directory`} icon={<UsersIcon className="h-4 w-4" />} label="Directory" />
+            <NavItem to={`/school/${siteId}/alumni/events`} icon={<CalendarIcon className="h-4 w-4" />} label="Events" />
+            <NavItem to={`/school/${siteId}/alumni/donations`} icon={<GiftIcon className="h-4 w-4" />} label="Donations" />
+          </CollapsibleNavSection>
+        )}
+
+        {hasAnyScope(['lms:admin', 'school:admin', 'student', 'homework:student', 'homework:parent', 'alumni:portal:self']) && (
+             <CollapsibleNavSection title="LMS & Portals" icon={<LibraryIcon className="h-4 w-4" />}>
                 {hasAnyScope(['lms:admin']) && <NavItem to={`/school/${siteId}/courses`} icon={<LibraryIcon className="h-4 w-4" />} label="Courses" />}
                 {hasAnyScope(['school:admin', 'lms:admin', 'student']) && <NavItem to={`/school/${siteId}/library`} icon={<FilmIcon className="h-4 w-4" />} label="Digital Library" />}
                 {hasAnyScope(['school:admin', 'student']) && <NavItem to={`/school/${siteId}/library/catchup`} icon={<ClockIcon className="h-4 w-4" />} label="Catch-Up Classes" />}
                 {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="My Homework" />}
+                {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/live-classes`} icon={<FilmIcon className="h-4 w-4" />} label="My Live Classes" />}
                 {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/hostel`} icon={<OfficeBuildingIcon className="h-4 w-4" />} label="My Hostel" />}
                 {hasAnyScope(['homework:parent']) && <NavItem to={`/portal/${siteId}/parent/student/${user?.studentId || 's01'}/homework`} icon={<UsersIcon className="h-4 w-4" />} label="Parent Portal" />}
+                {hasAnyScope(['alumni:portal:self']) && <NavItem to={`/portal/${siteId}/alumni/${user?.alumniId || 'alum-s01'}`} icon={<UsersIcon className="h-4 w-4" />} label="Alumni Portal" />}
              </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['cms:admin', 'cms:edit']) && (
-             <CollapsibleNavSection title="Website CMS" icon={<GlobeAltIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/cms/pages`} icon={<ClipboardIcon className="h-4 w-4" />} label="Pages" />
-                <NavItem to={`/school/${siteId}/cms/menus`} icon={<TableIcon className="h-4 w-4" />} label="Menus" />
-                <NavItem to={`/school/${siteId}/cms/news`} icon={<BookIcon className="h-4 w-4" />} label="News & Events" />
-                <NavItem to={`/school/${siteId}/cms/media`} icon={<FilmIcon className="h-4 w-4" />} label="Media Library" />
-                <NavItem to={`/school/${siteId}/cms/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-             </CollapsibleNavSection>
+        {hasAnyScope(['cms:admin']) && (
+          <CollapsibleNavSection title="Website CMS" icon={<GlobeIcon className="h-4 w-4" />}>
+              <NavItem to={`/school/${siteId}/cms/pages`} icon={<BookIcon className="h-4 w-4" />} label="Pages" />
+              <NavItem to={`/school/${siteId}/cms/posts`} icon={<ClipboardIcon className="h-4 w-4" />} label="News & Events" />
+              <NavItem to={`/school/${siteId}/cms/menus`} icon={<TableIcon className="h-4 w-4" />} label="Menus" />
+              <NavItem to={`/school/${siteId}/cms/media`} icon={<FilmIcon className="h-4 w-4" />} label="Media Library" />
+              <NavItem to={`/school/${siteId}/cms/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
+          </CollapsibleNavSection>
         )}
-      
-        {hasAnyScope(['certificates:admin', 'certificates:issue']) && (
-             <CollapsibleNavSection title="Certificates & IDs" icon={<IdentificationIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/certificates/issues`} icon={<ClipboardIcon className="h-4 w-4" />} label="Manage Issues" />
-                <NavItem to={`/school/${siteId}/certificates/issue`} icon={<DownloadIcon className="h-4 w-4" />} label="Batch Issuance" />
-                <NavItem to={`/school/${siteId}/certificates/templates`} icon={<BookIcon className="h-4 w-4" />} label="Templates" />
-             </CollapsibleNavSection>
+
+        {hasAnyScope(['certificates:admin']) && (
+          <CollapsibleNavSection title="Certificates" icon={<IdentificationIcon className="h-4 w-4" />}>
+              <NavItem to={`/school/${siteId}/certificates`} icon={<ClipboardIcon className="h-4 w-4" />} label="Manage Issues" />
+          </CollapsibleNavSection>
         )}
 
         {hasAnyScope(['school:admin']) && (

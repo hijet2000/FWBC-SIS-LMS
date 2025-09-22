@@ -12,6 +12,11 @@ const MOCK_USER: User = {
     'school:admin',
     'admissions:admin',
     'frontoffice:admin',
+    'inventory:admin',
+    'cms:admin',
+    'certificates:admin',
+    'finance:admin',
+    'alumni:admin',
     'sis:students:read', 
     'sis:academics:read', 
     'sis:attendance:write', 
@@ -22,12 +27,7 @@ const MOCK_USER: User = {
     'lms:courses:write',
     'homework:teacher',
     'homework:student',
-    'homework:parent',
-    'cms:admin',
-    'cms:edit',
-    'cms:publish',
-    'certificates:admin',
-    'certificates:issue',
+    'homework:parent'
   ],
 };
 

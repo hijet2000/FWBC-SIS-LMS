@@ -1,4 +1,3 @@
-// FIX: Removed invalid CDATA wrapper.
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
@@ -23,6 +22,8 @@ import FeesPaymentsPage from './pages/FeesPaymentsPage';
 import ClassTimetablePage from './pages/academics/ClassTimetablePage';
 import TeacherTimetablePage from './pages/academics/TeacherTimetablePage';
 import PlannerPage from './pages/academics/PlannerPage';
+import LiveClassesPage from './pages/academics/LiveClassesPage';
+import IntegrationsPage from './pages/academics/IntegrationsPage';
 
 // Homework Pages
 import HomeworkListPage from './pages/homework/HomeworkListPage';
@@ -82,33 +83,60 @@ import ParentHostelPage from './pages/portal/ParentHostelPage';
 // Inventory Pages
 import ItemsPage from './pages/inventory/ItemsPage';
 import StockPage from './pages/inventory/StockPage';
-import RequestsPage from './pages/inventory/RequestsPage';
 import SuppliersPage from './pages/inventory/SuppliersPage';
+import RequestsPage from './pages/inventory/RequestsPage';
 import AssetsPage from './pages/inventory/AssetsPage';
+
+// Finance Pages
+import FinanceDashboardPage from './pages/finance/FinanceDashboardPage';
+import LedgerPage from './pages/finance/LedgerPage';
+import CategoriesAndPayeesPage from './pages/finance/CategoriesAndPayeesPage';
+import FinanceReportsPage from './pages/finance/FinanceReportsPage';
+
+// CMS Pages
+import PagesListPage from './pages/cms/PagesListPage';
+import PageEditorPage from './pages/cms/PageEditorPage';
+import MenuManagerPage from './pages/cms/MenuManagerPage';
+import PostsListPage from './pages/cms/PostsListPage';
+import PostEditorPage from './pages/cms/PostEditorPage';
+import MediaLibraryPage from './pages/cms/MediaLibraryPage';
+import CmsSettingsPage from './pages/cms/CmsSettingsPage';
+
+// Certificates Pages
+import ManageIssuesPage from './pages/certificates/ManageIssuesPage';
 
 // Admin Pages
 import AuditTrailPage from './pages/admin/AuditTrailPage';
 import UserActivityPage from './pages/admin/UserActivityPage';
 
-// CMS Pages
-import PagesListPage from './pages/cms/PagesListPage';
-import PageEditorPage from './pages/cms/PageEditorPage';
-
-// Certificates Pages
-import ManageIssuesPage from './pages/certificates/ManageIssuesPage';
-import PublicVerifyPage from './pages/public/PublicVerifyPage';
-
-// Public Pages
-import ApplyPage from './pages/public/ApplyPage';
-import StatusPage from './pages/public/StatusPage';
-import PublicLayout from './pages/public/PublicLayout';
-import PublicPage from './pages/public/PublicPage';
-
+// Student Pages
+import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
 
 // Parent Portal Pages
 import ParentLayout from './components/portal/ParentLayout';
 import ParentHomeworkPage from './pages/portal/ParentHomeworkPage';
 import ParentLibraryPage from './pages/portal/ParentLibraryPage';
+import ParentLiveClassesPage from './pages/portal/ParentLiveClassesPage';
+
+// Alumni Pages
+import AlumniLayout from './components/portal/AlumniLayout';
+import AlumniDirectoryPage from './pages/alumni/AlumniDirectoryPage';
+import AlumniEventsPage from './pages/alumni/AlumniEventsPage';
+import AlumniDonationsPage from './pages/alumni/AlumniDonationsPage';
+import AlumniProfilePage from './pages/alumni/AlumniProfilePage';
+import AlumniPortalDirectoryPage from './pages/alumni/AlumniPortalDirectoryPage';
+import AlumniPortalEventsPage from './pages/alumni/AlumniPortalEventsPage';
+import AlumniDonatePage from './pages/alumni/AlumniDonatePage';
+
+// Public Pages
+import PublicLayout from './pages/public/PublicLayout';
+import PublicPage from './pages/public/PublicPage';
+import PostListPage from './pages/public/PostListPage';
+import PostDetailPage from './pages/public/PostDetailPage';
+import PublicVerifyPage from './pages/public/PublicVerifyPage';
+import ApplyPage from './pages/public/ApplyPage';
+import StatusPage from './pages/public/StatusPage';
+
 
 import RequireScope from './components/auth/RequireScope';
 
@@ -122,20 +150,20 @@ function App() {
             <React.Suspense fallback={<Spinner />}>
               <Routes>
                 <Route path="/" element={<Navigate to="/fwbc" replace />} />
-                
+
                 {/* Public Website Routes */}
                 <Route path="/:siteSlug" element={<PublicLayout />}>
                   <Route index element={<PublicPage isHomepage />} />
                   <Route path="p/:pageSlug" element={<PublicPage />} />
-                  {/* News & Events would go here */}
+                  <Route path="news" element={<PostListPage postType="News" />} />
+                  <Route path="news/:postSlug" element={<PostDetailPage />} />
+                  <Route path="events" element={<PostListPage postType="Event" />} />
+                  <Route path="events/:postSlug" element={<PostDetailPage />} />
                 </Route>
-
-                {/* Public Application Routes */}
+                <Route path="/verify/:serial" element={<PublicVerifyPage />} />
                 <Route path="/apply/:siteId" element={<ApplyPage />} />
                 <Route path="/apply/:siteId/status" element={<StatusPage />} />
-                
-                {/* Public Certificate Verification */}
-                <Route path="/verify/:serial" element={<PublicVerifyPage />} />
+
 
                 {/* Parent Portal Routes */}
                 <Route path="/portal/:siteId/parent/student/:studentId" element={<ParentLayout />}>
@@ -143,7 +171,18 @@ function App() {
                   <Route path="homework" element={<RequireScope requiredScopes={['homework:parent']}><ParentHomeworkPage /></RequireScope>} />
                   <Route path="library" element={<RequireScope requiredScopes={['homework:parent']}><ParentLibraryPage /></RequireScope>} />
                   <Route path="hostel" element={<RequireScope requiredScopes={['homework:parent']}><ParentHostelPage /></RequireScope>} />
+                  <Route path="live-classes" element={<RequireScope requiredScopes={['homework:parent']}><ParentLiveClassesPage /></RequireScope>} />
                 </Route>
+
+                {/* Alumni Portal Routes */}
+                <Route path="/portal/:siteId/alumni/:alumniId" element={<AlumniLayout />}>
+                    <Route index element={<Navigate to="profile" replace />} />
+                    <Route path="profile" element={<RequireScope requiredScopes={['alumni:portal:self']}><AlumniProfilePage /></RequireScope>} />
+                    <Route path="directory" element={<RequireScope requiredScopes={['alumni:portal:self']}><AlumniPortalDirectoryPage /></RequireScope>} />
+                    <Route path="events" element={<RequireScope requiredScopes={['alumni:portal:self']}><AlumniPortalEventsPage /></RequireScope>} />
+                    <Route path="donate" element={<RequireScope requiredScopes={['alumni:portal:self']}><AlumniDonatePage /></RequireScope>} />
+                </Route>
+
 
                 {/* Staff Routes */}
                 <Route path="/school/:siteId" element={<Layout />}>
@@ -161,6 +200,10 @@ function App() {
                   <Route path="academics/timetable/class" element={<RequireScope requiredScopes={['school:admin']}><ClassTimetablePage /></RequireScope>} />
                   <Route path="academics/timetable/teacher" element={<RequireScope requiredScopes={['school:admin']}><TeacherTimetablePage /></RequireScope>} />
 
+                  {/* Live Classes Sub-module */}
+                  <Route path="academics/live-classes" element={<RequireScope requiredScopes={['school:admin', 'homework:teacher']}><LiveClassesPage /></RequireScope>} />
+                  <Route path="academics/integrations" element={<RequireScope requiredScopes={['school:admin']}><IntegrationsPage /></RequireScope>} />
+
                   {/* Homework Module Routes (Teacher) */}
                   <Route path="homework" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkListPage /></RequireScope>} />
                   <Route path="homework/reports" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkReportsPage /></RequireScope>} />
@@ -171,6 +214,7 @@ function App() {
                   <Route path="student/homework" element={<RequireScope requiredScopes={['homework:student']}><StudentHomeworkPage /></RequireScope>} />
                   <Route path="student/homework/:homeworkId" element={<RequireScope requiredScopes={['homework:student']}><StudentSubmissionPage /></RequireScope>} />
                   <Route path="student/hostel" element={<RequireScope requiredScopes={['homework:student']}><StudentHostelPage /></RequireScope>} />
+                  <Route path="student/live-classes" element={<RequireScope requiredScopes={['homework:student']}><StudentLiveClassesPage /></RequireScope>} />
 
                   {/* Admissions Module Routes */}
                   <Route path="admissions" element={<RequireScope requiredScopes={['admissions:admin']}><AdmissionsDashboard /></RequireScope>} />
@@ -210,8 +254,16 @@ function App() {
                   <Route path="library/catchup" element={<RequireScope requiredScopes={['school:admin', 'student']}><CatchUpListPage /></RequireScope>} />
                   <Route path="library/catchup/view/:contentId" element={<RequireScope requiredScopes={['school:admin', 'student']}><CatchUpViewerPage /></RequireScope>} />
 
+                  {/* Fees Module Routes */}
                   <Route path="fees" element={<RequireScope requiredScopes={['school:admin']}><FeesPage /></RequireScope>} />
                   <Route path="fees/payments" element={<RequireScope requiredScopes={['school:admin']}><FeesPaymentsPage /></RequireScope>} />
+
+                  {/* Finance Module Routes */}
+                  <Route path="finance" element={<RequireScope requiredScopes={['finance:admin']}><Navigate to="dashboard" replace /></RequireScope>} />
+                  <Route path="finance/dashboard" element={<RequireScope requiredScopes={['finance:admin']}><FinanceDashboardPage /></RequireScope>} />
+                  <Route path="finance/ledger" element={<RequireScope requiredScopes={['finance:admin']}><LedgerPage /></RequireScope>} />
+                  <Route path="finance/config" element={<RequireScope requiredScopes={['finance:admin']}><CategoriesAndPayeesPage /></RequireScope>} />
+                  <Route path="finance/reports" element={<RequireScope requiredScopes={['finance:admin']}><FinanceReportsPage /></RequireScope>} />
 
                   {/* Hostel Module Routes */}
                   <Route path="hostel" element={<RequireScope requiredScopes={['sis:hostel:write']}><HostelDashboardPage /></RequireScope>} />
@@ -221,34 +273,40 @@ function App() {
                   <Route path="hostel/curfew" element={<RequireScope requiredScopes={['sis:hostel:write']}><CurfewPage /></RequireScope>} />
                   <Route path="hostel/settings" element={<RequireScope requiredScopes={['sis:hostel:write']}><SettingsPage /></RequireScope>} />
                   
-                  {/* Inventory Module Routes */}
-                  <Route path="inventory/items" element={<RequireScope requiredScopes={['school:admin']}><ItemsPage /></RequireScope>} />
-                  <Route path="inventory/stock" element={<RequireScope requiredScopes={['school:admin']}><StockPage /></RequireScope>} />
-                  <Route path="inventory/requests" element={<RequireScope requiredScopes={['school:admin']}><RequestsPage /></RequireScope>} />
-                  <Route path="inventory/suppliers" element={<RequireScope requiredScopes={['school:admin']}><SuppliersPage /></RequireScope>} />
-                  <Route path="inventory/assets" element={<RequireScope requiredScopes={['school:admin']}><AssetsPage /></RequireScope>} />
-
-
                   {/* Transport Module Routes */}
                   <Route path="transport" element={<RequireScope requiredScopes={['school:admin']}><Navigate to="vehicles" replace /></RequireScope>} />
                   <Route path="transport/vehicles" element={<RequireScope requiredScopes={['school:admin']}><VehiclesPage /></RequireScope>} />
                   <Route path="transport/trips" element={<RequireScope requiredScopes={['school:admin']}><TripsPage /></RequireScope>} />
                   <Route path="transport/boarding" element={<RequireScope requiredScopes={['school:admin']}><BoardingPage /></RequireScope>} />
+
+                  {/* Inventory Module Routes */}
+                  <Route path="inventory" element={<RequireScope requiredScopes={['inventory:admin']}><Navigate to="items" replace /></RequireScope>} />
+                  <Route path="inventory/items" element={<RequireScope requiredScopes={['inventory:admin']}><ItemsPage /></RequireScope>} />
+                  <Route path="inventory/stock" element={<RequireScope requiredScopes={['inventory:admin']}><StockPage /></RequireScope>} />
+                  <Route path="inventory/suppliers" element={<RequireScope requiredScopes={['inventory:admin']}><SuppliersPage /></RequireScope>} />
+                  <Route path="inventory/requests" element={<RequireScope requiredScopes={['inventory:admin']}><RequestsPage /></RequireScope>} />
+                  <Route path="inventory/assets" element={<RequireScope requiredScopes={['inventory:admin']}><AssetsPage /></RequireScope>} />
                   
-                  {/* Website CMS Module Routes */}
-                  <Route path="cms/pages" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PagesListPage /></RequireScope>} />
-                  <Route path="cms/pages/edit/:pageId" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PageEditorPage /></RequireScope>} />
-                  <Route path="cms/pages/new" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PageEditorPage /></RequireScope>} />
-                  <Route path="cms/menus" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PlaceholderPage title="Menu Manager" /></RequireScope>} />
-                  <Route path="cms/news" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PlaceholderPage title="News & Announcements" /></RequireScope>} />
-                  <Route path="cms/events" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PlaceholderPage title="Events Calendar" /></RequireScope>} />
-                  <Route path="cms/media" element={<RequireScope requiredScopes={['cms:admin', 'cms:edit']}><PlaceholderPage title="Media Library" /></RequireScope>} />
-                  <Route path="cms/settings" element={<RequireScope requiredScopes={['cms:admin']}><PlaceholderPage title="Website Settings" /></RequireScope>} />
+                  {/* CMS Module Routes */}
+                  <Route path="cms" element={<RequireScope requiredScopes={['cms:admin']}><Navigate to="pages" replace /></RequireScope>} />
+                  <Route path="cms/pages" element={<RequireScope requiredScopes={['cms:admin']}><PagesListPage /></RequireScope>} />
+                  <Route path="cms/pages/new" element={<RequireScope requiredScopes={['cms:admin']}><PageEditorPage /></RequireScope>} />
+                  <Route path="cms/pages/edit/:pageId" element={<RequireScope requiredScopes={['cms:admin']}><PageEditorPage /></RequireScope>} />
+                  <Route path="cms/posts" element={<RequireScope requiredScopes={['cms:admin']}><PostsListPage /></RequireScope>} />
+                  <Route path="cms/posts/new" element={<RequireScope requiredScopes={['cms:admin']}><PostEditorPage /></RequireScope>} />
+                  <Route path="cms/posts/edit/:postId" element={<RequireScope requiredScopes={['cms:admin']}><PostEditorPage /></RequireScope>} />
+                  <Route path="cms/menus" element={<RequireScope requiredScopes={['cms:admin']}><MenuManagerPage /></RequireScope>} />
+                  <Route path="cms/media" element={<RequireScope requiredScopes={['cms:admin']}><MediaLibraryPage /></RequireScope>} />
+                  <Route path="cms/settings" element={<RequireScope requiredScopes={['cms:admin']}><CmsSettingsPage /></RequireScope>} />
                   
                   {/* Certificates Module Routes */}
-                  <Route path="certificates/issues" element={<RequireScope requiredScopes={['certificates:admin']}><ManageIssuesPage /></RequireScope>} />
-                  <Route path="certificates/issue" element={<RequireScope requiredScopes={['certificates:issue']}><PlaceholderPage title="Batch Issuance" /></RequireScope>} />
-                  <Route path="certificates/templates" element={<RequireScope requiredScopes={['certificates:admin']}><PlaceholderPage title="Template Designer" /></RequireScope>} />
+                  <Route path="certificates" element={<RequireScope requiredScopes={['certificates:admin']}><ManageIssuesPage /></RequireScope>} />
+                  
+                  {/* Alumni Module Routes */}
+                  <Route path="alumni" element={<RequireScope requiredScopes={['alumni:admin']}><Navigate to="directory" replace /></RequireScope>} />
+                  <Route path="alumni/directory" element={<RequireScope requiredScopes={['alumni:admin']}><AlumniDirectoryPage /></RequireScope>} />
+                  <Route path="alumni/events" element={<RequireScope requiredScopes={['alumni:admin']}><AlumniEventsPage /></RequireScope>} />
+                  <Route path="alumni/donations" element={<RequireScope requiredScopes={['alumni:admin']}><AlumniDonationsPage /></RequireScope>} />
 
                   {/* Admin Module Routes */}
                   <Route path="admin/audit" element={<RequireScope requiredScopes={['school:admin']}><AuditTrailPage /></RequireScope>} />

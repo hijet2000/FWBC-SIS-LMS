@@ -1,4 +1,4 @@
-import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer } from '../types';
+import type { CatchupItem, WatchProgress, CatchupPolicy, QuizQuestion, QuizAnswer, LiveClass } from '../types';
 import { listSubjects } from './academicsService';
 
 // --- MOCK DATA STORE ---
@@ -123,4 +123,24 @@ export const saveCatchupAttendance = async (siteId: string, contentId: string, s
     await delay(400);
     console.log(`%c[Mock Attendance] Catch-up for ${studentId} on ${contentId} marked as complete.`, "color: green; font-weight: bold;", details);
     return;
+};
+
+export const createCatchupFromLiveClass = async (liveClass: LiveClass, recordedUrl: string): Promise<CatchupItem> => {
+    await delay(500);
+    const newCatchup: CatchupItem = {
+        id: `cu-${liveClass.id}`,
+        title: `Recording: ${liveClass.topic}`,
+        subjectId: liveClass.subjectId,
+        classId: liveClass.classId,
+        kind: 'VIDEO',
+        url: recordedUrl,
+        durationSec: liveClass.durationMinutes * 60,
+        teacherId: liveClass.teacherId,
+        publishedAt: new Date(liveClass.startTime).toISOString().split('T')[0],
+    };
+    // Avoid duplicates
+    if (!MOCK_CATCHUP_ITEMS.some(item => item.id === newCatchup.id)) {
+        MOCK_CATCHUP_ITEMS.unshift(newCatchup);
+    }
+    return newCatchup;
 };

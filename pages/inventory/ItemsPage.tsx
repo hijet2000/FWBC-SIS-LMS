@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -138,7 +137,7 @@ const ItemsPage: React.FC = () => {
                 </table>
             </div>
 
-            {isModalOpen && user && (
+            {user && (
                 <ItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSaveSuccess={handleSaveSuccess} initialData={editingItem} actor={user} categories={categories} />
             )}
         </div>

@@ -6,9 +6,10 @@ interface PageBlockProps {
     onUpdate: (id: string, content: any) => void;
     onDelete: (id: string) => void;
     onMove: (id: string, direction: 'up' | 'down') => void;
+    onSelectMedia: (blockId: string) => void;
 }
 
-const PageBlockComponent: React.FC<PageBlockProps> = ({ block, onUpdate, onDelete, onMove }) => {
+const PageBlockComponent: React.FC<PageBlockProps> = ({ block, onUpdate, onDelete, onMove, onSelectMedia }) => {
     const renderBlockContent = () => {
         switch (block.type) {
             case 'text':
@@ -23,18 +24,23 @@ const PageBlockComponent: React.FC<PageBlockProps> = ({ block, onUpdate, onDelet
                 );
             case 'image':
                  return (
-                    <div className="flex gap-2 items-center">
-                        <input
-                            value={block.content.mediaId}
-                            onChange={(e) => onUpdate(block.id, { ...block.content, mediaId: e.target.value })}
-                            placeholder="Media ID (e.g., media-1)"
-                            className="flex-grow p-2 border rounded-md"
-                        />
-                        <input
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <input
+                                value={block.content.mediaId}
+                                onChange={(e) => onUpdate(block.id, { ...block.content, mediaId: e.target.value })}
+                                placeholder="Media ID (e.g., media-1)"
+                                className="flex-grow p-2 border rounded-md"
+                            />
+                             <button type="button" onClick={() => onSelectMedia(block.id)} className="px-3 py-2 text-sm bg-gray-100 border rounded-md hover:bg-gray-200">
+                                Select from Library
+                            </button>
+                        </div>
+                         <input
                             value={block.content.caption}
                             onChange={(e) => onUpdate(block.id, { ...block.content, caption: e.target.value })}
                             placeholder="Caption"
-                            className="flex-grow p-2 border rounded-md"
+                            className="w-full p-2 border rounded-md"
                         />
                      </div>
                 );

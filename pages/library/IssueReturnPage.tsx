@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as libraryService from '../../lib/libraryService';
@@ -36,7 +36,7 @@ const IssueReturnPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     
     const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
-    const [overrideAction, setOverrideAction] = useState<(() => void) | null>(null);
+    const [overrideAction, setOverrideAction] = useState<{ action: () => void } | null>(null);
     const [overrideReasonText, setOverrideReasonText] = useState('');
 
     useEffect(() => {
@@ -73,7 +73,7 @@ const IssueReturnPage: React.FC = () => {
         } catch (err: any) {
             if (err.message.includes('Policy Violation') && !overrideReason) {
                 setOverrideReasonText(err.message);
-                setOverrideAction(() => () => handleIssue('Override reason provided'));
+                setOverrideAction({ action: () => handleIssue('Override reason provided') });
                 setIsOverrideModalOpen(true);
             } else {
                 addToast(err.message || 'Failed to issue book.', 'error');
@@ -95,7 +95,26 @@ const IssueReturnPage: React.FC = () => {
         }
     };
 
-    const action = details?.copy?.status === 'Available' ? 'issue' : details?.loan ? 'return' : null;
+    const handleRenew = async (overrideReason?: string) => {
+        if (!user || !details?.loan) return;
+        try {
+            await libraryService.renewBook(details.loan.id, user, overrideReason);
+            addToast('Book renewed successfully!', 'success');
+            resetForm();
+        } catch (err: any) {
+            if (err.message.includes('Policy Violation') && !overrideReason) {
+                setOverrideReasonText(err.message);
+                setOverrideAction({ action: () => handleRenew('Override reason provided') });
+                setIsOverrideModalOpen(true);
+            } else {
+                addToast(err.message || 'Failed to renew book.', 'error');
+            }
+        }
+    };
+
+    const canIssue = details?.member && details.copy?.status === 'Available';
+    const canReturn = details?.copy?.status === 'On Loan';
+    const canRenew = canReturn && !!details.member && details.loan?.memberId === details.member.id;
 
     return (
         <div className="space-y-6">
@@ -124,7 +143,7 @@ const IssueReturnPage: React.FC = () => {
                                 <p><strong>Title:</strong> {details.book.title}</p>
                                 <p><strong>Author:</strong> {details.book.author}</p>
                                 <p><strong>Status:</strong> <span className="font-bold">{details.copy?.status}</span></p>
-                                {details.loan && <p className="text-red-600">On loan to another member.</p>}
+                                {details.loan && !canRenew && <p className="text-red-600">On loan to another member.</p>}
                             </>
                         ) : <p className="text-gray-500">Scan book barcode.</p>}
                     </InfoCard>
@@ -141,15 +160,23 @@ const IssueReturnPage: React.FC = () => {
                         )}
                         
                         <div className="mt-4 flex flex-col gap-4">
-                            {action === 'issue' && <button onClick={() => handleIssue()} disabled={!details.member || details.policyViolations.length > 0} className="w-full p-4 text-xl font-bold text-white bg-green-600 rounded-md disabled:bg-gray-400">ISSUE BOOK</button>}
-                            {action === 'return' && <button onClick={() => handleReturn()} disabled={!details.loan} className="w-full p-4 text-xl font-bold text-white bg-blue-600 rounded-md disabled:bg-gray-400">RETURN BOOK</button>}
+                            {canIssue && <button onClick={() => handleIssue()} disabled={details.policyViolations.length > 0} className="w-full p-4 text-xl font-bold text-white bg-green-600 rounded-md disabled:bg-gray-400">ISSUE BOOK</button>}
+                            
+                            {canReturn && !canRenew && <button onClick={() => handleReturn()} className="w-full p-4 text-xl font-bold text-white bg-blue-600 rounded-md">RETURN BOOK</button>}
 
-                            {details?.policyViolations.length > 0 && (
-                                <button onClick={() => handleIssue()} className="w-full p-2 text-sm text-white bg-red-600 rounded-md">Manual Override</button>
+                            {canRenew && (
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <button onClick={() => handleReturn()} className="flex-1 p-4 text-xl font-bold text-white bg-blue-600 rounded-md">RETURN</button>
+                                    <button onClick={() => handleRenew()} className="flex-1 p-4 text-xl font-bold text-white bg-purple-600 rounded-md">RENEW</button>
+                                </div>
+                            )}
+
+                            {canIssue && details.policyViolations.length > 0 && (
+                                <button onClick={() => handleIssue()} className="w-full p-2 text-sm text-white bg-red-600 rounded-md">Manual Override & Issue</button>
                             )}
                         </div>
 
-                        {!action && details && <p className="text-center text-gray-500 p-8">No valid action. The book may be unavailable or not on loan.</p>}
+                        {!canIssue && !canReturn && debouncedBookBarcode && <p className="text-center text-gray-500 p-8">No valid action. The book may be unavailable or not on loan.</p>}
                     </InfoCard>
                 </div>
             </div>
@@ -159,7 +186,7 @@ const IssueReturnPage: React.FC = () => {
                 onClose={() => setIsOverrideModalOpen(false)}
                 onConfirm={(reason) => {
                     if (overrideAction) {
-                        overrideAction();
+                        overrideAction.action();
                     }
                     setIsOverrideModalOpen(false);
                 }}

@@ -3,7 +3,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as hostelService from '../../lib/hostelService';
 import { exportToCsv } from '../../lib/exporters';
-import type { CurfewRecord, CurfewSettings, CurfewStatus, HostelWithRoomsAndBeds, Student, User } from '../../types';
+import type { CurfewRecord, CurfewSettings, CurfewStatus, HostelWithRoomsAndBeds, Student } from '../../types';
 
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
@@ -130,7 +130,6 @@ const CurfewPage: React.FC = () => {
                             <div key={room.id} className="p-3 border-b last:border-0">
                                 <h3 className="font-medium">Room {room.roomNumber}</h3>
                                 {(boardersByRoom.get(room.id) || []).map(student => {
-                                    // FIX: Provide a default object that includes the `notes` property to satisfy the type checker.
                                     const record = records.get(student.id) || { status: 'In' as CurfewStatus, notes: '' };
                                     return (
                                     <div key={student.id} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center py-2">

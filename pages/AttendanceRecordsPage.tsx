@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // FIX: Import export functions from attendanceService, not transportService.
@@ -155,35 +157,27 @@ const AttendanceRecordsPage: React.FC = () => {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Student</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Class</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Class</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Minutes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {loading ? (
-                                        [...Array(5)].map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6"><div className="h-4 bg-gray-200 rounded w-3/4"></div></td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm"><div className="h-4 bg-gray-200 rounded w-1/2"></div></td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm"><div className="h-4 bg-gray-200 rounded w-1/4"></div></td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm"><div className="h-4 bg-gray-200 rounded w-1/2"></div></td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm"><div className="h-4 bg-gray-200 rounded w-1/4"></div></td>
-                                        </tr>
-                                        ))
+                                        <tr><td colSpan={5} className="p-4 text-center">Loading records...</td></tr>
                                     ) : error ? (
-                                        <tr><td colSpan={5} className="py-8 text-center text-red-600">{error}</td></tr>
+                                        <tr><td colSpan={5} className="p-4 text-center text-red-500">{error}</td></tr>
                                     ) : recordsWithNames.length === 0 ? (
-                                         <tr><td colSpan={5} className="py-8 text-center text-gray-500">No records found for the selected filters.</td></tr>
+                                        <tr><td colSpan={5} className="p-4 text-center">No records found for the selected filters.</td></tr>
                                     ) : (
-                                        recordsWithNames.map(rec => (
-                                            <tr key={rec.id}>
-                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{rec.studentName}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{rec.date}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{rec.status}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{rec.className}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{rec.minutesAttended ?? 'N/A'}</td>
+                                        recordsWithNames.map(record => (
+                                            <tr key={record.id}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{record.studentName}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.className}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.date}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.status}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.minutesAttended ?? 'N/A'}</td>
                                             </tr>
                                         ))
                                     )}

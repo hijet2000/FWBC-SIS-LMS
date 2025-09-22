@@ -1,3 +1,4 @@
+
 import type { Hostel, HostelType, Room, Bed, BedStatus, User, HostelDashboardSummary, Allocation, AllocationStatus, HostelVisitor, Curfew, CurfewRecord, CurfewSettings, CurfewStatus, Student, HostelSettings } from '../types';
 import { getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';

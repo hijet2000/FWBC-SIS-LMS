@@ -58,8 +58,8 @@ const AuditTrailPage: React.FC = () => {
         }, { replace: true });
     };
 
-    const modules: AuditModule[] = ['STUDENTS', 'ATTENDANCE', 'ACADEMICS', 'FEES', 'AUTH', 'SYSTEM', 'TRANSPORT'];
-    const actions: AuditAction[] = ['CREATE', 'UPDATE', 'DELETE', 'PAYMENT', 'LOGIN', 'LOGOUT', 'ROLE_CHANGE'];
+    const modules: AuditModule[] = ['STUDENTS', 'ATTENDANCE', 'ACADEMICS', 'FEES', 'AUTH', 'SYSTEM', 'TRANSPORT', 'LIBRARY', 'HOSTEL'];
+    const actions: AuditAction[] = ['CREATE', 'UPDATE', 'DELETE', 'PAYMENT', 'LOGIN', 'LOGOUT', 'ROLE_CHANGE', 'ISSUE', 'RETURN', 'RENEW'];
 
     return (
         <div className="space-y-6">

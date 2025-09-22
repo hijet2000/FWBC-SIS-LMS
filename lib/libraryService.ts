@@ -334,6 +334,45 @@ export const returnBook = async (loanId: string, actor: User, overrideReason?: s
     return loan;
 };
 
+export const renewBook = async (loanId: string, actor: User, overrideReason?: string): Promise<Loan> => {
+    await delay(500);
+    const loan = MOCK_LOANS.find(l => l.id === loanId);
+    if (!loan || loan.returnedAt) throw new Error("Invalid loan for renewal.");
+
+    const settings = await getLibrarySettings();
+    const renewals = loan.renewals || 0;
+
+    if (renewals >= settings.loanPolicy.maxRenewals && !overrideReason) {
+        throw new Error(`Policy Violation: Maximum number of renewals (${settings.loanPolicy.maxRenewals}) reached.`);
+    }
+
+    const before = { ...loan };
+
+    const newDueDate = new Date(loan.dueAt);
+    newDueDate.setDate(newDueDate.getDate() + settings.loanPolicy.loanDays);
+
+    loan.dueAt = newDueDate.toISOString();
+    loan.renewals = renewals + 1;
+
+    const copy = MOCK_COPIES.find(c => c.id === loan.copyId);
+
+    logAuditEvent({
+        actorId: actor.id,
+        actorName: actor.name,
+        action: 'RENEW',
+        module: 'LIBRARY',
+        entityType: 'Loan',
+        entityId: loan.id,
+        entityDisplay: `Loan of ${copy?.barcode}`,
+        before,
+        after: loan,
+        meta: { overrideReason }
+    });
+
+    return loan;
+};
+
+
 // --- Settings API ---
 export const getLibrarySettings = async (): Promise<LibrarySettings> => {
     await delay(400);

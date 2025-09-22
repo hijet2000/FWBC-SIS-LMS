@@ -3,7 +3,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as hostelService from '../../lib/hostelService';
 import * as schoolService from '../../lib/schoolService';
-import type { Allocation, Student, Hostel } from '../../types';
+import type { Allocation, Student } from '../../types';
 import AllocationModal from '../../components/hostel/AllocationModal';
 import CheckOutModal from '../../components/hostel/CheckOutModal';
 

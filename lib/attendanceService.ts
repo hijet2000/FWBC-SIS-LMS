@@ -1,3 +1,4 @@
+
 import type { AttendanceRecord, WeeklyEmailSettings, SchoolClass, Student, AttendanceStatus, AttendanceEntry } from '../types';
 import { getClasses, getStudents } from './schoolService';
 import { logAuditEvent } from './auditService';

@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import type { InventoryItem, User, ItemUnit } from '../../types';
 import * as inventoryService from '../../lib/inventoryService';

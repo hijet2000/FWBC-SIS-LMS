@@ -13,11 +13,12 @@ const PRESETS = {
             'homework:teacher', 'homework:student', 'homework:parent'
         ]
     },
-    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin', 'homework:teacher', 'admissions:admin', 'frontoffice:admin', 'sis:library:write', 'sis:hostel:write'] },
+    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin', 'homework:teacher', 'admissions:admin', 'frontoffice:admin', 'sis:library:write', 'sis:hostel:write', 'alumni:admin'] },
     sis: { name: 'SIS-Only Admin', scopes: ['school:admin', 'homework:teacher'] },
     lms: { name: 'LMS-Only Admin', scopes: ['lms:admin'] },
     student: { name: 'Student', scopes: ['student', 'homework:student'] },
     parent: { name: 'Parent', scopes: ['homework:parent'], studentId: 's01' },
+    alumnus: { name: 'Alumnus', scopes: ['alumni:portal:self'], alumniId: 's01' },
 };
 
 const ScopeSwitcher: React.FC = () => {
@@ -46,7 +47,12 @@ const ScopeSwitcher: React.FC = () => {
             newUserState = originalUser;
         } else {
              const newScopes = preset.scopes;
-             newUserState = { ...user, scopes: newScopes, studentId: (preset as any).studentId };
+             newUserState = { 
+                 ...user, 
+                 scopes: newScopes, 
+                 studentId: (preset as any).studentId,
+                 alumniId: (preset as any).alumniId 
+            };
         }
         
         setUser(newUserState);
@@ -93,6 +99,7 @@ const ScopeSwitcher: React.FC = () => {
                 <option value="lms">{PRESETS.lms.name}</option>
                 <option value="student">{PRESETS.student.name}</option>
                 <option value="parent">{PRESETS.parent.name}</option>
+                <option value="alumnus">{PRESETS.alumnus.name}</option>
                 {currentPresetKey === 'custom' && <option value="custom" disabled>Custom</option>}
             </select>
         </div>

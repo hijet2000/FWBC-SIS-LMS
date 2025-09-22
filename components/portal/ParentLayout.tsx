@@ -9,6 +9,7 @@ const ParentLayout: React.FC = () => {
         { name: 'Homework', href: `/portal/${siteId}/parent/student/${studentId}/homework` },
         { name: 'Library', href: `/portal/${siteId}/parent/student/${studentId}/library` },
         { name: 'Hostel', href: `/portal/${siteId}/parent/student/${studentId}/hostel` },
+        { name: 'Live Classes', href: `/portal/${siteId}/parent/student/${studentId}/live-classes` },
     ];
 
     const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
