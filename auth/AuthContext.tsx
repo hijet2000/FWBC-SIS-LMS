@@ -16,10 +16,18 @@ const MOCK_USER: User = {
     'sis:academics:read', 
     'sis:attendance:write', 
     'sis:library:read',
+    'sis:library:write',
+    'sis:hostel:write',
     'lms:admin', 
     'lms:courses:write',
     'homework:teacher',
-    'homework:student'
+    'homework:student',
+    'homework:parent',
+    'cms:admin',
+    'cms:edit',
+    'cms:publish',
+    'certificates:admin',
+    'certificates:issue',
   ],
 };
 

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Application, ApplicationStatus } from '../../types';
 
-// FIX: Add 'Approved' to the list of Kanban columns to match the updated ApplicationStatus type.
 const columns: ApplicationStatus[] = ['New', 'Screening', 'DocsMissing', 'Interview', 'Offer', 'Accepted', 'Approved', 'Rejected', 'Waitlist', 'Withdrawn'];
 
 const statusStyles: Record<ApplicationStatus, { bg: string, text: string }> = {

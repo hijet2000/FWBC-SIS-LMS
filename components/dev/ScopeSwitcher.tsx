@@ -10,13 +10,14 @@ const PRESETS = {
             'sis:admin', 'school:admin', 'sis:students:read', 
             'sis:academics:read', 'sis:attendance:write', 
             'sis:library:read', 'lms:admin', 'lms:courses:write',
-            'homework:teacher', 'homework:student'
+            'homework:teacher', 'homework:student', 'homework:parent'
         ]
     },
-    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin', 'homework:teacher'] },
+    full: { name: 'Full Admin', scopes: ['school:admin', 'lms:admin', 'homework:teacher', 'admissions:admin', 'frontoffice:admin', 'sis:library:write', 'sis:hostel:write'] },
     sis: { name: 'SIS-Only Admin', scopes: ['school:admin', 'homework:teacher'] },
     lms: { name: 'LMS-Only Admin', scopes: ['lms:admin'] },
     student: { name: 'Student', scopes: ['student', 'homework:student'] },
+    parent: { name: 'Parent', scopes: ['homework:parent'], studentId: 's01' },
 };
 
 const ScopeSwitcher: React.FC = () => {
@@ -28,7 +29,7 @@ const ScopeSwitcher: React.FC = () => {
         if (user && !originalUser) {
             setOriginalUser(user);
             // Show switcher only if the original logged-in user is an admin
-            if (user.scopes.includes('school:admin') || user.scopes.includes('lms:admin')) {
+            if (user.scopes.some(s => s.includes('admin'))) {
                 setIsInitialAdmin(true);
             }
         }
@@ -39,12 +40,13 @@ const ScopeSwitcher: React.FC = () => {
 
         const oldScopes = user.scopes;
         let newUserState: User;
+        const preset = PRESETS[presetKey];
 
         if (presetKey === 'default' && originalUser) {
             newUserState = originalUser;
         } else {
-             const newScopes = PRESETS[presetKey].scopes;
-             newUserState = { ...user, scopes: newScopes };
+             const newScopes = preset.scopes;
+             newUserState = { ...user, scopes: newScopes, studentId: (preset as any).studentId };
         }
         
         setUser(newUserState);
@@ -68,7 +70,6 @@ const ScopeSwitcher: React.FC = () => {
         return null;
     }
     
-    // Find which preset key matches the current user scopes
     const currentPresetKey = Object.keys(PRESETS).find(key => {
         const presetScopes = PRESETS[key as keyof typeof PRESETS].scopes;
         return presetScopes.length === user.scopes.length && presetScopes.every(scope => user.scopes.includes(scope));
@@ -91,6 +92,7 @@ const ScopeSwitcher: React.FC = () => {
                 <option value="sis">{PRESETS.sis.name}</option>
                 <option value="lms">{PRESETS.lms.name}</option>
                 <option value="student">{PRESETS.student.name}</option>
+                <option value="parent">{PRESETS.parent.name}</option>
                 {currentPresetKey === 'custom' && <option value="custom" disabled>Custom</option>}
             </select>
         </div>

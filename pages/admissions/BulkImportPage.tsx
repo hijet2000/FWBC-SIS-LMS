@@ -51,7 +51,7 @@ const BulkImportPage: React.FC = () => {
                     hasError = true;
                 }
             });
-            if (!/^\S+@\S+\.\S+$/.test(row.guardianEmail)) {
+            if (row.guardianEmail && !/^\S+@\S+\.\S+$/.test(row.guardianEmail)) {
                  errors.push({ rowIndex: i + 1, field: 'guardianEmail', message: 'Invalid email format' });
                  hasError = true;
             }
@@ -94,17 +94,20 @@ const BulkImportPage: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold">Bulk Import Applications</h1>
+            <div>
+                <h1 className="text-3xl font-bold text-gray-800">Bulk Import Applications</h1>
+                <p className="mt-1 text-sm text-gray-500">Paste CSV data to validate and import new applications.</p>
+            </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
                 <textarea
                     value={csvText}
                     onChange={e => setCsvText(e.target.value)}
                     placeholder="Paste CSV data here. Required headers: fullName, dob, guardianEmail, desiredClassId"
-                    className="w-full h-48 font-mono text-sm"
+                    className="w-full h-48 font-mono text-sm p-2 border rounded-md"
                 />
                 <div className="flex gap-4">
-                    <button onClick={handleValidate} className="px-4 py-2 bg-blue-600 text-white rounded-md">Validate Data</button>
-                    <button onClick={handleImport} disabled={isImporting || !validationResult || validationResult.errors.length > 0 || validationResult.valid.length === 0} className="px-4 py-2 bg-green-600 text-white rounded-md disabled:bg-gray-400">
+                    <button onClick={handleValidate} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Validate Data</button>
+                    <button onClick={handleImport} disabled={isImporting || !validationResult || validationResult.errors.length > 0 || validationResult.valid.length === 0} className="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                         {isImporting ? 'Importing...' : `Import ${validationResult?.valid.length || 0} Records`}
                     </button>
                 </div>
@@ -112,14 +115,19 @@ const BulkImportPage: React.FC = () => {
             {validationResult && (
                 <div className="bg-white p-4 rounded-lg shadow-sm border">
                     <h2 className="text-lg font-semibold">Validation Report</h2>
-                    <p className="text-green-600">{validationResult.valid.length} valid records found.</p>
-                    <p className="text-red-600">{validationResult.errors.length} errors found.</p>
+                    <div className="flex gap-4 mt-2">
+                        <p className="text-green-600 font-medium">{validationResult.valid.length} valid record(s) found.</p>
+                        <p className="text-red-600 font-medium">{validationResult.errors.length} error(s) found.</p>
+                    </div>
                     {validationResult.errors.length > 0 && (
-                        <ul className="mt-2 text-sm text-red-700 list-disc list-inside max-h-48 overflow-y-auto">
-                            {validationResult.errors.map((err, i) => (
-                                <li key={i}>Row {err.rowIndex + 1}: Field '{err.field}' - {err.message}</li>
-                            ))}
-                        </ul>
+                        <div className="mt-4">
+                             <h3 className="font-semibold text-gray-700">Errors:</h3>
+                            <ul className="mt-2 text-sm text-red-700 list-disc list-inside max-h-48 overflow-y-auto bg-red-50 p-2 rounded-md">
+                                {validationResult.errors.map((err, i) => (
+                                    <li key={i}>Row {err.rowIndex}: Field '{err.field}' - {err.message}</li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
                 </div>
             )}

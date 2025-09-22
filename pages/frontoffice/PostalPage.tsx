@@ -92,10 +92,10 @@ const PostalPage: React.FC = () => {
             <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-300">
                     <thead className="bg-gray-50"><tr>
-                        <th className="p-3 text-left text-xs uppercase">Subject</th>
-                        <th className="p-3 text-left text-xs uppercase">Sender/Recipient</th>
-                        <th className="p-3 text-left text-xs uppercase">Date</th>
-                        <th className="p-3 text-left text-xs uppercase">Status</th>
+                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">Sender/Recipient</th>
+                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     </tr></thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {loading ? <tr><td colSpan={4} className="p-4 text-center">Loading...</td></tr> :
@@ -106,17 +106,15 @@ const PostalPage: React.FC = () => {
                                         {item.confidential && <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
                                         {item.subject}
                                     </Link>
-                                    <div className="text-gray-500">{item.refNo || item.carrier}</div>
                                 </td>
                                 <td className="p-3 text-sm">{item.direction === 'Incoming' ? item.sender : item.recipient}</td>
                                 <td className="p-3 text-sm">{item.date}</td>
-                                <td className="p-3 text-sm"><span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{item.status}</span></td>
+                                <td className="p-3 text-sm">{item.status}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-
             {user && <PostalItemModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSaveSuccess={handleSaveSuccess} actor={user} hosts={teachers} />}
         </div>
     );

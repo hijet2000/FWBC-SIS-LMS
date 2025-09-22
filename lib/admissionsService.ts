@@ -16,7 +16,7 @@ let MOCK_APPLICATIONS: Application[] = [
     { id: 'app-4', applicantName: 'Isabella Rossi', desiredClassId: 'c1', intakeSession: '2025-2026', status: 'Screening', submittedAt: getISODateMinutesAgo(500), applicantDetails: { fullName: 'Isabella Rossi', dob: '2018-01-01', gender: 'Female', nationality: 'Italian', priorSchool: 'Bambini Felici' }, guardians: [{ name: 'Marco Rossi', relationship: 'Father', phone: '555-1122', email: 'marco.rossi@example.com', address: '1 Villa Borghese' }], documents: [], screeningChecklist: { ageEligibility: false, prerequisitesMet: false, catchmentArea: false }, interviewDetails: {}, decisionDetails: {} },
 ];
 
-let MOCK_SEAT_ALLOCATIONS: SeatAllocation[] = [
+let MOCK_SEAT_ALLOCATIONS: Omit<SeatAllocation, 'pendingOffers' | 'waitlisted'>[] = [
     { classId: 'c1', capacity: 20, allocated: 5 },
     { classId: 'c2', capacity: 25, allocated: 18 },
     { classId: 'c3', capacity: 15, allocated: 12 },
@@ -61,11 +61,45 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 export const listApplications = async (): Promise<Application[]> => { await delay(400); return [...MOCK_APPLICATIONS]; };
 export const getApplication = async (id: string): Promise<Application | null> => { await delay(300); return MOCK_APPLICATIONS.find(a => a.id === id) || null; };
 
+
+const VALID_TRANSITIONS: Partial<Record<ApplicationStatus, ApplicationStatus[]>> = {
+    New: ['Screening', 'Withdrawn', 'Rejected'],
+    Screening: ['DocsMissing', 'Interview', 'Withdrawn', 'Rejected'],
+    DocsMissing: ['Screening', 'Interview', 'Withdrawn', 'Rejected'],
+    Interview: ['Offer', 'Waitlist', 'Withdrawn', 'Rejected'],
+    Offer: ['Accepted', 'Withdrawn'],
+    Accepted: ['Approved', 'Withdrawn'],
+    Waitlist: ['Offer', 'Withdrawn'],
+    // Terminal states have no valid onward transitions: Approved, Rejected, Withdrawn
+};
+
+
 export const updateApplication = async (id: string, update: Partial<Application>, actor: User): Promise<Application> => {
     await delay(500);
     const index = MOCK_APPLICATIONS.findIndex(a => a.id === id);
     if (index === -1) throw new Error("Application not found");
+    
     const before = { ...MOCK_APPLICATIONS[index] };
+
+    // --- STATE MACHINE VALIDATION ---
+    if (update.status && update.status !== before.status) {
+        const allowedTransitions = VALID_TRANSITIONS[before.status];
+        if (!allowedTransitions || !allowedTransitions.includes(update.status)) {
+            // Allow any state to move to Withdrawn
+            if (update.status !== 'Withdrawn') {
+                 throw new Error(`Invalid status transition from ${before.status} to ${update.status}.`);
+            }
+        }
+    }
+    
+    // --- CAPACITY GUARD ---
+    if (update.status === 'Offer' && before.status !== 'Offer') {
+        const { available } = await checkSeatAvailability(before.desiredClassId);
+        if (!available) {
+            throw new Error(`Cannot make an offer for class ${before.desiredClassId} as it is at full capacity.`);
+        }
+    }
+
     MOCK_APPLICATIONS[index] = { ...MOCK_APPLICATIONS[index], ...update };
     const after = MOCK_APPLICATIONS[index];
     logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'ADMISSIONS', entityType: 'Application', entityId: id, entityDisplay: after.applicantName, before, after });
@@ -97,7 +131,23 @@ export const approveApplication = async (applicationId: string, actor: User): Pr
 };
 
 // Seat Allocation
-export const getSeatAllocations = async (): Promise<SeatAllocation[]> => { await delay(200); return [...MOCK_SEAT_ALLOCATIONS]; };
+export const getSeatAllocations = async (): Promise<SeatAllocation[]> => {
+    await delay(200);
+    const results = MOCK_SEAT_ALLOCATIONS.map(alloc => {
+        const pendingOffers = MOCK_APPLICATIONS.filter(
+          app => app.desiredClassId === alloc.classId && app.status === 'Offer'
+        ).length;
+        const waitlisted = MOCK_APPLICATIONS.filter(
+          app => app.desiredClassId === alloc.classId && app.status === 'Waitlist'
+        ).length;
+        return {
+          ...alloc,
+          pendingOffers,
+          waitlisted,
+        };
+    });
+    return [...results];
+};
 
 export const updateSeatCapacity = async (classId: string, newCapacity: number, actor: User): Promise<void> => {
     await delay(400);
@@ -138,6 +188,20 @@ export const submitPublicApplication = async (input: PublicAppInput): Promise<{ 
         decisionDetails: {},
     };
     MOCK_APPLICATIONS.unshift(newApp);
+
+    // --- AUDIT ---
+    logAuditEvent({
+        actorId: 'public-user',
+        actorName: newApp.guardians[0]?.name || 'Public Applicant',
+        action: 'CREATE',
+        module: 'ADMISSIONS',
+        entityType: 'Application',
+        entityId: newApp.id,
+        entityDisplay: newApp.applicantName,
+        after: newApp,
+        meta: { source: 'PublicApplyForm', duplicateWarning: duplicate }
+    });
+
     return { application: newApp, duplicate };
 };
 
@@ -178,8 +242,55 @@ export const bulkImportApplications = async (newApps: Omit<Application, 'id'|'st
     return { success: true, count: newApps.length };
 };
 
+// Communications
+export const sendCommunication = async (templateId: string, applicationIds: string[], actor: User): Promise<{ success: boolean, queued: boolean }> => {
+    await delay(1000);
+
+    const currentHour = new Date().getUTCHours();
+    // Mock quiet hours as 22:00 - 08:00 UTC
+    const isQuietHours = currentHour >= 22 || currentHour < 8;
+
+    console.log(`Sending template '${templateId}' to ${applicationIds.length} applications. Quiet hours: ${isQuietHours}`);
+    logAuditEvent({
+        actorId: actor.id,
+        actorName: actor.name,
+        action: 'UPDATE', // Represents sending a communication
+        module: 'ADMISSIONS',
+        entityType: 'Communication',
+        entityDisplay: `Template: ${templateId}`,
+        meta: {
+            recipients: applicationIds.length,
+            applicationIds: applicationIds,
+            queuedForQuietHours: isQuietHours,
+        }
+    });
+    return { success: true, queued: isQuietHours };
+};
+
+export const getOffersSummary = async (): Promise<{ pending: number, accepted: number, approved: number }> => {
+    await delay(300);
+    const pending = MOCK_APPLICATIONS.filter(a => a.status === 'Offer').length;
+    const accepted = MOCK_APPLICATIONS.filter(a => a.status === 'Accepted').length;
+    const approved = MOCK_APPLICATIONS.filter(a => a.status === 'Approved').length;
+    return { pending, accepted, approved };
+};
+
 
 // --- REST OF THE SERVICE (Enquiries, Visitors, etc.) ---
+export const getFrontOfficeSummary = async (): Promise<{ newEnquiries: number, unresolvedVisitors: number, openCalls: number, dueFollowUps: number }> => {
+    await delay(500);
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const newEnquiries = MOCK_ENQUIRIES.filter(e => new Date(e.createdAt) > twentyFourHoursAgo).length;
+    const unresolvedVisitors = MOCK_VISITOR_LOGS.filter(v => v.isUnresolved).length;
+    const openCalls = MOCK_CALL_LOGS.filter(c => c.status === 'Open').length;
+    const dueFollowUps = MOCK_FOLLOW_UPS.filter(f => !f.doneAt && f.dueAt.startsWith(todayStr)).length;
+    
+    return { newEnquiries, unresolvedVisitors, openCalls, dueFollowUps };
+};
+
 // --- Follow-ups ---
 export const listFollowUps = async (enquiryId: string): Promise<FollowUp[]> => {
     await delay(200);

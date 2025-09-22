@@ -54,7 +54,7 @@ const ApplicationsPage: React.FC = () => {
         if (!user) return;
         const originalApplications = [...applications];
         setApplications(prev => prev.map(app => app.id === applicationId ? { ...app, status: newStatus } : app));
-        // Use the new, more flexible updateApplication function
+        
         updateApplication(applicationId, { status: newStatus }, user)
             .catch(() => {
                 addToast('Failed to update status.', 'error');

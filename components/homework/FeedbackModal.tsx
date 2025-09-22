@@ -50,6 +50,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSaveSu
             setIsSaving(false);
         }
     };
+    
+    const isEditing = !!fullSubmission?.feedback;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Feedback for ${studentName}`}>
@@ -61,6 +63,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, onSaveSu
                             <p className="text-xs text-gray-600">Status: {submission.status}</p>
                             {submission.submittedAt && <p className="text-xs text-gray-600">Time: {new Date(submission.submittedAt).toLocaleString()}</p>}
                         </div>
+                        {isEditing && <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded-md">You are editing existing feedback. This will be logged as an override.</p>}
                         {error && <p className="text-sm text-red-600">{error}</p>}
                         <div>
                             <label>Score (optional)</label>

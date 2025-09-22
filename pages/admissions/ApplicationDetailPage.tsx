@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as admissionsService from '../../lib/admissionsService';
-import { getClasses, getStudent } from '../../lib/schoolService'; // Assuming getStudent exists
+import { getClasses } from '../../lib/schoolService';
 import { listTeachers } from '../../lib/academicsService';
 import type { Application, SchoolClass, Teacher, ApplicationStatus } from '../../types';
 
@@ -54,15 +54,21 @@ const ApplicationDetailPage: React.FC = () => {
 
     const handleUpdate = async (update: Partial<Application>, notificationMessage?: string) => {
         if (!app || !user) return;
+        const originalApp = { ...app };
+        // Optimistic UI update
+        setApp(prev => prev ? { ...prev, ...update } : null);
+
         try {
             const updatedApp = await admissionsService.updateApplication(app.id, update, user);
-            setApp(updatedApp);
+            setApp(updatedApp); // Set the confirmed state from the server
             addToast('Application updated.', 'success');
             if (notificationMessage) {
-                addToast(`Parent notification for '${notificationMessage}' sent.`, 'info');
+                // In a real app, this would be a more sophisticated notification system
+                addToast(`Mock parent notification for '${notificationMessage}' sent.`, 'info');
             }
-        } catch {
-            addToast('Update failed.', 'error');
+        } catch (err: any) {
+            addToast(err.message || 'Update failed.', 'error');
+            setApp(originalApp); // Revert on error
         }
     };
     
@@ -72,9 +78,25 @@ const ApplicationDetailPage: React.FC = () => {
             const { admissionNo } = await admissionsService.approveApplication(app.id, user);
             addToast(`Student created! Admission No: ${admissionNo}`, 'success');
             fetchData(); // Refresh all data
-        } catch {
-            addToast('Failed to approve application and create student.', 'error');
+        } catch (err: any) {
+            addToast(err.message || 'Failed to approve application and create student.', 'error');
         }
+    };
+    
+    const handleCompleteScreening = () => {
+        if (!app) return;
+        const allPassedChecklist = {
+            ageEligibility: true,
+            prerequisitesMet: true,
+            catchmentArea: true,
+        };
+        handleUpdate(
+            { 
+                screeningChecklist: allPassedChecklist,
+                status: 'Interview' 
+            },
+            'Screening Complete'
+        );
     };
 
     const classMap = useMemo(() => new Map(classes.map(c => [c.id, c.name])), [classes]);
@@ -98,6 +120,15 @@ const ApplicationDetailPage: React.FC = () => {
                                 <label htmlFor={key} className="ml-2 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
                             </div>
                         ))}
+                         <div className="pt-4 border-t mt-4">
+                            <button
+                                onClick={handleCompleteScreening}
+                                disabled={app.status !== 'Screening' && app.status !== 'New'}
+                                className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Mark All Passed & Move to Interview
+                            </button>
+                        </div>
                     </DetailCard>
                     <DetailCard title="Documents">
                         {app.documents.map((doc, i) => (
@@ -114,21 +145,21 @@ const ApplicationDetailPage: React.FC = () => {
                         ))}
                     </DetailCard>
                      <DetailCard title="Interview">
-                        <input type="datetime-local" value={app.interviewDetails.scheduledAt?.substring(0,16) || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : undefined}}, 'Interview Scheduled')} className="w-full" />
-                        <select value={app.interviewDetails.interviewerId || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, interviewerId: e.target.value}})} className="w-full">
+                        <input type="datetime-local" value={app.interviewDetails.scheduledAt?.substring(0,16) || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : undefined}}, 'Interview Scheduled')} className="w-full rounded-md border-gray-300" />
+                        <select value={app.interviewDetails.interviewerId || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, interviewerId: e.target.value}})} className="w-full rounded-md border-gray-300">
                             <option value="">Select Interviewer</option>
                             {teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
-                        <textarea value={app.interviewDetails.notes || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, notes: e.target.value}})} placeholder="Interview Notes..." className="w-full" rows={3}/>
+                        <textarea value={app.interviewDetails.notes || ''} onChange={e => handleUpdate({ interviewDetails: {...app.interviewDetails, notes: e.target.value}})} placeholder="Interview Notes..." className="w-full rounded-md border-gray-300" rows={3}/>
                     </DetailCard>
                 </div>
                 <div className="lg:col-span-1 space-y-6">
                     <DetailCard title="Decision Panel">
-                         <select value={app.status} onChange={e => handleUpdate({ status: e.target.value as ApplicationStatus }, `Status Changed to ${e.target.value}`)} className="w-full">
+                         <select value={app.status} onChange={e => handleUpdate({ status: e.target.value as ApplicationStatus }, `Status Changed to ${e.target.value}`)} className="w-full rounded-md border-gray-300">
                             {['New', 'Screening', 'DocsMissing', 'Interview', 'Offer', 'Accepted', 'Approved', 'Rejected', 'Waitlist', 'Withdrawn'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        {app.status === 'Offer' && <input type="date" value={app.decisionDetails.offerExpiresAt || ''} onChange={e => handleUpdate({ decisionDetails: {...app.decisionDetails, offerExpiresAt: e.target.value}})} placeholder="Offer Expiry Date" className="w-full" />}
-                        {app.status === 'Rejected' && <input value={app.decisionDetails.rejectionReason || ''} onChange={e => handleUpdate({ decisionDetails: {...app.decisionDetails, rejectionReason: e.target.value}})} placeholder="Rejection Reason" className="w-full" />}
+                        {app.status === 'Offer' && <input type="date" value={app.decisionDetails.offerExpiresAt || ''} onChange={e => handleUpdate({ decisionDetails: {...app.decisionDetails, offerExpiresAt: e.target.value}})} placeholder="Offer Expiry Date" className="w-full rounded-md border-gray-300" />}
+                        {app.status === 'Rejected' && <input value={app.decisionDetails.rejectionReason || ''} onChange={e => handleUpdate({ decisionDetails: {...app.decisionDetails, rejectionReason: e.target.value}})} placeholder="Rejection Reason" className="w-full rounded-md border-gray-300" />}
                         
                         <button disabled={!seatAvailable || app.status !== 'Interview'} onClick={() => handleUpdate({status: 'Offer'}, 'Offer Made')} className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400">
                             {seatAvailable ? 'Make Offer' : 'Class Full'}
