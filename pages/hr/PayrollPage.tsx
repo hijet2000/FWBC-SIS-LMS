@@ -30,7 +30,6 @@ const PayrollPage: React.FC = () => {
     
     const [filterQuery, setFilterQuery] = useState('');
 
-    // Fix: Changed `e.name` to `e.fullName` to match the Employee type definition.
     const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e.fullName])), [employees]);
 
     useEffect(() => {

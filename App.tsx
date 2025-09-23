@@ -7,6 +7,7 @@ import Spinner from './components/ui/Spinner';
 import Layout from './components/Layout';
 import SisDashboard from './pages/SisDashboard';
 import PlaceholderPage from './pages/PlaceholderPage';
+import TasksPage from './pages/TasksPage';
 import StudentsPage from './pages/StudentsPage';
 import StudentProfilePage from './pages/StudentProfilePage';
 import AttendancePage from './pages/AttendancePage';
@@ -15,6 +16,7 @@ import LibraryPage from './pages/LibraryPage';
 import LibraryViewerPage from './pages/LibraryViewerPage';
 import AttendanceRecordsPage from './pages/AttendanceRecordsPage';
 import AttendanceExportsPage from './pages/AttendanceExportsPage';
+import AttendanceSettingsPage from './pages/attendance/SettingsPage';
 import FeesPage from './pages/FeesPage';
 import FeesPaymentsPage from './pages/FeesPaymentsPage';
 
@@ -58,6 +60,7 @@ import PostalDetailPage from './pages/frontoffice/PostalDetailPage';
 import VehiclesPage from './pages/transport/VehiclesPage';
 import TripsPage from './pages/transport/TripsPage';
 import BoardingPage from './pages/transport/BoardingPage';
+import TransportSettingsPage from './pages/transport/SettingsPage';
 
 // Catch-up Pages
 import CatchUpListPage from './pages/library/CatchUpListPage';
@@ -198,13 +201,11 @@ function App() {
                 {/* Staff Routes */}
                 <Route path="/school/:siteId" element={<Layout />}>
                   <Route index element={<SisDashboard />} />
+                  <Route path="tasks" element={<RequireScope requiredScopes={['school:admin', 'homework:teacher']}><TasksPage /></RequireScope>} />
                   <Route path="students" element={<RequireScope requiredScopes={['school:admin']}><StudentsPage /></RequireScope>} />
                   <Route path="students/:studentId" element={<RequireScope requiredScopes={['school:admin']}><StudentProfilePage /></RequireScope>} />
                   
                   <Route path="academics" element={<RequireScope requiredScopes={['school:admin']}><AcademicsPage /></RequireScope>} />
-                  <Route path="academics/subjects" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Manage Subjects" /></RequireScope>} />
-                  <Route path="academics/gradebooks" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Gradebooks" /></RequireScope>} />
-                  <Route path="academics/reports" element={<RequireScope requiredScopes={['school:admin']}><PlaceholderPage title="Report Cards" /></RequireScope>} />
                   
                   {/* Timetabling Sub-module */}
                   <Route path="academics/planner" element={<RequireScope requiredScopes={['school:admin']}><PlannerPage /></RequireScope>} />
@@ -232,7 +233,6 @@ function App() {
                   <Route path="admissions/applications" element={<RequireScope requiredScopes={['admissions:admin']}><ApplicationsPage /></RequireScope>} />
                   <Route path="admissions/applications/:applicationId" element={<RequireScope requiredScopes={['admissions:admin']}><ApplicationDetailPage /></RequireScope>} />
                   <Route path="admissions/seats" element={<RequireScope requiredScopes={['admissions:admin']}><SeatAllocationPage /></RequireScope>} />
-                  <Route path="admissions/online" element={<RequireScope requiredScopes={['admissions:admin']}><PlaceholderPage title="Online Admissions Management" /></RequireScope>} />
                   <Route path="admissions/offers" element={<RequireScope requiredScopes={['admissions:admin']}><OffersPage /></RequireScope>} />
                   <Route path="admissions/import" element={<RequireScope requiredScopes={['admissions:admin']}><BulkImportPage /></RequireScope>} />
                   <Route path="admissions/comms" element={<RequireScope requiredScopes={['admissions:admin']}><CommunicationsPage /></RequireScope>} />
@@ -251,8 +251,8 @@ function App() {
                   <Route path="attendance" element={<RequireScope requiredScopes={['school:admin']}><AttendancePage /></RequireScope>} />
                   <Route path="attendance/records" element={<RequireScope requiredScopes={['school:admin']}><AttendanceRecordsPage /></RequireScope>} />
                   <Route path="attendance/exports" element={<RequireScope requiredScopes={['school:admin']}><AttendanceExportsPage /></RequireScope>} />
+                  <Route path="attendance/settings" element={<RequireScope requiredScopes={['school:admin']}><AttendanceSettingsPage /></RequireScope>} />
                   
-                  <Route path="courses" element={<RequireScope requiredScopes={['lms:admin']}><PlaceholderPage title="Courses" /></RequireScope>} />
                   <Route path="library" element={<RequireScope requiredScopes={['school:admin', 'lms:admin', 'student']}><LibraryPage /></RequireScope>} />
                   <Route path="library/digital/view" element={<RequireScope requiredScopes={['school:admin', 'lms:admin']}><LibraryViewerPage /></RequireScope>} />
                   <Route path="library/catalog" element={<RequireScope requiredScopes={['sis:library:write']}><CatalogPage /></RequireScope>} />
@@ -281,9 +281,7 @@ function App() {
                   <Route path="hr/dashboard" element={<RequireScope requiredScopes={['hr:admin']}><HrDashboardPage /></RequireScope>} />
                   <Route path="hr/employees" element={<RequireScope requiredScopes={['hr:admin']}><EmployeesPage /></RequireScope>} />
                   <Route path="hr/leave" element={<RequireScope requiredScopes={['hr:admin']}><LeavePage /></RequireScope>} />
-                  <Route path="hr/timesheets" element={<RequireScope requiredScopes={['hr:admin']}><PlaceholderPage title="Timesheets" /></RequireScope>} />
                   <Route path="hr/payroll" element={<RequireScope requiredScopes={['payroll:admin']}><PayrollPage /></RequireScope>} />
-                  <Route path="hr/reports" element={<RequireScope requiredScopes={['hr:admin', 'payroll:admin']}><PlaceholderPage title="HR & Payroll Reports" /></RequireScope>} />
 
                   {/* Hostel Module Routes */}
                   <Route path="hostel" element={<RequireScope requiredScopes={['sis:hostel:write']}><HostelDashboardPage /></RequireScope>} />
@@ -298,6 +296,7 @@ function App() {
                   <Route path="transport/vehicles" element={<RequireScope requiredScopes={['school:admin']}><VehiclesPage /></RequireScope>} />
                   <Route path="transport/trips" element={<RequireScope requiredScopes={['school:admin']}><TripsPage /></RequireScope>} />
                   <Route path="transport/boarding" element={<RequireScope requiredScopes={['school:admin']}><BoardingPage /></RequireScope>} />
+                  <Route path="transport/settings" element={<RequireScope requiredScopes={['school:admin']}><TransportSettingsPage /></RequireScope>} />
 
                   {/* Inventory Module Routes */}
                   <Route path="inventory" element={<RequireScope requiredScopes={['inventory:admin']}><Navigate to="items" replace /></RequireScope>} />
@@ -338,11 +337,6 @@ function App() {
                       <Route path="modules" element={<ModulesPage />} />
                       <Route path="locale" element={<LocalePage />} />
                       <Route path="calendar" element={<CalendarPage />} />
-                      <Route path="branding" element={<PlaceholderPage title="Branding Settings" />} />
-                      <Route path="roles" element={<PlaceholderPage title="Roles & Permissions" />} />
-                      <Route path="privacy" element={<PlaceholderPage title="Privacy & Data" />} />
-                      <Route path="backup" element={<PlaceholderPage title="Backup & Restore" />} />
-                      <Route path="diagnostics" element={<PlaceholderPage title="System Health" />} />
                   </Route>
 
                 </Route>

@@ -23,7 +23,8 @@ const InfoRow: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, 
 
 
 const StudentProfilePage: React.FC = () => {
-    const { siteId, studentId } = useParams<{ siteId: string; studentId: string }>();
+    const { siteId: routeSiteId, studentId } = useParams<{ siteId: string; studentId: string }>();
+    const siteId = routeSiteId || 'fwbc';
     const location = useLocation();
     const { addToast } = useToast();
 

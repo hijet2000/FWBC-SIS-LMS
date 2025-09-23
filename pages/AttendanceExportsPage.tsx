@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { listAttendanceRecords, getWeeklyEmailSettings, updateWeeklyEmailSettings, exportAnalyticsCSV, exportAnalyticsPDF } from '../lib/attendanceService';
+import { useSearchParams, Link, useParams } from 'react-router-dom';
+import { listAttendanceRecords, exportAnalyticsCSV, exportAnalyticsPDF } from '../lib/attendanceService';
 import { getClasses } from '../lib/schoolService';
-import type { AttendanceRecord, SchoolClass, WeeklyEmailSettings } from '../types';
+import type { AttendanceRecord, SchoolClass } from '../types';
 import Heatmap from '../components/attendance/Heatmap';
 
 const getISODateDaysAgo = (days: number): string => {
@@ -19,15 +19,14 @@ const DashboardCard: React.FC<{ title: string; children: React.ReactNode; classN
 );
 
 const AttendanceExportsPage: React.FC = () => {
+    const { siteId: routeSiteId } = useParams<{ siteId: string }>();
+    const siteId = routeSiteId || 'fwbc';
     const [searchParams, setSearchParams] = useSearchParams();
     
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
-    const [settings, setSettings] = useState<WeeklyEmailSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [saving, setSaving] = useState(false);
-    const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null);
 
     const classId = searchParams.get('classId') || '';
     const from = searchParams.get('from') || getISODateDaysAgo(29);
@@ -38,14 +37,12 @@ const AttendanceExportsPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const [classesData, recordsData, settingsData] = await Promise.all([
+                const [classesData, recordsData] = await Promise.all([
                     getClasses(),
                     listAttendanceRecords({ classId, from, to }),
-                    getWeeklyEmailSettings(),
                 ]);
                 setClasses(classesData);
                 setRecords(recordsData);
-                setSettings(settingsData);
             } catch {
                 setError('Failed to load dashboard data.');
             } finally {
@@ -71,26 +68,6 @@ const AttendanceExportsPage: React.FC = () => {
             else newParams.delete(key);
             return newParams;
         }, { replace: true });
-    };
-    
-    const handleSettingsChange = (update: Partial<WeeklyEmailSettings>) => {
-        if (!settings) return;
-        setSettings({ ...settings, ...update });
-    };
-
-    const handleSaveSettings = async () => {
-        if (!settings) return;
-        setSaving(true);
-        setSaveStatus(null);
-        try {
-            await updateWeeklyEmailSettings(settings);
-            setSaveStatus('success');
-        } catch {
-            setSaveStatus('error');
-        } finally {
-            setSaving(false);
-            setTimeout(() => setSaveStatus(null), 3000);
-        }
     };
     
     return (
@@ -138,37 +115,11 @@ const AttendanceExportsPage: React.FC = () => {
                         </div>
                     </DashboardCard>
                     
-                    <DashboardCard title="Weekly Email Summary">
-                        {settings ? (
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label htmlFor="email-enabled" className="text-sm font-medium text-gray-700">Send weekly summary email</label>
-                                    <button
-                                        type="button"
-                                        id="email-enabled"
-                                        onClick={() => handleSettingsChange({ enabled: !settings.enabled })}
-                                        className={`${settings.enabled ? 'bg-indigo-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
-                                        role="switch"
-                                        aria-checked={settings.enabled}
-                                    >
-                                        <span className={`${settings.enabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
-                                    </button>
-                                </div>
-                                 <div>
-                                    <label htmlFor="send-hour" className="block text-sm font-medium text-gray-700">Send Hour (UTC)</label>
-                                    <select id="send-hour" value={settings.sendHour} onChange={e => handleSettingsChange({sendHour: Number(e.target.value)})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" disabled={!settings.enabled}>
-                                        {[...Array(24).keys()].map(hour => <option key={hour} value={hour}>{hour.toString().padStart(2, '0')}:00</option>)}
-                                    </select>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <button onClick={handleSaveSettings} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-gray-400">
-                                        {saving ? 'Saving...' : 'Save Settings'}
-                                    </button>
-                                    {saveStatus === 'success' && <span className="text-sm text-green-600">Settings saved!</span>}
-                                    {saveStatus === 'error' && <span className="text-sm text-red-600">Failed to save.</span>}
-                                </div>
-                            </div>
-                        ) : <p className="text-sm text-gray-500">Loading settings...</p>}
+                    <DashboardCard title="Email Settings">
+                        <p className="text-sm text-gray-500 mb-4">Settings for weekly attendance summaries have been moved to their own page.</p>
+                         <Link to={`/school/${siteId}/attendance/settings`} className="inline-block px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                            Go to Settings
+                        </Link>
                     </DashboardCard>
                 </div>
             </>

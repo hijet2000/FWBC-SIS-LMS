@@ -5,11 +5,6 @@ const TABS = [
     { name: 'Modules & Navigation', href: 'modules' },
     { name: 'Locale & Formats', href: 'locale' },
     { name: 'Calendars & Holidays', href: 'calendar' },
-    { name: 'Branding', href: 'branding' },
-    { name: 'Roles & Permissions', href: 'roles' },
-    { name: 'Privacy & Data', href: 'privacy' },
-    { name: 'Backup & Restore', href: 'backup' },
-    { name: 'Diagnostics', href: 'diagnostics' },
 ];
 
 const SettingsLayout: React.FC = () => {
@@ -22,7 +17,10 @@ const SettingsLayout: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">System & Tenant Settings</h1>
+            <div>
+                <h1 className="text-3xl font-bold text-gray-800">System & Tenant Settings</h1>
+                <p className="mt-1 text-sm text-gray-500">Manage global settings for the entire school tenant.</p>
+            </div>
             
             <div className="bg-white border-b border-gray-200">
                  <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">

@@ -28,7 +28,8 @@ const CalendarDaysIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 
 const SisDashboard: React.FC = () => {
-  const { siteId } = useParams<{ siteId: string }>();
+  const { siteId: routeSiteId } = useParams<{ siteId: string }>();
+  const siteId = routeSiteId || 'fwbc';
   const { user, loading: authLoading } = useAuth();
   const { addToast } = useToast();
   
@@ -105,7 +106,7 @@ const SisDashboard: React.FC = () => {
             title="Upcoming Exams (14d)"
             value={kpiData.exams}
             icon={<CalendarDaysIcon className="h-6 w-6" />}
-            linkTo={`/school/${siteId}/academics/reports`}
+            linkTo={`/school/${siteId}/academics`}
             loading={loading}
             className="text-amber-600"
           />

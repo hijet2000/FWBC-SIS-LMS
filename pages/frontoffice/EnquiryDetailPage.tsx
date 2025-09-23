@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
@@ -53,7 +52,8 @@ const FollowUpModal: React.FC<FollowUpModalProps> = ({ isOpen, onClose, onSave, 
 
 // --- Main Detail Page ---
 const EnquiryDetailPage: React.FC = () => {
-    const { enquiryId } = useParams<{ enquiryId: string }>();
+    const { enquiryId, siteId: routeSiteId } = useParams<{ enquiryId: string, siteId: string }>();
+    const siteId = routeSiteId || 'fwbc';
     const { user } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -102,7 +102,7 @@ const EnquiryDetailPage: React.FC = () => {
         try {
             const newApp = await admissionsService.convertEnquiryToApplication(enquiry.id, user);
             addToast('Converted to application!', 'success');
-            navigate(`/school/site_123/admissions/applications?highlight=${newApp.id}`);
+            navigate(`/school/${siteId}/admissions/applications?highlight=${newApp.id}`);
         } catch {
              addToast('Conversion failed.', 'error');
         }

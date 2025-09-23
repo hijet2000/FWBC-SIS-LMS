@@ -62,7 +62,8 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({ currentPage, to
 
 
 const StudentsPage: React.FC = () => {
-    const { siteId } = useParams<{ siteId: string }>();
+    const { siteId: routeSiteId } = useParams<{ siteId: string }>();
+    const siteId = routeSiteId || 'fwbc';
     const [searchParams, setSearchParams] = useSearchParams();
     const { addToast } = useToast();
 

@@ -17,6 +17,16 @@ export interface AuthContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
+// --- Task Management Types ---
+export interface Task {
+  id: string;
+  title: string;
+  dueDate: string; // YYYY-MM-DD
+  completed: boolean;
+  createdAt: string; // ISO String
+  ownerId: string;
+}
+
 // --- SIS (Student Information System) Types ---
 
 export interface SchoolClass {
@@ -1152,7 +1162,7 @@ export interface TenantSettings {
 
 // --- Audit & System Types ---
 
-export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'ADMISSIONS' | 'FRONTOFFICE' | 'SYSTEM' | 'INVENTORY' | 'ASSETS' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASS' | 'FINANCE' | 'ALUMNI' | 'HR' | 'PAYROLL' | 'SETTINGS';
+export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'ADMISSIONS' | 'FRONTOFFICE' | 'SYSTEM' | 'INVENTORY' | 'ASSETS' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASS' | 'FINANCE' | 'ALUMNI' | 'HR' | 'PAYROLL' | 'SETTINGS' | 'TASKS';
 export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'APPROVE' | 'ARCHIVE' | 'NOTIFY' | 'CONVERT' | 'ROLE_CHANGE' | 'ISSUE' | 'RETURN' | 'RENEW' | 'GRADE' | 'REQUEST' | 'REVOKE' | 'PUBLISH' | 'UNPUBLISH' | 'MEDIA_UPLOAD' | 'MEDIA_DELETE' | 'MENU_UPDATE' | 'RUN_PAYROLL';
 
 export interface AuditEvent {
