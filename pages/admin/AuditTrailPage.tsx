@@ -5,6 +5,7 @@ import * as auditService from '../../lib/auditService';
 import Drawer from '../../components/admin/Drawer';
 import JsonDiffViewer from '../../components/admin/JsonDiffViewer';
 import { adminKeys } from '../../lib/queryKeys';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const getISODateDaysAgo = (days: number): string => {
     const date = new Date();
@@ -14,6 +15,7 @@ const getISODateDaysAgo = (days: number): string => {
 
 const AuditTrailPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const { settings, loading: settingsLoading } = useSettings();
 
     const [events, setEvents] = useState<AuditEvent[]>([]);
     const [users, setUsers] = useState<Omit<User, 'scopes'>[]>([]);
@@ -58,6 +60,17 @@ const AuditTrailPage: React.FC = () => {
         }, { replace: true });
     };
 
+    const formatDate = (isoString: string) => {
+        if (!settings || settingsLoading) return new Date(isoString).toLocaleString();
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+            hour12: settings.locale.timeFormat === '12h',
+            timeZone: settings.locale.timezone,
+        };
+        return new Date(isoString).toLocaleString(settings.locale.language, options);
+    };
+
     const modules: AuditModule[] = ['STUDENTS', 'ATTENDANCE', 'ACADEMICS', 'FEES', 'AUTH', 'SYSTEM', 'TRANSPORT', 'LIBRARY', 'HOSTEL'];
     const actions: AuditAction[] = ['CREATE', 'UPDATE', 'DELETE', 'PAYMENT', 'LOGIN', 'LOGOUT', 'ROLE_CHANGE', 'ISSUE', 'RETURN', 'RENEW'];
 
@@ -93,7 +106,7 @@ const AuditTrailPage: React.FC = () => {
                         events.length === 0 ? <tr><td colSpan={5} className="p-4 text-center text-gray-500">No events found.</td></tr> :
                         events.map(event => (
                             <tr key={event.id} onClick={() => setSelectedEvent(event)} className="cursor-pointer hover:bg-gray-50">
-                                <td className="px-4 py-4 text-sm text-gray-500" title={event.tsISO}>{new Date(event.tsISO).toLocaleString()}</td>
+                                <td className="px-4 py-4 text-sm text-gray-500" title={event.tsISO}>{formatDate(event.tsISO)}</td>
                                 <td className="px-4 py-4 text-sm font-medium text-gray-800">{event.actorName}</td>
                                 <td className="px-4 py-4 text-sm"><span className="font-mono text-xs bg-gray-100 p-1 rounded">{event.module}:{event.action}</span></td>
                                 <td className="px-4 py-4 text-sm text-gray-600">{event.entityDisplay || 'N/A'}</td>

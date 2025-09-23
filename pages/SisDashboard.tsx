@@ -3,12 +3,13 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import KpiCard from '../components/dashboard/KpiCard';
+import type { Holiday } from '../types';
 
 // Services
 import { getStudentsCount } from '../lib/schoolService';
 import { getTodaysAttendanceSummary } from '../lib/attendanceService';
-import { listCourses } from '../lib/lmsService';
 import { getUpcomingExamsCount } from '../lib/academicsService';
+import { listHolidays } from '../lib/settingsService';
 
 // Icons
 const UsersIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -17,11 +18,6 @@ const UsersIcon: React.FC<{ className?: string }> = ({ className }) => (
 const CheckBadgeIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
-const BookOpenIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
     </svg>
 );
 const CalendarDaysIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -39,28 +35,31 @@ const SisDashboard: React.FC = () => {
   const [kpiData, setKpiData] = useState({
       students: 0,
       attendance: 0,
-      courses: 0,
       exams: 0,
   });
+  const [nextHoliday, setNextHoliday] = useState<Holiday | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchKpis = async () => {
       try {
         setLoading(true);
-        const [studentCount, attendanceSummary, coursesData, examsCount] = await Promise.all([
+        const [studentCount, attendanceSummary, examsCount, holidaysData] = await Promise.all([
           getStudentsCount(),
           getTodaysAttendanceSummary(),
-          listCourses(),
           getUpcomingExamsCount(),
+          listHolidays(),
         ]);
 
         setKpiData({
             students: studentCount,
             attendance: attendanceSummary.presentRate,
-            courses: coursesData.filter(c => c.status === 'Open').length,
             exams: examsCount,
         });
+
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingHoliday = holidaysData.find(h => h.date >= today);
+        setNextHoliday(upcomingHoliday || null);
 
       } catch (e) {
         console.error("Failed to load dashboard KPIs", e);
@@ -103,20 +102,21 @@ const SisDashboard: React.FC = () => {
             className="text-green-600"
           />
           <KpiCard
-            title="Active Courses"
-            value={kpiData.courses}
-            icon={<BookOpenIcon className="h-6 w-6" />}
-            linkTo={`/school/${siteId}/courses`}
-            loading={loading}
-            className="text-gray-800"
-          />
-          <KpiCard
             title="Upcoming Exams (14d)"
             value={kpiData.exams}
             icon={<CalendarDaysIcon className="h-6 w-6" />}
-            linkTo={`/school/${siteId}/academics/reports`} // No exams page yet, link to reports
+            linkTo={`/school/${siteId}/academics/reports`}
             loading={loading}
             className="text-amber-600"
+          />
+          <KpiCard
+            title="Next Public Holiday"
+            value={nextHoliday?.name || 'N/A'}
+            subValue={nextHoliday ? new Date(nextHoliday.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'long', day: 'numeric' }) : ''}
+            icon={<CalendarDaysIcon className="h-6 w-6" />}
+            linkTo={`/school/${siteId}/admin/settings/calendar`}
+            loading={loading}
+            className="text-indigo-600"
           />
       </div>
 

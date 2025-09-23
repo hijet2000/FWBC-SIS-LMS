@@ -8,14 +8,20 @@ interface KpiCardProps {
   linkTo: string;
   loading: boolean;
   className?: string;
+  subValue?: string;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({ title, value, icon, linkTo, loading, className = '' }) => {
+const KpiCard: React.FC<KpiCardProps> = ({ title, value, icon, linkTo, loading, className = '', subValue }) => {
   const renderContent = () => {
     if (loading) {
       return <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>;
     }
-    return <p className={`text-4xl font-bold ${className}`}>{value}</p>;
+    return (
+        <div>
+            <p className={`text-3xl font-bold ${className} truncate`}>{value}</p>
+            {subValue && <p className="text-sm text-gray-500 mt-1">{subValue}</p>}
+        </div>
+    );
   };
 
   return (

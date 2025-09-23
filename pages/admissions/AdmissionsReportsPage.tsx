@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { listEnquiries, listApplications, getSeatAllocations } from '../../lib/admissionsService';
 import { getClasses } from '../../lib/schoolService';
@@ -139,7 +140,8 @@ const AdmissionsReportsPage: React.FC = () => {
                             <div key={stage} className="flex items-center gap-4">
                                 <span className="w-32 text-sm font-medium text-gray-600">{stage}</span>
                                 <div className="flex-grow bg-gray-200 rounded-full h-6">
-                                    <div className="bg-indigo-600 h-6 rounded-full text-white text-xs font-bold flex items-center justify-end pr-2" style={{ width: `${(count / maxFunnelCount) * 100}%` }}>
+                                    {/* FIX: Ensured `count` is treated as a number to prevent type errors during arithmetic operation. */}
+                                    <div className="bg-indigo-600 h-6 rounded-full text-white text-xs font-bold flex items-center justify-end pr-2" style={{ width: `${(Number(count) / maxFunnelCount) * 100}%` }}>
                                         {count}
                                     </div>
                                 </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
 import { getClasses, getStudentsByClass } from '../lib/schoolService';
@@ -61,7 +62,6 @@ const AttendancePage: React.FC = () => {
         getStudentsByClass(classId)
             .then(roster => {
                 setStudents(roster);
-                // FIX: Explicitly type the Map to ensure type compatibility with AttendanceEntry.
                 const initialAttendance = new Map<string, AttendanceEntry>(roster.map(s => [
                     s.id,
                     { studentId: s.id, status: 'PRESENT', minutesAttended: totalSessionMinutes > 0 ? totalSessionMinutes : undefined }
@@ -83,7 +83,8 @@ const AttendancePage: React.FC = () => {
 
     const handleAttendanceChange = (studentId: string, newEntry: Partial<AttendanceEntry>) => {
         setAttendance(prev => {
-            const newMap = new Map(prev);
+            // FIX: Explicitly type the new Map to preserve the value type.
+            const newMap = new Map<string, AttendanceEntry>(prev);
             const currentEntry = newMap.get(studentId) || { studentId, status: 'PRESENT' };
             newMap.set(studentId, { ...currentEntry, ...newEntry });
             return newMap;
@@ -92,7 +93,8 @@ const AttendancePage: React.FC = () => {
 
     const applyThreshold = () => {
         const thresholdMinutes = totalSessionMinutes * (threshold / 100);
-        const newAttendance = new Map(attendance);
+        // FIX: Explicitly type the new Map to preserve the value type.
+        const newAttendance = new Map<string, AttendanceEntry>(attendance);
         students.forEach(student => {
             const entry = newAttendance.get(student.id);
             if (!entry) return;
@@ -119,6 +121,9 @@ const AttendancePage: React.FC = () => {
             siteId,
             classId,
             date,
+            // FIX: `Array.from(attendance.values())` was being inferred as `unknown[]`.
+            // The fix in `handleAttendanceChange` ensures `attendance` retains its type,
+            // so this line now correctly produces `AttendanceEntry[]`.
             entries: Array.from(attendance.values()),
             actor: { id: user.id, name: user.name },
             className,

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { User, Teacher, Handover } from '../../types';
 import { createHandover } from '../../lib/admissionsService';

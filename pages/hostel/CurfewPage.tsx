@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -21,6 +22,8 @@ const CurfewPage: React.FC = () => {
     
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    // FIX: Refactor boardersByRoom to use state and effect for async operations.
+    const [boardersByRoom, setBoardersByRoom] = useState<Map<string, Student[]>>(new Map());
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -50,23 +53,26 @@ const CurfewPage: React.FC = () => {
         fetchData();
     }, [fetchData]);
 
-    const boardersByRoom = useMemo(() => {
-        const map = new Map<string, Student[]>();
+    // FIX: Use useEffect to correctly handle the async operation of building boardersByRoom.
+    useEffect(() => {
         const studentMap = new Map(boarders.map(s => [s.id, s]));
         hostelService.listAllocations().then(allocs => {
+            const newMap = new Map<string, Student[]>();
             allocs.filter(a => a.status === 'CheckedIn').forEach(a => {
-                if (!map.has(a.roomId)) map.set(a.roomId, []);
+                if (!newMap.has(a.roomId)) newMap.set(a.roomId, []);
                 const student = studentMap.get(a.studentId);
-                if (student) map.get(a.roomId)!.push(student);
+                if (student) newMap.get(a.roomId)!.push(student);
             });
+            setBoardersByRoom(newMap);
         });
-        return map;
     }, [boarders]);
 
     const handleRecordChange = (studentId: string, newStatus: CurfewStatus, notes?: string) => {
         setRecords(prev => {
-            const newMap = new Map(prev);
-            const existing = newMap.get(studentId) || { id: '', curfewId: curfewId || '', studentId, status: 'In' };
+            // FIX: Explicitly type the new Map to preserve the value type.
+            const newMap = new Map<string, CurfewRecord>(prev);
+            // FIX: Provide a complete default object to satisfy the CurfewRecord type.
+            const existing = newMap.get(studentId) || { id: '', curfewId: curfewId || '', studentId, status: 'In', notes: undefined };
             newMap.set(studentId, { ...existing, status: newStatus, notes });
             return newMap;
         });
@@ -76,7 +82,8 @@ const CurfewPage: React.FC = () => {
         if (!curfewId || !user) return;
         setIsSaving(true);
         try {
-            const recordsToSave = Array.from(records.values()).map(({ id, ...rest }) => rest);
+            // FIX: Correctly destructure to omit both 'id' and 'curfewId' to match the expected type.
+            const recordsToSave = Array.from(records.values()).map(({ id, curfewId: cId, ...rest }) => rest);
             await hostelService.saveCurfewRecords(curfewId, recordsToSave, user);
             addToast('Curfew sheet saved.', 'success');
         } catch {
@@ -130,7 +137,8 @@ const CurfewPage: React.FC = () => {
                             <div key={room.id} className="p-3 border-b last:border-0">
                                 <h3 className="font-medium">Room {room.roomNumber}</h3>
                                 {(boardersByRoom.get(room.id) || []).map(student => {
-                                    const record = records.get(student.id) || { status: 'In' as CurfewStatus, notes: '' };
+                                    // FIX: The `records` map is now correctly typed, so `record` has all properties of `CurfewRecord`.
+                                    const record = records.get(student.id) || { id: '', curfewId: curfewId || '', studentId: student.id, status: 'In' as CurfewStatus, notes: '' };
                                     return (
                                     <div key={student.id} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center py-2">
                                         <div className="font-medium">{student.name}</div>

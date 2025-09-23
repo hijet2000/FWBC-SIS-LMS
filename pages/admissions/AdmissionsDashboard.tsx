@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { listEnquiries, listApplications } from '../../lib/admissionsService';
 import type { Enquiry, Application, ApplicationStatus } from '../../types';
@@ -80,6 +81,7 @@ const AdmissionsDashboard: React.FC = () => {
                 <div className="flex items-end justify-around text-center space-x-2">
                     {Object.entries(appStatusCounts).map(([status, count]) => (
                          <div key={status} className="flex flex-col items-center">
+                            {/* FIX: The 'count' variable could be undefined. Added a fallback to 0 to prevent arithmetic operations on undefined. */}
                             <div className="bg-indigo-500 text-white rounded-t-lg px-4 py-2 w-24" style={{ height: `${Math.max(20, (count || 0) * 20)}px`, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                                 <span className="font-bold text-lg">{count}</span>
                             </div>

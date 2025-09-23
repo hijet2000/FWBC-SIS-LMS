@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 // --- Icon Components ---
 const HomeIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -136,6 +137,11 @@ const GiftIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4H5z" />
     </svg>
 );
+const BriefcaseIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
 
 // --- Navigation Components ---
 
@@ -226,18 +232,32 @@ const CollapsibleNavSection: React.FC<CollapsibleNavSectionProps> = ({ title, ic
 const Sidebar: React.FC = () => {
   const { siteId } = useParams<{ siteId: string }>();
   const { user } = useAuth();
+  const { settings, loading: settingsLoading } = useSettings();
 
   const hasAnyScope = (requiredScopes: string[]): boolean => {
       if (!user) return false;
       return requiredScopes.some(scope => user.scopes.includes(scope));
   };
   
+  if (settingsLoading) {
+    return (
+         <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4">
+            <div className="animate-pulse space-y-4">
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+            </div>
+        </aside>
+    )
+  }
+
   return (
     <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4 flex flex-col">
       <nav className="flex flex-col gap-2 text-sm font-normal">
         {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard />}
 
-        {hasAnyScope(['school:admin']) && (
+        {settings?.modules.sis.enabled && hasAnyScope(['school:admin']) && (
             <CollapsibleNavSection title="SIS" icon={<UsersIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/students`} icon={<UsersIcon className="h-4 w-4" />} label="Students" />
                 <NavItem to={`/school/${siteId}/attendance`} icon={<ClipboardIcon className="h-4 w-4" />} label="Daily Entry" />
@@ -246,8 +266,8 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
         
-        {hasAnyScope(['school:admin', 'homework:teacher']) && (
-            <CollapsibleNavSection title="Academics" icon={<BookIcon className="h-4 w-4" />}>
+        {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'homework:teacher']) && (
+            <CollapsibleNavSection title="Academics & LMS" icon={<BookIcon className="h-4 w-4" />}>
                  {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics`} icon={<BookIcon className="h-4 w-4" />} label="Overview" />}
                  {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="Homework" />}
                  {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />}
@@ -260,7 +280,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
         
-        {hasAnyScope(['admissions:admin']) && (
+        {settings?.modules.admissions.enabled && hasAnyScope(['admissions:admin']) && (
             <CollapsibleNavSection title="Admissions" icon={<FolderAddIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/admissions`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" />
                 <NavItem to={`/school/${siteId}/admissions/applications`} icon={<UsersIcon className="h-4 w-4" />} label="Applications" />
@@ -273,7 +293,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['frontoffice:admin']) && (
+        {settings?.modules.frontoffice.enabled && hasAnyScope(['frontoffice:admin']) && (
             <CollapsibleNavSection title="Front Office" icon={<IdentificationIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/frontoffice`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
                 <NavItem to={`/school/${siteId}/frontoffice/enquiries`} icon={<ClipboardIcon className="h-4 w-4" />} label="Enquiries" />
@@ -283,14 +303,14 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['school:admin']) && (
+        {settings?.modules.fees.enabled && hasAnyScope(['school:admin']) && (
             <CollapsibleNavSection title="Student Fees" icon={<CreditCardIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/fees`} icon={<CreditCardIcon className="h-4 w-4" />} label="Structures" />
                 <NavItem to={`/school/${siteId}/fees/payments`} icon={<ReceiptIcon className="h-4 w-4" />} label="Payments" />
             </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['finance:admin']) && (
+        {settings?.modules.finance.enabled && hasAnyScope(['finance:admin']) && (
             <CollapsibleNavSection title="Finance" icon={<CurrencyDollarIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/finance/dashboard`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
                 <NavItem to={`/school/${siteId}/finance/ledger`} icon={<TableIcon className="h-4 w-4" />} label="Ledger" />
@@ -299,7 +319,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
         
-        {hasAnyScope(['sis:library:write']) && (
+        {settings?.modules.library.enabled && hasAnyScope(['sis:library:write']) && (
             <CollapsibleNavSection title="Physical Library" icon={<BookIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/library/catalog`} icon={<BookIcon className="h-4 w-4" />} label="Catalog" />
                 <NavItem to={`/school/${siteId}/library/members`} icon={<UsersIcon className="h-4 w-4" />} label="Members" />
@@ -309,7 +329,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
         
-        {hasAnyScope(['sis:hostel:write']) && (
+        {settings?.modules.hostel.enabled && hasAnyScope(['sis:hostel:write']) && (
             <CollapsibleNavSection title="Hostel" icon={<OfficeBuildingIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/hostel`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
                 <NavItem to={`/school/${siteId}/hostel/structure`} icon={<TableIcon className="h-4 w-4" />} label="Structure" />
@@ -320,7 +340,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
         
-        {hasAnyScope(['school:admin']) && (
+        {settings?.modules.transport.enabled && hasAnyScope(['school:admin']) && (
             <CollapsibleNavSection title="Transport" icon={<BusIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/transport/vehicles`} icon={<BusIcon className="h-4 w-4" />} label="Vehicles" />
                 <NavItem to={`/school/${siteId}/transport/trips`} icon={<ClipboardIcon className="h-4 w-4" />} label="Trips" />
@@ -328,7 +348,7 @@ const Sidebar: React.FC = () => {
             </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['inventory:admin']) && (
+        {settings?.modules.inventory.enabled && hasAnyScope(['inventory:admin']) && (
           <CollapsibleNavSection title="Inventory" icon={<ArchiveIcon className="h-4 w-4" />}>
             <NavItem to={`/school/${siteId}/inventory/items`} icon={<BookIcon className="h-4 w-4" />} label="Items" />
             <NavItem to={`/school/${siteId}/inventory/stock`} icon={<TableIcon className="h-4 w-4" />} label="Stock" />
@@ -338,7 +358,7 @@ const Sidebar: React.FC = () => {
           </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['alumni:admin']) && (
+        {settings?.modules.alumni.enabled && hasAnyScope(['alumni:admin']) && (
           <CollapsibleNavSection title="Alumni" icon={<UsersIcon className="h-4 w-4" />}>
             <NavItem to={`/school/${siteId}/alumni/directory`} icon={<UsersIcon className="h-4 w-4" />} label="Directory" />
             <NavItem to={`/school/${siteId}/alumni/events`} icon={<CalendarIcon className="h-4 w-4" />} label="Events" />
@@ -346,20 +366,31 @@ const Sidebar: React.FC = () => {
           </CollapsibleNavSection>
         )}
 
+        {settings?.modules.hr.enabled && hasAnyScope(['hr:admin', 'payroll:admin']) && (
+          <CollapsibleNavSection title="HR & Payroll" icon={<BriefcaseIcon className="h-4 w-4" />}>
+            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/dashboard`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard />}
+            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/employees`} icon={<UsersIcon className="h-4 w-4" />} label="Employees" />}
+            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/leave`} icon={<CalendarIcon className="h-4 w-4" />} label="Leave" />}
+            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/timesheets`} icon={<ClockIcon className="h-4 w-4" />} label="Timesheets" />}
+            {settings?.modules.payroll.enabled && hasAnyScope(['payroll:admin']) && <NavItem to={`/school/${siteId}/hr/payroll`} icon={<CurrencyDollarIcon className="h-4 w-4" />} label="Payroll" />}
+            {hasAnyScope(['hr:admin', 'payroll:admin']) && <NavItem to={`/school/${siteId}/hr/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />}
+          </CollapsibleNavSection>
+        )}
+
         {hasAnyScope(['lms:admin', 'school:admin', 'student', 'homework:student', 'homework:parent', 'alumni:portal:self']) && (
-             <CollapsibleNavSection title="LMS & Portals" icon={<LibraryIcon className="h-4 w-4" />}>
-                {hasAnyScope(['lms:admin']) && <NavItem to={`/school/${siteId}/courses`} icon={<LibraryIcon className="h-4 w-4" />} label="Courses" />}
-                {hasAnyScope(['school:admin', 'lms:admin', 'student']) && <NavItem to={`/school/${siteId}/library`} icon={<FilmIcon className="h-4 w-4" />} label="Digital Library" />}
-                {hasAnyScope(['school:admin', 'student']) && <NavItem to={`/school/${siteId}/library/catchup`} icon={<ClockIcon className="h-4 w-4" />} label="Catch-Up Classes" />}
+             <CollapsibleNavSection title="Portals" icon={<LibraryIcon className="h-4 w-4" />}>
+                {settings?.modules.lms.enabled && hasAnyScope(['lms:admin']) && <NavItem to={`/school/${siteId}/courses`} icon={<LibraryIcon className="h-4 w-4" />} label="Courses" />}
+                {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'lms:admin', 'student']) && <NavItem to={`/school/${siteId}/library`} icon={<FilmIcon className="h-4 w-4" />} label="Digital Library" />}
+                {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'student']) && <NavItem to={`/school/${siteId}/library/catchup`} icon={<ClockIcon className="h-4 w-4" />} label="Catch-Up Classes" />}
                 {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="My Homework" />}
                 {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/live-classes`} icon={<FilmIcon className="h-4 w-4" />} label="My Live Classes" />}
                 {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/hostel`} icon={<OfficeBuildingIcon className="h-4 w-4" />} label="My Hostel" />}
                 {hasAnyScope(['homework:parent']) && <NavItem to={`/portal/${siteId}/parent/student/${user?.studentId || 's01'}/homework`} icon={<UsersIcon className="h-4 w-4" />} label="Parent Portal" />}
-                {hasAnyScope(['alumni:portal:self']) && <NavItem to={`/portal/${siteId}/alumni/${user?.alumniId || 'alum-s01'}`} icon={<UsersIcon className="h-4 w-4" />} label="Alumni Portal" />}
+                {settings?.modules.alumni.enabled && hasAnyScope(['alumni:portal:self']) && <NavItem to={`/portal/${siteId}/alumni/${user?.alumniId || 'alum-s01'}`} icon={<UsersIcon className="h-4 w-4" />} label="Alumni Portal" />}
              </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['cms:admin']) && (
+        {settings?.modules.cms.enabled && hasAnyScope(['cms:admin']) && (
           <CollapsibleNavSection title="Website CMS" icon={<GlobeIcon className="h-4 w-4" />}>
               <NavItem to={`/school/${siteId}/cms/pages`} icon={<BookIcon className="h-4 w-4" />} label="Pages" />
               <NavItem to={`/school/${siteId}/cms/posts`} icon={<ClipboardIcon className="h-4 w-4" />} label="News & Events" />
@@ -369,7 +400,7 @@ const Sidebar: React.FC = () => {
           </CollapsibleNavSection>
         )}
 
-        {hasAnyScope(['certificates:admin']) && (
+        {settings?.modules.certificates.enabled && hasAnyScope(['certificates:admin']) && (
           <CollapsibleNavSection title="Certificates" icon={<IdentificationIcon className="h-4 w-4" />}>
               <NavItem to={`/school/${siteId}/certificates`} icon={<ClipboardIcon className="h-4 w-4" />} label="Manage Issues" />
           </CollapsibleNavSection>
@@ -379,6 +410,7 @@ const Sidebar: React.FC = () => {
             <CollapsibleNavSection title="Admin" icon={<ShieldIcon className="h-4 w-4" />}>
                 <NavItem to={`/school/${siteId}/admin/audit`} icon={<ShieldIcon className="h-4 w-4" />} label="Audit Trail" />
                 <NavItem to={`/school/${siteId}/admin/activity`} icon={<UsersIcon className="h-4 w-4" />} label="User Activity" />
+                <NavItem to={`/school/${siteId}/admin/settings`} icon={<CogIcon className="h-4 w-4" />} label="Tenant Settings" />
             </CollapsibleNavSection>
         )}
       

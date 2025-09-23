@@ -93,6 +93,12 @@ import LedgerPage from './pages/finance/LedgerPage';
 import CategoriesAndPayeesPage from './pages/finance/CategoriesAndPayeesPage';
 import FinanceReportsPage from './pages/finance/FinanceReportsPage';
 
+// HR Pages
+import HrDashboardPage from './pages/hr/HrDashboardPage';
+import EmployeesPage from './pages/hr/EmployeesPage';
+import LeavePage from './pages/hr/LeavePage';
+import PayrollPage from './pages/hr/PayrollPage';
+
 // CMS Pages
 import PagesListPage from './pages/cms/PagesListPage';
 import PageEditorPage from './pages/cms/PageEditorPage';
@@ -108,6 +114,11 @@ import ManageIssuesPage from './pages/certificates/ManageIssuesPage';
 // Admin Pages
 import AuditTrailPage from './pages/admin/AuditTrailPage';
 import UserActivityPage from './pages/admin/UserActivityPage';
+import SettingsLayout from './pages/admin/settings/SettingsLayout';
+import ModulesPage from './pages/admin/settings/ModulesPage';
+import LocalePage from './pages/admin/settings/LocalePage';
+import CalendarPage from './pages/admin/settings/CalendarPage';
+
 
 // Student Pages
 import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
@@ -265,6 +276,15 @@ function App() {
                   <Route path="finance/config" element={<RequireScope requiredScopes={['finance:admin']}><CategoriesAndPayeesPage /></RequireScope>} />
                   <Route path="finance/reports" element={<RequireScope requiredScopes={['finance:admin']}><FinanceReportsPage /></RequireScope>} />
 
+                  {/* HR & Payroll Module Routes */}
+                  <Route path="hr" element={<RequireScope requiredScopes={['hr:admin']}><Navigate to="dashboard" replace /></RequireScope>} />
+                  <Route path="hr/dashboard" element={<RequireScope requiredScopes={['hr:admin']}><HrDashboardPage /></RequireScope>} />
+                  <Route path="hr/employees" element={<RequireScope requiredScopes={['hr:admin']}><EmployeesPage /></RequireScope>} />
+                  <Route path="hr/leave" element={<RequireScope requiredScopes={['hr:admin']}><LeavePage /></RequireScope>} />
+                  <Route path="hr/timesheets" element={<RequireScope requiredScopes={['hr:admin']}><PlaceholderPage title="Timesheets" /></RequireScope>} />
+                  <Route path="hr/payroll" element={<RequireScope requiredScopes={['payroll:admin']}><PayrollPage /></RequireScope>} />
+                  <Route path="hr/reports" element={<RequireScope requiredScopes={['hr:admin', 'payroll:admin']}><PlaceholderPage title="HR & Payroll Reports" /></RequireScope>} />
+
                   {/* Hostel Module Routes */}
                   <Route path="hostel" element={<RequireScope requiredScopes={['sis:hostel:write']}><HostelDashboardPage /></RequireScope>} />
                   <Route path="hostel/structure" element={<RequireScope requiredScopes={['sis:hostel:write']}><StructurePage /></RequireScope>} />
@@ -311,6 +331,19 @@ function App() {
                   {/* Admin Module Routes */}
                   <Route path="admin/audit" element={<RequireScope requiredScopes={['school:admin']}><AuditTrailPage /></RequireScope>} />
                   <Route path="admin/activity" element={<RequireScope requiredScopes={['school:admin']}><UserActivityPage /></RequireScope>} />
+                  
+                  {/* Settings Module Routes */}
+                  <Route path="admin/settings" element={<RequireScope requiredScopes={['school:admin']}><SettingsLayout /></RequireScope>}>
+                      <Route index element={<Navigate to="modules" replace />} />
+                      <Route path="modules" element={<ModulesPage />} />
+                      <Route path="locale" element={<LocalePage />} />
+                      <Route path="calendar" element={<CalendarPage />} />
+                      <Route path="branding" element={<PlaceholderPage title="Branding Settings" />} />
+                      <Route path="roles" element={<PlaceholderPage title="Roles & Permissions" />} />
+                      <Route path="privacy" element={<PlaceholderPage title="Privacy & Data" />} />
+                      <Route path="backup" element={<PlaceholderPage title="Backup & Restore" />} />
+                      <Route path="diagnostics" element={<PlaceholderPage title="System Health" />} />
+                  </Route>
 
                 </Route>
                 <Route path="*" element={<Navigate to="/fwbc" replace />} />

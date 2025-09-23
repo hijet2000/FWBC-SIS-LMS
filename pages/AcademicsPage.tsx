@@ -1,10 +1,12 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { listSubjects, listTeachers, listMappings, deleteMapping } from '../lib/academicsService';
 import { getClasses } from '../lib/schoolService';
-import type { Subject, Teacher, SchoolClass, Mapping } from '../types';
+// FIX: Import ToastType to use for state
+import type { Subject, Teacher, SchoolClass, Mapping, ToastType } from '../types';
 
 import MappingModal from '../components/academics/MappingModal';
 import Toast from '../components/ui/Toast';
@@ -27,7 +29,8 @@ const AcademicsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMapping, setEditingMapping] = useState<Mapping | null>(null);
     const [deletingMapping, setDeletingMapping] = useState<Mapping | null>(null);
-    const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    // FIX: Update toast state to use ToastType
+    const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
     // Filter states from URL
     const filters = useMemo(() => ({

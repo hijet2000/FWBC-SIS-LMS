@@ -1030,11 +1030,130 @@ export interface Donation {
     isAnonymous: boolean;
 }
 
+// --- HR & Payroll Types ---
+export type ContractType = 'Full-time' | 'Part-time' | 'Contractor';
+export type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated';
+export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected';
+export type LeaveType = 'Annual' | 'Sick' | 'Unpaid' | 'Maternity' | 'Paternity';
+
+export interface Employee {
+    id: string; // Will be the same as their user ID if they are a system user
+    staffId: string;
+    fullName: string;
+    role: string;
+    department: 'Academics' | 'Administration' | 'Support Staff' | 'Management';
+    status: EmployeeStatus;
+    contract: {
+        type: ContractType;
+        startDate: string; // YYYY-MM-DD
+        endDate?: string; // YYYY-MM-DD
+    };
+    contact: {
+        email: string;
+        phone: string;
+    };
+    payroll: {
+        basicSalary: number;
+        allowances: { name: string; amount: number }[];
+        taxId?: string;
+        bankDetails?: string;
+    };
+}
+
+export interface LeaveApplication {
+    id: string;
+    employeeId: string;
+    leaveType: LeaveType;
+    startDate: string; // YYYY-MM-DD
+    endDate: string; // YYYY-MM-DD
+    reason: string;
+    status: LeaveStatus;
+    requestedAt: string; // ISO String
+    reviewedBy?: string; // User ID
+    reviewedAt?: string; // ISO String
+}
+
+export interface LeaveBalance {
+    employeeId: string;
+    annualEntitlement: number;
+    annualUsed: number;
+    sickEntitlement: number;
+    sickUsed: number;
+}
+
+export interface Payslip {
+    id: string;
+    employeeId: string;
+    period: string; // e.g. "2025-08"
+    grossSalary: number;
+    deductions: { name: string; amount: number }[];
+    netSalary: number;
+    generatedAt: string; // ISO String
+}
+
+
+// --- Tenant Settings Types ---
+export interface BrandingSettings {
+    siteTitle: string;
+    primaryColor: string;
+    logoUrl?: string;
+}
+
+export interface LocaleSettings {
+    language: 'en-GB' | 'en-US';
+    timezone: string; // e.g., 'Europe/London'
+    dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY';
+    timeFormat: '12h' | '24h';
+}
+
+export interface ModuleConfig {
+    enabled: boolean;
+    name: string;
+    description: string;
+}
+
+export interface ModuleSettings {
+    sis: ModuleConfig;
+    lms: ModuleConfig;
+    admissions: ModuleConfig;
+    frontoffice: ModuleConfig;
+    fees: ModuleConfig;
+    finance: ModuleConfig;
+    library: ModuleConfig;
+    hostel: ModuleConfig;
+    transport: ModuleConfig;
+    inventory: ModuleConfig;
+    hr: ModuleConfig;
+    payroll: ModuleConfig;
+    alumni: ModuleConfig;
+    cms: ModuleConfig;
+    certificates: ModuleConfig;
+}
+
+export interface Holiday {
+    id: string;
+    name: string;
+    date: string; // YYYY-MM-DD
+}
+
+export interface RolePreset {
+    id: string;
+    name: string;
+    description: string;
+    scopes: string[];
+}
+
+export interface TenantSettings {
+    branding: BrandingSettings;
+    locale: LocaleSettings;
+    modules: ModuleSettings;
+}
+
 
 // --- Audit & System Types ---
 
-export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'ADMISSIONS' | 'FRONTOFFICE' | 'SYSTEM' | 'INVENTORY' | 'ASSETS' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASS' | 'FINANCE' | 'ALUMNI';
-export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'APPROVE' | 'ARCHIVE' | 'NOTIFY' | 'CONVERT' | 'ROLE_CHANGE' | 'ISSUE' | 'RETURN' | 'RENEW' | 'GRADE' | 'REQUEST' | 'REVOKE' | 'PUBLISH' | 'UNPUBLISH' | 'MEDIA_UPLOAD' | 'MEDIA_DELETE' | 'MENU_UPDATE';
+export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'ADMISSIONS' | 'FRONTOFFICE' | 'SYSTEM' | 'INVENTORY' | 'ASSETS' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASS' | 'FINANCE' | 'ALUMNI' | 'HR' | 'PAYROLL' | 'SETTINGS';
+export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'APPROVE' | 'ARCHIVE' | 'NOTIFY' | 'CONVERT' | 'ROLE_CHANGE' | 'ISSUE' | 'RETURN' | 'RENEW' | 'GRADE' | 'REQUEST' | 'REVOKE' | 'PUBLISH' | 'UNPUBLISH' | 'MEDIA_UPLOAD' | 'MEDIA_DELETE' | 'MENU_UPDATE' | 'RUN_PAYROLL';
 
 export interface AuditEvent {
     id: string;

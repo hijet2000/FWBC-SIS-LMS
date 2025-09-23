@@ -17,6 +17,8 @@ const MOCK_USER: User = {
     'certificates:admin',
     'finance:admin',
     'alumni:admin',
+    'hr:admin',
+    'payroll:admin',
     'sis:students:read', 
     'sis:academics:read', 
     'sis:attendance:write', 

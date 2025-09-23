@@ -1,3 +1,4 @@
+
 import type { Application, ApplicationStatus, Enquiry, EnquiryStatus, FollowUp, VisitorLog, CallLog, Postal, Handover, User, SeatAllocation, CallDirection, CallTopic, PublicApplicationView } from '../types';
 import { logAuditEvent } from './auditService';
 import { createStudentFromApplication } from './schoolService';
@@ -379,7 +380,7 @@ export const listHandovers = async (postalId: string): Promise<Handover[]> => {
 export const createHandover = async (input: Omit<Handover, 'id'>, actor: User): Promise<Handover> => {
     await delay(400);
     // FIX: Correctly add fromUserId from actor
-    const newHandover: Handover = { ...input, id: `ho-${Date.now()}`, fromUserId: actor.id };
+    const newHandover: Handover = { ...input, id: `ho-${Date.now()}` };
     MOCK_HANDOVERS.push(newHandover);
     
     // Also update postal item status
