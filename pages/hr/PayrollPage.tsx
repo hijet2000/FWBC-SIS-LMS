@@ -27,6 +27,8 @@ const PayrollPage: React.FC = () => {
         const month = (now.getMonth() + 1).toString().padStart(2, '0'); // getMonth() is 0-indexed
         return `${year}-${month}`;
     });
+    
+    const [filterQuery, setFilterQuery] = useState('');
 
     // Fix: Changed `e.name` to `e.fullName` to match the Employee type definition.
     const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e.fullName])), [employees]);
@@ -76,6 +78,15 @@ const PayrollPage: React.FC = () => {
         }
     };
 
+    const filteredPayslips = useMemo(() => {
+        const q = filterQuery.toLowerCase();
+        if (!q) return payslips;
+        return payslips.filter(p => {
+            const employeeName = employeeMap.get(p.employeeId)?.toLowerCase();
+            return employeeName?.includes(q);
+        });
+    }, [payslips, filterQuery, employeeMap]);
+
     const formatCurrency = (amount: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
 
     return (
@@ -112,32 +123,53 @@ const PayrollPage: React.FC = () => {
             )}
             
             {!loading.payslips && payslips.length > 0 && (
-                 <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-300">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="p-3 text-left text-xs uppercase">Employee</th>
-                                <th className="p-3 text-right text-xs uppercase">Gross Salary</th>
-                                <th className="p-3 text-right text-xs uppercase">Deductions</th>
-                                <th className="p-3 text-right text-xs uppercase">Net Salary</th>
-                                <th className="p-3 text-right text-xs uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {payslips.map(p => {
-                                const deductions = p.deductions.reduce((sum, d) => sum + d.amount, 0);
-                                return (
-                                <tr key={p.id}>
-                                    <td className="p-3 font-medium">{employeeMap.get(p.employeeId)}</td>
-                                    <td className="p-3 text-sm text-right">{formatCurrency(p.grossSalary)}</td>
-                                    <td className="p-3 text-sm text-right text-red-500">{formatCurrency(deductions)}</td>
-                                    <td className="p-3 text-sm text-right font-semibold">{formatCurrency(p.netSalary)}</td>
-                                    <td className="p-3 text-right"><button className="text-indigo-600 text-sm">View</button></td>
+                <>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border">
+                        <label htmlFor="payroll-search" className="sr-only">Search by employee name</label>
+                        <input
+                            id="payroll-search"
+                            type="search"
+                            value={filterQuery}
+                            onChange={e => setFilterQuery(e.target.value)}
+                            placeholder="Search by employee name..."
+                            className="w-full md:w-1/2 p-2 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                    <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table className="min-w-full divide-y divide-gray-300">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="p-3 text-left text-xs uppercase">Employee</th>
+                                    <th className="p-3 text-right text-xs uppercase">Gross Salary</th>
+                                    <th className="p-3 text-right text-xs uppercase">Deductions</th>
+                                    <th className="p-3 text-right text-xs uppercase">Net Salary</th>
+                                    <th className="p-3 text-right text-xs uppercase">Actions</th>
                                 </tr>
-                            )})}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredPayslips.length > 0 ? (
+                                    filteredPayslips.map(p => {
+                                        const deductions = p.deductions.reduce((sum, d) => sum + d.amount, 0);
+                                        return (
+                                        <tr key={p.id}>
+                                            <td className="p-3 font-medium">{employeeMap.get(p.employeeId)}</td>
+                                            <td className="p-3 text-sm text-right">{formatCurrency(p.grossSalary)}</td>
+                                            <td className="p-3 text-sm text-right text-red-500">{formatCurrency(deductions)}</td>
+                                            <td className="p-3 text-sm text-right font-semibold">{formatCurrency(p.netSalary)}</td>
+                                            <td className="p-3 text-right"><button className="text-indigo-600 text-sm">View</button></td>
+                                        </tr>
+                                    )})
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="p-4 text-center text-gray-500">
+                                            No employees found matching your search.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
             )}
         </div>
     );
