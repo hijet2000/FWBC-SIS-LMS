@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // --- Core Types ---
@@ -120,6 +121,99 @@ export interface TimetableEntry {
     classId: string;
     day: DayOfWeek;
     timeSlot: string; // e.g., "09:00-10:00"
+}
+
+// --- Online Exams Types ---
+export type OnlineExamStatus = 'Draft' | 'Published' | 'Archived';
+export type ExamQuestionType = 'multiple-choice' | 'true-false';
+
+export interface OnlineExamConfig {
+    lockdownMode: boolean; // Prevents tab switching
+    timePerQuestionSec?: number; // Optional time limit per question in seconds
+    // List of question IDs from the central bank that are active for this exam.
+    questionIds: string[]; 
+}
+
+export interface OnlineExam {
+    id: string;
+    title: string;
+    subjectId: string;
+    classId: string;
+    instructions: string;
+    durationMinutes: number;
+    startTime: string; // ISO String for start of window
+    endTime: string; // ISO String for end of window
+    status: OnlineExamStatus;
+    totalMarks: number;
+    config: OnlineExamConfig;
+    resultsPublishedAt?: string | null; // null = not published. ISO String = published.
+}
+
+export interface Question {
+    id: string;
+    subjectId: string;
+    questionText: string;
+    type: ExamQuestionType;
+    // For 'multiple-choice', this will be an array of strings.
+    // For 'true-false', this will be ['True', 'False'].
+    options: string[];
+    // For 'multiple-choice', this is the index of the correct option.
+    // For 'true-false', this will be 0 for True, 1 for False.
+    correctOptionIndex: number;
+    marks: number;
+}
+
+export interface StudentExamSubmission {
+    id: string;
+    examId: string;
+    studentId: string;
+    startedAt: string; // ISO String
+    submittedAt?: string; // ISO String
+    answers: Map<string, number>; // questionId -> selectedOptionIndex
+    score?: number;
+    status: 'InProgress' | 'Submitted';
+}
+
+// --- Live Classes Types ---
+export type LiveClassStatus = 'Scheduled' | 'Live' | 'Finished' | 'Cancelled';
+export type IntegrationProvider = 'SelfHosted' | 'Zoom' | 'Google Meet';
+
+export interface LiveClass {
+    id: string;
+    topic: string;
+    classId: string;
+    subjectId: string;
+    teacherId: string;
+    startTime: string; // ISO String
+    durationMinutes: number;
+    status: LiveClassStatus;
+    joinUrl: string;
+    meetingId?: string;
+    recordedUrl?: string;
+}
+
+export interface LiveClassIntegrationSettings {
+    provider: IntegrationProvider;
+    enabled: boolean;
+    apiKey?: string;
+    apiSecret?: string;
+    autoRecord?: boolean; // Automatically record all sessions
+    autoPublishRecording?: boolean; // If recorded, automatically add to catch-up module
+}
+
+export interface LiveClassAttendance {
+    id: string;
+    liveClassId: string;
+    studentId: string;
+    joinedAt: string; // ISO String
+    leftAt?: string; // ISO String
+    durationAttendedMinutes: number;
+}
+
+export interface LiveClassParticipant {
+    id: string;
+    name: string;
+    isHost: boolean;
 }
 
 
@@ -426,6 +520,12 @@ export interface FeeItem {
     active: boolean;
 }
 
+export interface InvoiceLineItem {
+    feeItemId: string;
+    description: string;
+    amount: number;
+}
+
 export interface Invoice {
     id: string;
     invoiceNo: string;
@@ -433,7 +533,7 @@ export interface Invoice {
     classId: string;
     issuedAt: string; // YYYY-MM-DD
     dueAt: string; // YYYY-MM-DD
-    lineItems: { feeItemId: string; description: string; amount: number }[];
+    lineItems: InvoiceLineItem[];
     total: number;
     paid: number;
     status: InvoiceStatus;
@@ -450,61 +550,15 @@ export interface Payment {
     note?: string;
 }
 
-// --- Finance (Non-Fee) Types ---
-export type TransactionType = 'INCOME' | 'EXPENSE';
-
-export interface FinanceCategory {
-    id: string;
-    name: string;
-    type: TransactionType;
-}
-
-export interface Payee {
-    id: string;
-    name: string;
-    type: 'Staff' | 'Vendor' | 'Other';
-    contact?: string;
-}
-
-export interface LedgerEntry {
-    id: string;
-    date: string; // YYYY-MM-DD
-    categoryId: string;
-    payeeId?: string;
-    description: string;
-    // Amount is always positive. 'type' determines if it's income or expense.
-    // In the ledger, expenses will be shown as debits (negative).
-    amount: number;
-    type: TransactionType;
-    refNo?: string;
-    notes?: string;
-    isReversal: boolean;
-    reversalOf?: string; // ID of the entry being reversed
-    actorId: string;
-    createdAt: string; // ISO String
-}
-
-export interface FinancialPeriod {
-    id: string; // e.g., "2025-08"
-    month: number; // 1-12
-    year: number;
-    status: 'Open' | 'Closed';
-    closingBalance?: number;
-    closedBy?: string;
-    closedAt?: string;
-}
-
 
 // --- Transport Types ---
-export type TripStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
-export type BoardingDirection = 'Pickup' | 'Dropoff';
 
 export interface Vehicle {
     id: string;
     regNo: string;
     make: string;
     model: string;
-    capacity: number;
+    capacity?: number;
     active: boolean;
     notes?: string;
 }
@@ -517,11 +571,27 @@ export interface Driver {
     active: boolean;
 }
 
+export interface RouteStop {
+    id: string;
+    label: string;
+}
 export interface TransportRoute {
     id: string;
     name: string;
-    stops: { id: string; label: string }[];
+    stops: RouteStop[];
 }
+
+export interface EligibleStudent {
+    id: string;
+    name: string;
+    admissionNo: string;
+    transportRouteId: string;
+    pickupStopId: string;
+    dropoffStopId: string;
+    guardianPhone: string;
+}
+
+export type TripStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
 
 export interface Trip {
     id: string;
@@ -529,17 +599,12 @@ export interface Trip {
     vehicleId: string;
     driverId: string;
     routeId: string;
-    startTime?: string;
-    endTime?: string;
+    startTime?: string; // HH:MM
+    endTime?: string; // HH:MM
     status: TripStatus;
 }
 
-export interface EligibleStudent extends Student {
-    transportRouteId: string;
-    pickupStopId: string;
-    dropoffStopId: string;
-    guardianPhone: string;
-}
+export type BoardingDirection = 'Pickup' | 'Dropoff';
 
 export interface BoardingEvent {
     id: string;
@@ -557,126 +622,12 @@ export interface AlertSettings {
     onDropoff: boolean;
 }
 
-
-// --- Physical Library Types ---
-export type BookCopyStatus = 'Available' | 'On Loan' | 'Reserved' | 'Maintenance' | 'Lost';
-export type MemberType = 'Student' | 'Staff';
-
-export interface Book {
-    id: string;
-    isbn?: string;
-    title: string;
-    author: string;
-    category?: string;
-    publisher?: string;
-    publishedYear?: number;
-}
-
-export interface BookCopy {
-    id: string;
-    bookId: string;
-    barcode: string;
-    status: BookCopyStatus;
-    rack?: string;
-    shelf?: string;
-    condition?: 'New' | 'Good' | 'Fair' | 'Poor';
-}
-
-export interface LibraryMember {
-    id: string;
-    type: MemberType;
-    barcode: string;
-    active: boolean;
-}
-
-export interface Loan {
-    id: string;
-    copyId: string;
-    memberId: string;
-    issuedAt: string; // ISO String
-    dueAt: string; // ISO String
-    returnedAt?: string; // ISO String
-    renewals?: number;
-    fineIncurred?: number;
-}
-
-export interface PotentialMember {
-    id: string;
-    name: string;
-    type: 'Student' | 'Staff';
-    isMember: boolean;
-    libraryMemberId?: string;
-}
-
-export interface LoanPolicy {
-    loanDays: number;
-    maxRenewals: number;
-    graceDays: number;
-    finePerDay: number;
-}
-
-export interface MemberTypePolicy {
-    type: MemberType;
-    maxConcurrentLoans: number;
-}
-
-export interface LibrarySettings {
-    loanPolicy: LoanPolicy;
-    memberTypePolicies: MemberTypePolicy[];
-    taxonomy: {
-        racks: string[];
-        shelves: string[];
-    };
-    labelFormats: {
-        bookBarcode: string;
-        memberBarcode: string;
-    };
-    fineRounding: 'none' | 'nearest_0.5' | 'up_to_integer';
-}
-
-export interface BookWithCopies extends Book {
-    copies: BookCopy[];
-}
-
-export interface MemberLoanDetails extends Loan {
-    bookTitle: string;
-    bookAuthor: string;
-    copyBarcode: string;
-}
-export interface MemberDetails {
-    member: LibraryMember;
-    user: { id: string, name: string, type: 'Student' | 'Staff' };
-    currentLoans: MemberLoanDetails[];
-    loanHistory: MemberLoanDetails[];
-    totalFines: number;
-}
-export type CirculationDetails = {
-    member?: MemberDetails['member'] & { name: string; maxConcurrentLoans?: number; };
-    book?: Book;
-    copy?: BookCopy;
-    loan?: Loan;
-    policyViolations: string[];
-};
-export interface OverdueLoanDetails extends Loan {
-    memberName: string;
-    memberType: MemberType;
-    bookTitle: string;
-    copyBarcode: string;
-    daysOverdue: number;
-}
-export interface CirculationStats {
-    topTitles: { title: string; count: number }[];
-    topCategories: { category: string; count: number }[];
-    loansLast30Days: number;
-    totalLoans: number;
-}
-
-
 // --- Hostel Types ---
 export type HostelType = 'Boys' | 'Girls' | 'Mixed' | 'Staff';
 export type BedStatus = 'Available' | 'Occupied' | 'Blocked';
 export type AllocationStatus = 'Scheduled' | 'CheckedIn' | 'CheckedOut';
 export type CurfewStatus = 'In' | 'Late' | 'Absent';
+export type GenderRule = 'Enforce' | 'Warn';
 
 export interface Hostel {
     id: string;
@@ -713,6 +664,23 @@ export interface Allocation {
     depositNotes?: string;
 }
 
+export interface HostelDashboardSummary {
+    kpis: {
+        totalCapacity: number;
+        totalOccupied: number;
+        occupancyRate: number;
+        totalAvailable: number;
+    };
+    occupancyByHostel: {
+        id: string; name: string; type: HostelType;
+        capacity: number; occupied: number; available: number; blocked: number;
+    }[];
+    alerts: {
+        overcapacityRooms: { roomNumber: string; hostelName: string; capacity: number; occupied: number; }[];
+        totalBlockedBeds: number;
+    };
+}
+
 export interface HostelVisitor {
     id: string;
     visitorName: string;
@@ -721,7 +689,6 @@ export interface HostelVisitor {
     idChecked: boolean;
     timeIn: string; // ISO String
     timeOut?: string; // ISO String
-    approvedByWardenId?: string;
     isOverstay?: boolean;
 }
 
@@ -743,42 +710,15 @@ export interface CurfewSettings {
     alertsEnabled: boolean;
 }
 
-
-export interface HostelDashboardSummary {
-    kpis: {
-        totalCapacity: number;
-        totalOccupied: number;
-        occupancyRate: number;
-        totalAvailable: number;
-    };
-    occupancyByHostel: {
-        id: string;
-        name: string;
-        type: HostelType;
-        capacity: number;
-        occupied: number;
-        available: number;
-        blocked: number;
-    }[];
-    alerts: {
-        overcapacityRooms: {
-            roomNumber: string;
-            hostelName: string;
-            capacity: number;
-            occupied: number;
-        }[];
-        totalBlockedBeds: number;
-    };
-}
-
 export interface HostelSettings {
     curfewTime: string; // HH:MM
     lateThresholdMin: number;
-    genderRule: 'Enforce' | 'Warn';
+    genderRule: GenderRule;
     maxVisitorsPerDay: number;
     idRequiredForVisitors: boolean;
 }
 
+// FIX: Added HostelWithRoomsAndBeds and RoomWithBeds types
 export interface RoomWithBeds extends Room {
     beds: Bed[];
 }
@@ -786,384 +726,11 @@ export interface HostelWithRoomsAndBeds extends Hostel {
     rooms: RoomWithBeds[];
 }
 
-// --- Inventory & Assets Types ---
-export type ItemUnit = 'Pcs' | 'Box' | 'Kg' | 'Litre' | 'Set' | 'Other';
-export interface InventoryItem {
-    id: string;
-    name: string;
-    sku: string;
-    unit: ItemUnit;
-    category: string;
-    reorderLevel: number;
-    reorderQty: number;
-    location?: string;
-    trackAsset: boolean;
-    photoUrl?: string;
-    active: boolean;
-}
-export type StockTransactionType = 'IN' | 'OUT' | 'ADJUST' | 'RETURN';
-export type StockEntity = 'Teacher' | 'Class' | 'Room';
-export interface StockTransaction {
-    id: string;
-    itemId: string;
-    type: StockTransactionType;
-    quantity: number; // Positive for IN/RETURN, negative for OUT/ADJUST
-    unitCost?: number;
-    supplierId?: string;
-    toEntityType?: StockEntity;
-    toEntityId?: string;
-    reason?: string;
-    ref?: string;
-    createdAt: string; // ISO String
-    actorId: string;
-}
-export type IssueRequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Fulfilled' | 'Cancelled';
-export interface IssueRequest {
-    id: string;
-    itemId: string;
-    quantity: number;
-    requesterId: string;
-    status: IssueRequestStatus;
-    requestedAt: string; // ISO String
-    approvedAt?: string;
-    approverId?: string;
-    fulfilledAt?: string;
-    notes?: string;
-}
-export interface Supplier {
-    id: string;
-    name: string;
-    contactPerson?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    active: boolean;
-}
-export type AssetStatus = 'In Stock' | 'Assigned' | 'In Repair' | 'Lost' | 'Disposed';
-export type AssetLocationType = 'Teacher' | 'Classroom' | 'Location';
-export interface Asset {
-    id: string;
-    itemId: string;
-    serialNumber?: string;
-    status: AssetStatus;
-    assignedToType?: AssetLocationType;
-    assignedToId?: string;
-    assignedToName?: string;
-    history: {
-        timestamp: string;
-        status: AssetStatus;
-        locationType?: AssetLocationType;
-        locationId?: string;
-        actorId: string;
-        notes?: string;
-    }[];
-}
-
-// --- CMS Types ---
-export type PageStatus = 'Draft' | 'InReview' | 'Published' | 'Archived';
-export type BlockType = 'text' | 'image' | 'video';
-export interface PageBlock {
-    id: string;
-    type: BlockType;
-    order: number;
-    content: any; // e.g., { text: '...' } or { mediaId: '...', caption: '...' }
-}
-export interface SeoData {
-    title: string;
-    description: string;
-    keywords: string;
-}
-export interface CmsPage {
-    id: string;
-    title: string;
-    slug: string;
-    status: PageStatus;
-    authorId: string;
-    createdAt: string; // ISO
-    updatedAt: string; // ISO
-    publishedAt?: string; // ISO
-    currentVersion: number;
-    seo: SeoData;
-    blocks: PageBlock[];
-    versions: {
-        version: number;
-        updatedAt: string;
-        authorId: string;
-        blocks: PageBlock[];
-    }[];
-}
-export type CmsPostType = 'News' | 'Event';
-export interface CmsPost {
-    id: string;
-    postType: CmsPostType;
-    title: string;
-    slug: string;
-    status: PageStatus;
-    authorId: string;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt?: string;
-    seo: SeoData;
-    excerpt: string;
-    content: string; // Markdown or simple text
-    featuredImageId?: string;
-    // Event-specific fields
-    eventDate?: string; // YYYY-MM-DD
-    eventTime?: string; // HH:MM
-    eventLocation?: string;
-}
-export interface MediaAsset {
-    id: string;
-    fileName: string;
-    mimeType: string;
-    sizeBytes: number;
-    url: string; // In a real app, this would be a CDN URL
-    altText?: string;
-    uploadedAt: string;
-    uploadedBy: string;
-}
-export interface WebsiteSettings {
-    siteTitle: string;
-    primaryColor: string;
-    logoUrl?: string;
-}
-export type MenuItemType = 'page' | 'url';
-export interface MenuItem {
-    id: string;
-    label: string;
-    type: MenuItemType;
-    value: string; // Page slug or external URL
-    order: number;
-    children: MenuItem[];
-}
-export interface Menu {
-    id: string;
-    name: string;
-    items: MenuItem[];
-}
-
-
-// --- Certificates Types ---
-export type CertificateStatus = 'Valid' | 'Expired' | 'Revoked';
-export type CertificateType = 'ID_CARD' | 'CERTIFICATE' | 'TRANSCRIPT';
-export interface CertificateTemplate {
-    id: string;
-    name: string;
-    type: CertificateType;
-    widthMm: number;
-    heightMm: number;
-    frontLayers: any[];
-    backLayers: any[];
-}
-export interface IssuedCertificate {
-    id: string;
-    serialNo: string;
-    qrToken: string;
-    templateId: string;
-    holderId: string;
-    holderName: string;
-    status: CertificateStatus;
-    issuedAt: string; // ISO
-    expiresAt?: string; // ISO
-    revokedAt?: string; // ISO
-    revocationReason?: string;
-}
-
-// --- Live Classes Types ---
-export type LiveClassStatus = 'Scheduled' | 'Live' | 'Finished' | 'Cancelled';
-export type IntegrationProvider = 'Zoom' | 'Google Meet' | 'SelfHosted';
-
-export interface LiveClass {
-    id: string;
-    topic: string;
-    classId: string;
-    subjectId: string;
-    teacherId: string;
-    startTime: string; // ISO String
-    durationMinutes: number;
-    status: LiveClassStatus;
-    joinUrl: string;
-    meetingId?: string;
-    recordedUrl?: string; // Set when recording is added to catch-up
-}
-
-export interface LiveClassIntegrationSettings {
-    provider: IntegrationProvider;
-    apiKey?: string;
-    apiSecret?: string;
-    enabled: boolean;
-}
-
-export interface LiveClassAttendance {
-    id: string;
-    liveClassId: string;
-    studentId: string;
-    joinedAt: string; // ISO String
-    leftAt?: string; // ISO String
-    durationAttendedMinutes: number;
-}
-
-// --- Alumni Types ---
-export interface AlumniPrivacySettings {
-    profilePublic: boolean;
-    contactPublic: boolean;
-    mentorshipOptIn: boolean;
-}
-export interface Alumni {
-    id: string; // Same as student ID
-    studentId: string;
-    name: string;
-    graduationYear: number;
-    degree?: string;
-    profession?: string;
-    company?: string;
-    contact: {
-        email: string;
-        phone?: string;
-        linkedin?: string;
-    };
-    privacy: AlumniPrivacySettings;
-}
-export interface AlumniEvent {
-    id: string;
-    title: string;
-    date: string; // ISO String
-    location: string;
-    description: string;
-}
-export interface Donation {
-    id: string;
-    alumniId: string;
-    amount: number;
-    date: string; // YYYY-MM-DD
-    campaign?: string;
-    isAnonymous: boolean;
-}
-
-// --- HR & Payroll Types ---
-export type ContractType = 'Full-time' | 'Part-time' | 'Contractor';
-export type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated';
-export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected';
-export type LeaveType = 'Annual' | 'Sick' | 'Unpaid' | 'Maternity' | 'Paternity';
-
-export interface Employee {
-    id: string; // Will be the same as their user ID if they are a system user
-    staffId: string;
-    fullName: string;
-    role: string;
-    department: 'Academics' | 'Administration' | 'Support Staff' | 'Management';
-    status: EmployeeStatus;
-    contract: {
-        type: ContractType;
-        startDate: string; // YYYY-MM-DD
-        endDate?: string; // YYYY-MM-DD
-    };
-    contact: {
-        email: string;
-        phone: string;
-    };
-    payroll: {
-        basicSalary: number;
-        allowances: { name: string; amount: number }[];
-        taxId?: string;
-        bankDetails?: string;
-    };
-}
-
-export interface LeaveApplication {
-    id: string;
-    employeeId: string;
-    leaveType: LeaveType;
-    startDate: string; // YYYY-MM-DD
-    endDate: string; // YYYY-MM-DD
-    reason: string;
-    status: LeaveStatus;
-    requestedAt: string; // ISO String
-    reviewedBy?: string; // User ID
-    reviewedAt?: string; // ISO String
-}
-
-export interface LeaveBalance {
-    employeeId: string;
-    annualEntitlement: number;
-    annualUsed: number;
-    sickEntitlement: number;
-    sickUsed: number;
-}
-
-export interface Payslip {
-    id: string;
-    employeeId: string;
-    period: string; // e.g. "2025-08"
-    grossSalary: number;
-    deductions: { name: string; amount: number }[];
-    netSalary: number;
-    generatedAt: string; // ISO String
-}
-
-
-// --- Tenant Settings Types ---
-export interface BrandingSettings {
-    siteTitle: string;
-    primaryColor: string;
-    logoUrl?: string;
-}
-
-export interface LocaleSettings {
-    language: 'en-GB' | 'en-US';
-    timezone: string; // e.g., 'Europe/London'
-    dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY';
-    timeFormat: '12h' | '24h';
-}
-
-export interface ModuleConfig {
-    enabled: boolean;
-    name: string;
-    description: string;
-}
-
-export interface ModuleSettings {
-    sis: ModuleConfig;
-    lms: ModuleConfig;
-    admissions: ModuleConfig;
-    frontoffice: ModuleConfig;
-    fees: ModuleConfig;
-    finance: ModuleConfig;
-    library: ModuleConfig;
-    hostel: ModuleConfig;
-    transport: ModuleConfig;
-    inventory: ModuleConfig;
-    hr: ModuleConfig;
-    payroll: ModuleConfig;
-    alumni: ModuleConfig;
-    cms: ModuleConfig;
-    certificates: ModuleConfig;
-}
-
-export interface Holiday {
-    id: string;
-    name: string;
-    date: string; // YYYY-MM-DD
-}
-
-export interface RolePreset {
-    id: string;
-    name: string;
-    description: string;
-    scopes: string[];
-}
-
-export interface TenantSettings {
-    branding: BrandingSettings;
-    locale: LocaleSettings;
-    modules: ModuleSettings;
-}
-
-
-// --- Audit & System Types ---
-
-export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'ACADEMICS' | 'HOMEWORK' | 'FEES' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'ADMISSIONS' | 'FRONTOFFICE' | 'SYSTEM' | 'INVENTORY' | 'ASSETS' | 'CMS' | 'CERTIFICATES' | 'LIVE_CLASS' | 'FINANCE' | 'ALUMNI' | 'HR' | 'PAYROLL' | 'SETTINGS' | 'TASKS';
-export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'APPROVE' | 'ARCHIVE' | 'NOTIFY' | 'CONVERT' | 'ROLE_CHANGE' | 'ISSUE' | 'RETURN' | 'RENEW' | 'GRADE' | 'REQUEST' | 'REVOKE' | 'PUBLISH' | 'UNPUBLISH' | 'MEDIA_UPLOAD' | 'MEDIA_DELETE' | 'MENU_UPDATE' | 'RUN_PAYROLL';
+// --- Admin & Settings ---
+// FIX: Added 'FINANCE' and 'TASKS' to AuditModule type
+export type AuditModule = 'AUTH' | 'STUDENTS' | 'ATTENDANCE' | 'FEES' | 'ACADEMICS' | 'SETTINGS' | 'SYSTEM' | 'TRANSPORT' | 'LIBRARY' | 'HOSTEL' | 'INVENTORY' | 'ASSETS' | 'HR' | 'PAYROLL' | 'ALUMNI' | 'CMS' | 'CERTIFICATES' | 'ADMISSIONS' | 'FRONTOFFICE' | 'HOMEWORK' | 'LIVE_CLASS' | 'ONLINE_EXAMS' | 'FINANCE' | 'TASKS';
+// FIX: Added 'GRADE' to AuditAction type
+export type AuditAction = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'PAYMENT' | 'ROLE_CHANGE' | 'APPROVE' | 'REVOKE' | 'ISSUE' | 'RETURN' | 'RENEW' | 'NOTIFY' | 'ARCHIVE' | 'REQUEST' | 'CONVERT' | 'MENU_UPDATE' | 'MEDIA_UPLOAD' | 'PUBLISH' | 'UNPUBLISH' | 'RUN_PAYROLL' | 'START_EXAM' | 'SUBMIT_EXAM' | 'GRADE';
 
 export interface AuditEvent {
     id: string;
@@ -1192,15 +759,485 @@ export interface UserSession {
     active: boolean;
 }
 
-// --- UI Types ---
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
-
 export interface ToastMessage {
   id: number;
   message: string;
   type: ToastType;
 }
-
 export interface ToastContextType {
   addToast: (message: string, type: ToastType) => void;
+}
+
+export interface Holiday {
+    id: string;
+    name: string;
+    date: string; // YYYY-MM-DD
+}
+
+export interface ModuleConfig {
+    enabled: boolean;
+    name: string;
+    description: string;
+}
+export type ModuleSettings = Record<string, ModuleConfig>;
+
+export interface BrandingSettings {
+    siteTitle: string;
+    primaryColor: string;
+    logoUrl: string;
+}
+
+export interface LocaleSettings {
+    language: 'en-GB' | 'en-US';
+    timezone: string;
+    dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY';
+    timeFormat: '12h' | '24h';
+}
+
+export interface TenantSettings {
+    branding: BrandingSettings;
+    locale: LocaleSettings;
+    modules: ModuleSettings;
+}
+
+// --- Library Types ---
+export type BookCopyStatus = 'Available' | 'On Loan' | 'Reserved' | 'Maintenance' | 'Lost';
+export type MemberType = 'Student' | 'Staff';
+
+export interface Book {
+    id: string;
+    isbn?: string;
+    title: string;
+    author: string;
+    category?: string;
+    publisher?: string;
+    publishedYear?: number;
+}
+
+export interface BookCopy {
+    id: string;
+    bookId: string;
+    barcode: string;
+    status: BookCopyStatus;
+    rack?: string;
+    shelf?: string;
+    condition?: 'New' | 'Good' | 'Fair' | 'Poor';
+}
+
+export interface LibraryMember {
+    id: string; // Corresponds to Student or Teacher ID
+    type: MemberType;
+    barcode: string;
+    active: boolean;
+}
+
+export interface PotentialMember {
+    id: string;
+    name: string;
+    type: MemberType;
+    isMember: boolean;
+    libraryMemberId?: string;
+}
+
+export interface Loan {
+    id: string;
+    copyId: string;
+    memberId: string;
+    issuedAt: string; // ISO String
+    dueAt: string; // ISO String
+    returnedAt?: string; // ISO String
+    renewals?: number;
+    fineIncurred?: number;
+}
+
+export interface LoanPolicy {
+    loanDays: number;
+    maxRenewals: number;
+    graceDays: number;
+    finePerDay: number;
+}
+
+export interface MemberTypePolicy {
+    type: MemberType;
+    maxConcurrentLoans: number;
+}
+
+export interface LibrarySettings {
+    loanPolicy: LoanPolicy;
+    memberTypePolicies: MemberTypePolicy[];
+    taxonomy: {
+        racks: string[];
+        shelves: string[];
+    };
+    labelFormats: {
+        bookBarcode: string;
+        memberBarcode: string;
+    };
+    fineRounding: 'nearest_0.5' | 'up' | 'down';
+}
+
+export interface BookWithCopies extends Book {
+    copies: BookCopy[];
+}
+
+export interface MemberLoanDetails extends Loan {
+    bookTitle: string;
+    bookAuthor: string;
+    copyBarcode: string;
+}
+export interface MemberDetails {
+    member: LibraryMember;
+    user: { id: string, name: string, type: 'Student' | 'Staff' };
+    currentLoans: MemberLoanDetails[];
+    loanHistory: MemberLoanDetails[];
+    totalFines: number;
+}
+
+export interface OverdueLoanDetails extends Loan {
+    memberName: string;
+    memberType: MemberType;
+    bookTitle: string;
+    copyBarcode: string;
+    daysOverdue: number;
+}
+
+export interface CirculationStats {
+    topTitles: { title: string; count: number }[];
+    topCategories: { category: string; count: number }[];
+    loansLast30Days: number;
+    totalLoans: number;
+}
+
+export interface CirculationDetails {
+    member?: (LibraryMember & { name: string; maxConcurrentLoans?: number; });
+    book?: Book;
+    copy?: BookCopy;
+    loan?: Loan;
+    policyViolations: string[];
+};
+
+// --- Inventory Types ---
+export type ItemUnit = 'Pcs' | 'Box' | 'Kg' | 'Litre' | 'Set' | 'Other';
+export type StockTransactionType = 'IN' | 'OUT' | 'ADJUST' | 'RETURN';
+export type IssueRequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Fulfilled' | 'Cancelled';
+export type AssetStatus = 'In Stock' | 'Assigned' | 'In Repair' | 'Lost' | 'Disposed';
+export type AssetLocationType = 'Teacher' | 'Classroom' | 'Location';
+export type StockEntity = 'Class' | 'Teacher' | 'Room';
+
+export interface InventoryItem {
+    id: string;
+    name: string;
+    sku: string;
+    unit: ItemUnit;
+    category: string;
+    reorderLevel: number;
+    reorderQty: number;
+    location?: string;
+    trackAsset: boolean;
+    photoUrl?: string;
+    active: boolean;
+}
+
+export interface Supplier {
+    id: string;
+    name: string;
+    contactPerson?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    active: boolean;
+}
+
+export interface StockTransaction {
+    id: string;
+    itemId: string;
+    type: StockTransactionType;
+    quantity: number; // Positive for IN/RETURN, negative for OUT/ADJUST
+    unitCost?: number;
+    supplierId?: string;
+    toEntityType?: StockEntity;
+    toEntityId?: string;
+    reason?: string;
+    ref?: string;
+    createdAt: string; // ISO String
+    actorId: string;
+}
+
+export interface IssueRequest {
+    id: string;
+    itemId: string;
+    quantity: number;
+    requesterId: string; // Teacher/Staff ID
+    status: IssueRequestStatus;
+    requestedAt: string; // ISO String
+    approvedAt?: string;
+    approverId?: string;
+    notes?: string;
+}
+
+export interface AssetHistoryLog {
+    timestamp: string; // ISO String
+    status: AssetStatus;
+    locationType?: AssetLocationType;
+    locationId?: string;
+    actorId: string;
+    notes?: string;
+}
+
+export interface Asset {
+    id: string; // e.g., ASSET-00001
+    itemId: string;
+    serialNumber?: string;
+    status: AssetStatus;
+    assignedToType?: AssetLocationType;
+    assignedToId?: string;
+    assignedToName?: string;
+    history: AssetHistoryLog[];
+}
+
+// --- CMS Types ---
+export type PageStatus = 'Draft' | 'InReview' | 'Published' | 'Archived';
+export type CmsPostType = 'News' | 'Event';
+export type BlockType = 'text' | 'image' | 'video' | 'quote';
+export type MenuItemType = 'page' | 'url';
+
+export interface SeoData {
+    title: string;
+    description: string;
+    keywords: string;
+}
+
+export interface PageBlock {
+    id: string;
+    type: BlockType;
+    order: number;
+    content: any; // e.g., { text: '...' } or { mediaId: '...', caption: '...' }
+}
+
+export interface CmsPage {
+    id: string;
+    title: string;
+    slug: string;
+    status: PageStatus;
+    authorId: string;
+    createdAt: string; // ISO String
+    updatedAt: string; // ISO String
+    publishedAt?: string; // ISO String
+    currentVersion: number;
+    seo: SeoData;
+    blocks: PageBlock[];
+    versions: any[]; // Placeholder for version history
+}
+
+export interface CmsPost {
+    id: string;
+    postType: CmsPostType;
+    title: string;
+    slug: string;
+    status: PageStatus;
+    authorId: string;
+    createdAt: string; // ISO String
+    updatedAt: string; // ISO String
+    publishedAt?: string; // ISO String
+    seo: SeoData;
+    excerpt: string;
+    content: string;
+    featuredImageId?: string;
+    // Event-specific fields
+    eventDate?: string; // YYYY-MM-DD
+    eventTime?: string; // HH:MM
+    eventLocation?: string;
+}
+
+export interface MediaAsset {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    url: string;
+    altText?: string;
+    uploadedAt: string; // ISO String
+    uploadedBy: string;
+}
+
+export interface MenuItem {
+    id: string;
+    label: string;
+    type: MenuItemType;
+    value: string; // slug for page, URL for url
+    order: number;
+    children: MenuItem[];
+}
+
+export interface Menu {
+    id: string;
+    name: string;
+    items: MenuItem[];
+}
+
+export interface WebsiteSettings {
+    siteTitle: string;
+    primaryColor: string;
+    logoUrl: string;
+}
+
+// --- Certificates Types ---
+export type CertificateType = 'ID_CARD' | 'CERTIFICATE';
+export type CertificateStatus = 'Valid' | 'Revoked' | 'Expired';
+
+export interface CertificateLayer {
+    // ... define properties for design layers if needed
+}
+
+export interface CertificateTemplate {
+    id: string;
+    name: string;
+    type: CertificateType;
+    widthMm: number;
+    heightMm: number;
+    frontLayers: CertificateLayer[];
+    backLayers: CertificateLayer[];
+}
+
+export interface IssuedCertificate {
+    id: string;
+    serialNo: string;
+    qrToken: string;
+    templateId: string;
+    holderId: string; // Student ID
+    holderName: string;
+    status: CertificateStatus;
+    issuedAt: string; // ISO String
+    expiresAt?: string; // ISO String
+    revokedAt?: string; // ISO String
+    revocationReason?: string;
+}
+
+// --- Finance Types ---
+export type TransactionType = 'INCOME' | 'EXPENSE';
+
+export interface FinanceCategory {
+    id: string;
+    name: string;
+    type: TransactionType;
+}
+
+export interface Payee {
+    id: string;
+    name: string;
+    type: 'Staff' | 'Vendor' | 'Other';
+    contact?: string;
+}
+
+export interface LedgerEntry {
+    id: string;
+    date: string; // YYYY-MM-DD
+    categoryId: string;
+    payeeId?: string;
+    description: string;
+    amount: number;
+    type: TransactionType;
+    refNo?: string;
+    actorId: string;
+    createdAt: string; // ISO String
+    isReversal: boolean;
+    reversalOf?: string;
+}
+
+export interface FinancialPeriod {
+    id: string; // e.g., 2025-08
+    month: number;
+    year: number;
+    status: 'Open' | 'Closed';
+    closingBalance?: number;
+    closedBy?: string;
+    closedAt?: string; // ISO String
+}
+
+// --- Alumni Types ---
+export interface Alumni {
+    id: string;
+    studentId: string;
+    name: string;
+    graduationYear: number;
+    degree?: string;
+    profession?: string;
+    company?: string;
+    contact: {
+        email: string;
+        phone?: string;
+        linkedin?: string;
+    };
+    privacy: {
+        profilePublic: boolean;
+        contactPublic: boolean;
+        mentorshipOptIn: boolean;
+    };
+}
+
+export interface AlumniEvent {
+    id: string;
+    title: string;
+    date: string; // ISO String
+    location: string;
+    description: string;
+}
+
+export interface Donation {
+    id: string;
+    alumniId: string;
+    amount: number;
+    date: string; // YYYY-MM-DD
+    campaign?: string;
+    isAnonymous: boolean;
+}
+
+// --- HR & Payroll Types ---
+export type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated';
+export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export interface Employee {
+    id: string;
+    staffId: string;
+    fullName: string;
+    role: string;
+    department: string;
+    status: EmployeeStatus;
+    contract: {
+        type: 'Full-time' | 'Part-time' | 'Contract';
+        startDate: string; // YYYY-MM-DD
+        endDate?: string;
+    };
+    contact: {
+        email: string;
+        phone?: string;
+    };
+    payroll: {
+        basicSalary: number; // Annually
+        allowances: { name: string; amount: number }[];
+    };
+}
+
+export interface LeaveApplication {
+    id: string;
+    employeeId: string;
+    leaveType: 'Annual' | 'Sick' | 'Maternity' | 'Unpaid' | 'Other';
+    startDate: string; // YYYY-MM-DD
+    endDate: string; // YYYY-MM-DD
+    reason: string;
+    status: LeaveStatus;
+    requestedAt: string; // ISO String
+    reviewedAt?: string;
+    reviewedBy?: string;
+}
+
+export interface Payslip {
+    id: string;
+    employeeId: string;
+    period: string; // e.g., 2025-08
+    grossSalary: number;
+    deductions: { name: string; amount: number }[];
+    netSalary: number;
+    generatedAt: string; // ISO String
 }

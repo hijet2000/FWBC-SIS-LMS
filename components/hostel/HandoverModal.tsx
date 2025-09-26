@@ -20,7 +20,6 @@ const HandoverModal: React.FC<HandoverModalProps> = ({ isOpen, onClose, onSaveSu
         e.preventDefault();
         if (!toUserId) return;
         setIsSaving(true);
-        // FIX: Add 'fromUserId' to the payload to satisfy the Omit<Handover, "id"> type required by createHandover.
         const payload: Omit<Handover, "id"> = {
             postalId,
             toUserId,

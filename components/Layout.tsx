@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
@@ -10,7 +9,7 @@ import { SettingsProvider } from '../contexts/SettingsContext';
 const Layout: React.FC = () => {
   return (
     <SettingsProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-gray-50">
         <Header />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />

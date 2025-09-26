@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Trip, Vehicle, Driver, TransportRoute, BoardingEvent, AlertSettings, EligibleStudent, BoardingDirection } from '../../types';
+import type { Trip, Vehicle, Driver, TransportRoute, BoardingEvent, AlertSettings, EligibleStudent, BoardingDirection, Student } from '../../types';
 import * as transportService from '../../lib/transportService';
 import { getStudents } from '../../lib/schoolService';
 import Toast from '../../components/ui/Toast';
@@ -16,7 +17,8 @@ const BoardingPage: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [drivers, setDrivers] = useState<Driver[]>([]);
     const [routes, setRoutes] = useState<TransportRoute[]>([]);
-    const [students, setStudents] = useState<EligibleStudent[]>([]);
+    // FIX: Update state type to reflect the merged Student and EligibleStudent data.
+    const [students, setStudents] = useState<(Student & Partial<EligibleStudent>)[]>([]);
     const [boardingEvents, setBoardingEvents] = useState<BoardingEvent[]>([]);
     const [alertSettings, setAlertSettings] = useState<AlertSettings | null>(null);
 
@@ -48,7 +50,8 @@ const BoardingPage: React.FC = () => {
                     ...s,
                     ...(eligibleMap.get(s.id) || {}),
                 }));
-                setStudents(enrichedStudents as EligibleStudent[]);
+                // FIX: Remove incorrect cast. The state type now matches the data shape.
+                setStudents(enrichedStudents);
                 
             } catch {
                 setError('Failed to load essential data.');

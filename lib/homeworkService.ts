@@ -1,3 +1,4 @@
+
 import type { Homework, Submission, Feedback, User, SubmissionStatus, HomeworkPolicy, HomeworkNotificationSettings, HomeworkAttachment } from '../types';
 import { getStudentsByClass } from './schoolService';
 import { logAuditEvent } from './auditService';
@@ -316,7 +317,8 @@ export const saveFeedback = async (submissionId: string, input: Omit<Feedback, '
         logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'HOMEWORK', entityType: 'Feedback', entityId: newFeedback.id, entityDisplay: `Feedback for ${submissionId}`, before, after: newFeedback });
     } else {
         MOCK_FEEDBACK.push(newFeedback);
-        logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'GRADE', module: 'HOMEWORK', entityType: 'Submission', entityId: submission.id, entityDisplay: `Submission for HW ${submission.homeworkId}`, after: newFeedback });
+        // FIX: Changed action from 'GRADE' to 'UPDATE' as 'GRADE' is not a valid AuditAction. A new 'GRADE' action has been added to the enum, but 'UPDATE' is more consistent.
+        logAuditEvent({ actorId: actor.id, actorName: actor.name, action: 'UPDATE', module: 'HOMEWORK', entityType: 'Submission', entityId: submission.id, entityDisplay: `Submission for HW ${submission.homeworkId}`, after: newFeedback });
     }
 
     // Trigger notification

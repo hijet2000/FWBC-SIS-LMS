@@ -4,6 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import * as liveClassService from '../../lib/liveClassService';
 import * as academicsService from '../../lib/academicsService';
 import type { LiveClass, LiveClassStatus, Teacher } from '../../types';
+import { Link, useParams } from 'react-router-dom';
 
 const statusStyles: Record<LiveClassStatus, string> = {
     Scheduled: 'bg-gray-100 text-gray-800',
@@ -13,20 +14,7 @@ const statusStyles: Record<LiveClassStatus, string> = {
 };
 
 const LiveClassCard: React.FC<{ lc: LiveClass, teacherName?: string }> = ({ lc, teacherName }) => {
-    const { user } = useAuth();
-    const { addToast } = useToast();
-    const studentId = 's01'; // HACK
-    
-    const handleJoin = async () => {
-        if (!user) return;
-        try {
-            await liveClassService.joinLiveClass(lc.id, studentId);
-            addToast('Attendance marked! Joining class...', 'success');
-            window.open(lc.joinUrl, '_blank');
-        } catch {
-            addToast('Failed to join class.', 'error');
-        }
-    };
+    const { siteId } = useParams<{ siteId: string }>();
 
     const isJoinable = useMemo(() => {
         if (lc.status !== 'Scheduled' && lc.status !== 'Live') return false;
@@ -47,9 +35,14 @@ const LiveClassCard: React.FC<{ lc: LiveClass, teacherName?: string }> = ({ lc, 
                 <p className="text-sm text-gray-500">{teacherName}</p>
             </div>
             {(lc.status === 'Scheduled' || lc.status === 'Live') && (
-                <button onClick={handleJoin} disabled={!isJoinable} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                <Link 
+                    to={`/school/${siteId}/live-classroom/${lc.id}`}
+                    aria-disabled={!isJoinable}
+                    onClick={(e) => { if (!isJoinable) e.preventDefault(); }}
+                    className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-sm hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed aria-disabled:bg-gray-400 aria-disabled:cursor-not-allowed"
+                >
                     {lc.status === 'Live' ? 'Join Now' : 'Join'}
-                </button>
+                </Link>
             )}
         </div>
     );

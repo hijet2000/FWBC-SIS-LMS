@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { listEnquiries, listApplications } from '../../lib/admissionsService';
 import type { Enquiry, Application, ApplicationStatus } from '../../types';
@@ -51,7 +53,7 @@ const AdmissionsDashboard: React.FC = () => {
     }, [enquiries, applications]);
 
     const appStatusCounts = useMemo(() => {
-        // FIX: Initialize only a subset of statuses for the funnel view.
+        // Initialize only a subset of statuses for the funnel view.
         // Using Partial<> and checking for property existence prevents runtime errors
         // for applications with statuses not displayed on the dashboard.
         const counts: Partial<Record<ApplicationStatus, number>> = { New: 0, Screening: 0, Approved: 0, Rejected: 0, Waitlist: 0 };

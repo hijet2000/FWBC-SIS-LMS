@@ -11,6 +11,23 @@ const SettingsCard: React.FC<{ title: string; children: React.ReactNode }> = ({ 
     </div>
 );
 
+const Toggle: React.FC<{ label: string; enabled: boolean; onChange: (enabled: boolean) => void; disabled?: boolean }> = ({ label, enabled, onChange, disabled }) => (
+    <div className="flex items-center justify-between">
+        <label className={`text-sm font-medium ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>{label}</label>
+        <button
+            type="button"
+            onClick={() => onChange(!enabled)}
+            disabled={disabled}
+            className={`${enabled ? 'bg-indigo-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed`}
+            role="switch"
+            aria-checked={enabled}
+        >
+            <span className={`${enabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
+        </button>
+    </div>
+);
+
+
 const IntegrationsPage: React.FC = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
@@ -87,7 +104,20 @@ const IntegrationsPage: React.FC = () => {
                         </div>
                     </>
                 )}
-                 <div className="pt-4 flex justify-end">
+
+                <div className="pt-4 border-t">
+                    <h4 className="font-semibold text-gray-700">Recording Policy</h4>
+                    <p className="text-xs text-gray-500 mb-2">Configure automatic recording and publishing for finished classes.</p>
+                    <div className="space-y-3">
+                        <Toggle label="Auto-record all sessions" enabled={settings.autoRecord ?? false} onChange={val => setSettings({...settings, autoRecord: val})} disabled={!settings.enabled} />
+                        <Toggle label="Auto-publish to Catch-up" enabled={settings.autoPublishRecording ?? false} onChange={val => setSettings({...settings, autoPublishRecording: val})} disabled={!settings.enabled || !settings.autoRecord} />
+                    </div>
+                </div>
+
+                 <div className="pt-4 border-t flex justify-between items-center">
+                    <button onClick={() => addToast('Connection successful! (Mock)', 'success')} className="px-4 py-2 text-sm bg-white border rounded-md">
+                        Test Connection
+                    </button>
                     <button onClick={handleSave} disabled={isSaving} className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-gray-400">
                         {isSaving ? 'Saving...' : 'Save Settings'}
                     </button>

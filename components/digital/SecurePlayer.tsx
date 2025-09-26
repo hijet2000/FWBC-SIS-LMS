@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 
 declare global {
@@ -69,4 +70,5 @@ const SecurePlayer = React.forwardRef<HTMLVideoElement, SecurePlayerProps>(({ sr
     );
 });
 
+SecurePlayer.displayName = 'SecurePlayer';
 export default SecurePlayer;

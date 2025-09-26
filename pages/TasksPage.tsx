@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import * as taskService from '../lib/taskService';
@@ -22,10 +22,13 @@ const TasksPage: React.FC = () => {
         setLoading(true);
         taskService.listTasks(user.id)
             .then(data => {
-                // Sort tasks: incomplete first, then by due date
+                // Sort tasks: incomplete first, then by due date. Completed tasks at the end by completion date.
                 data.sort((a, b) => {
                     if (a.completed !== b.completed) {
                         return a.completed ? 1 : -1;
+                    }
+                    if (a.completed) {
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                     }
                     return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
                 });
@@ -67,27 +70,27 @@ const TasksPage: React.FC = () => {
     const handleToggleComplete = async (task: Task) => {
         if (!user) return;
         
-        // Optimistic UI update
-        const originalTasks = [...tasks];
-        setTasks(prevTasks => prevTasks.map(t => 
-            t.id === task.id ? { ...t, completed: !t.completed } : t
-        ));
+        // Optimistic UI update and re-sorting
+        setTasks(prevTasks => {
+            const updatedTasks = prevTasks.map(t => 
+                t.id === task.id ? { ...t, completed: !t.completed, createdAt: new Date().toISOString() } : t // update createdAt on complete for sorting
+            );
+            updatedTasks.sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                if (a.completed) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            });
+            return updatedTasks;
+        });
 
         try {
             await taskService.updateTask(task.id, { completed: !task.completed }, user);
         } catch {
             addToast('Failed to update task. Reverting.', 'error');
-            // Revert on failure
-            setTasks(originalTasks);
+            // Revert on failure by refetching
+            fetchData();
         }
     };
-
-    const { activeTasks, completedTasks } = useMemo(() => {
-        return {
-            activeTasks: tasks.filter(t => !t.completed),
-            completedTasks: tasks.filter(t => t.completed),
-        };
-    }, [tasks]);
 
     return (
         <div className="space-y-6">
@@ -117,77 +120,39 @@ const TasksPage: React.FC = () => {
             </div>
 
             {loading ? <p>Loading tasks...</p> : (
-                <div className="space-y-6">
-                    <div>
-                        <h2 className="text-xl font-semibold mb-2">Active Tasks ({activeTasks.length})</h2>
-                        <ul className="space-y-2">
-                            {activeTasks.map(task => (
-                                <li key={task.id} className="bg-white p-3 rounded-md border flex items-center gap-4 transition-all duration-300">
-                                    <div className="relative flex items-center justify-center w-5 h-5">
-                                        <input 
-                                            type="checkbox" 
-                                            id={`task-${task.id}`}
-                                            checked={task.completed} 
-                                            onChange={() => handleToggleComplete(task)}
-                                            className="peer h-5 w-5 shrink-0 appearance-none rounded border-2 border-gray-300 checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer transition"
-                                        />
-                                        <svg
-                                            className="pointer-events-none absolute h-4 w-4 text-white transform scale-0 peer-checked:scale-100 transition-transform duration-200 ease-in-out"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                        </svg>
-                                    </div>
-                                    <div className="flex-grow">
-                                        <label htmlFor={`task-${task.id}`} className="font-medium text-gray-800 transition-colors duration-300 cursor-pointer">{task.title}</label>
-                                        <p className="text-sm text-gray-500 transition-colors duration-300">Due: {task.dueDate}</p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                         {activeTasks.length === 0 && <p className="text-gray-500 text-sm p-4 text-center bg-gray-50 rounded-md">No active tasks. Well done!</p>}
-                    </div>
-                     <div>
-                        <h2 className="text-xl font-semibold mb-2">Completed Tasks ({completedTasks.length})</h2>
-                        <ul className="space-y-2">
-                            {completedTasks.map(task => (
-                                <li key={task.id} className="bg-gray-50 p-3 rounded-md border flex items-center gap-4 opacity-70 transition-all duration-300">
-                                    <div className="relative flex items-center justify-center w-5 h-5">
-                                        <input 
-                                            type="checkbox" 
-                                            id={`task-${task.id}`}
-                                            checked={task.completed} 
-                                            onChange={() => handleToggleComplete(task)}
-                                            className="peer h-5 w-5 shrink-0 appearance-none rounded border-2 border-gray-300 checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer transition"
-                                        />
-                                        <svg
-                                            className="pointer-events-none absolute h-4 w-4 text-white transform scale-0 peer-checked:scale-100 transition-transform duration-200 ease-in-out"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                        </svg>
-                                    </div>
-                                    <div className="flex-grow">
-                                        <label htmlFor={`task-${task.id}`} className="font-medium text-gray-600 line-through transition-colors duration-300 cursor-pointer">{task.title}</label>
-                                        <p className="text-sm text-gray-400 line-through transition-colors duration-300">Due: {task.dueDate}</p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                         {completedTasks.length === 0 && <p className="text-gray-500 text-sm p-4 text-center bg-gray-50 rounded-md">No tasks completed yet.</p>}
-                    </div>
+                <div>
+                    <ul className="space-y-2">
+                        {tasks.map(task => (
+                            <li key={task.id} className={`p-3 rounded-md border flex items-center gap-4 transition-all duration-300 ease-in-out ${task.completed ? 'bg-gray-100 opacity-60 scale-[0.98]' : 'bg-white scale-100'}`}>
+                                <div className="relative flex items-center justify-center w-5 h-5">
+                                    <input 
+                                        type="checkbox" 
+                                        id={`task-${task.id}`}
+                                        checked={task.completed} 
+                                        onChange={() => handleToggleComplete(task)}
+                                        className="peer h-5 w-5 shrink-0 appearance-none rounded border-2 border-gray-300 checked:border-indigo-600 checked:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer transition"
+                                    />
+                                    <svg
+                                        className="pointer-events-none absolute h-4 w-4 text-white transform scale-0 peer-checked:scale-100 transition-transform duration-200 ease-in-out"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div className="flex-grow">
+                                    <label htmlFor={`task-${task.id}`} className={`font-medium cursor-pointer transition-all duration-300 ${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{task.title}</label>
+                                    <p className={`text-sm transition-colors duration-300 ${task.completed ? 'text-gray-400 line-through' : 'text-gray-500'}`}>Due: {task.dueDate}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                    {tasks.length === 0 && <p className="text-gray-500 text-sm p-4 text-center bg-gray-50 rounded-md">No tasks to display.</p>}
                 </div>
             )}
         </div>

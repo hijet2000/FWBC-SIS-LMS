@@ -25,7 +25,12 @@ import ClassTimetablePage from './pages/academics/ClassTimetablePage';
 import TeacherTimetablePage from './pages/academics/TeacherTimetablePage';
 import PlannerPage from './pages/academics/PlannerPage';
 import LiveClassesPage from './pages/academics/LiveClassesPage';
+import LiveClassroomPage from './pages/academics/LiveClassroomPage';
 import IntegrationsPage from './pages/academics/IntegrationsPage';
+import TeacherOnlineExamsPage from './pages/academics/TeacherOnlineExamsPage';
+import ExamQuestionsPage from './pages/academics/ExamQuestionsPage';
+import ExamSettingsPage from './pages/academics/ExamSettingsPage';
+import QuestionBankPage from './pages/academics/QuestionBankPage';
 
 // Homework Pages
 import HomeworkListPage from './pages/homework/HomeworkListPage';
@@ -125,11 +130,16 @@ import CalendarPage from './pages/admin/settings/CalendarPage';
 
 // Student Pages
 import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
+import StudentOnlineExamsPage from './pages/student/StudentOnlineExamsPage';
+import OnlineExamTakerPage from './pages/student/OnlineExamTakerPage';
+import OnlineExamResultsPage from './pages/student/OnlineExamResultsPage';
+
 
 // Parent Portal Pages
 import ParentLayout from './components/portal/ParentLayout';
 import ParentHomeworkPage from './pages/portal/ParentHomeworkPage';
 import ParentLibraryPage from './pages/portal/ParentLibraryPage';
+// FIX: Removed duplicate import of ParentHostelPage.
 import ParentLiveClassesPage from './pages/portal/ParentLiveClassesPage';
 
 // Alumni Pages
@@ -215,6 +225,12 @@ function App() {
                   {/* Live Classes Sub-module */}
                   <Route path="academics/live-classes" element={<RequireScope requiredScopes={['school:admin', 'homework:teacher']}><LiveClassesPage /></RequireScope>} />
                   <Route path="academics/integrations" element={<RequireScope requiredScopes={['school:admin']}><IntegrationsPage /></RequireScope>} />
+                  
+                  {/* Online Exams Sub-module (Teacher) */}
+                  <Route path="online-exams" element={<RequireScope requiredScopes={['homework:teacher']}><TeacherOnlineExamsPage /></RequireScope>} />
+                  <Route path="online-exams/:examId/questions" element={<RequireScope requiredScopes={['homework:teacher']}><ExamQuestionsPage /></RequireScope>} />
+                  <Route path="online-exams/:examId/settings" element={<RequireScope requiredScopes={['homework:teacher']}><ExamSettingsPage /></RequireScope>} />
+                  <Route path="question-bank" element={<RequireScope requiredScopes={['homework:teacher']}><QuestionBankPage /></RequireScope>} />
 
                   {/* Homework Module Routes (Teacher) */}
                   <Route path="homework" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkListPage /></RequireScope>} />
@@ -222,11 +238,14 @@ function App() {
                   <Route path="homework/:homeworkId" element={<RequireScope requiredScopes={['homework:teacher']}><HomeworkSubmissionsPage /></RequireScope>} />
                   <Route path="homework/notifications" element={<RequireScope requiredScopes={['homework:teacher']}><NotificationsPage /></RequireScope>} />
 
-                  {/* Homework Module Routes (Student) */}
+                  {/* Student-facing Routes */}
                   <Route path="student/homework" element={<RequireScope requiredScopes={['homework:student']}><StudentHomeworkPage /></RequireScope>} />
                   <Route path="student/homework/:homeworkId" element={<RequireScope requiredScopes={['homework:student']}><StudentSubmissionPage /></RequireScope>} />
                   <Route path="student/hostel" element={<RequireScope requiredScopes={['homework:student']}><StudentHostelPage /></RequireScope>} />
                   <Route path="student/live-classes" element={<RequireScope requiredScopes={['homework:student']}><StudentLiveClassesPage /></RequireScope>} />
+                  <Route path="student/online-exams" element={<RequireScope requiredScopes={['homework:student']}><StudentOnlineExamsPage /></RequireScope>} />
+                  <Route path="student/online-exams/:examId/results" element={<RequireScope requiredScopes={['homework:student']}><OnlineExamResultsPage /></RequireScope>} />
+
 
                   {/* Admissions Module Routes */}
                   <Route path="admissions" element={<RequireScope requiredScopes={['admissions:admin']}><AdmissionsDashboard /></RequireScope>} />
@@ -340,6 +359,10 @@ function App() {
                   </Route>
 
                 </Route>
+                {/* Standalone routes outside the main layout */}
+                <Route path="/school/:siteId/live-classroom/:liveClassId" element={<RequireScope requiredScopes={['homework:teacher', 'homework:student']}><LiveClassroomPage /></RequireScope>} />
+                <Route path="/school/:siteId/take-exam/:examId" element={<RequireScope requiredScopes={['homework:student']}><OnlineExamTakerPage /></RequireScope>} />
+
                 <Route path="*" element={<Navigate to="/fwbc" replace />} />
               </Routes>
             </React.Suspense>

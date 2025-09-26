@@ -1,4 +1,5 @@
 
+
 import type { Application, ApplicationStatus, Enquiry, EnquiryStatus, FollowUp, VisitorLog, CallLog, Postal, Handover, User, SeatAllocation, CallDirection, CallTopic, PublicApplicationView } from '../types';
 import { logAuditEvent } from './auditService';
 import { createStudentFromApplication } from './schoolService';
@@ -28,7 +29,6 @@ let MOCK_ENQUIRIES: Enquiry[] = [
     { id: 'enq-1', name: 'Jane Doe (for John)', phone: '555-1234', source: 'Web', status: 'Converted', ownerUserId: 'user-evelyn-reed', targetClassId: 'c1', createdAt: getISODateMinutesAgo(2000) },
     { id: 'enq-2', name: 'Li Wei (for Chen)', email: 'li.wei@example.com', source: 'Referral', status: 'Converted', ownerUserId: 'user-evelyn-reed', targetClassId: 'c1', createdAt: getISODateMinutesAgo(11000) },
 ];
-// FIX: Add mock data for Front Office features
 let MOCK_FOLLOW_UPS: FollowUp[] = [
     { id: 'fu-1', enquiryId: 'enq-1', ownerId: 'user-evelyn-reed', dueAt: getISODateMinutesAgo(-1440), doneAt: getISODateMinutesAgo(-1430), method: 'Call', summary: 'Initial follow-up call', outcome: 'Scheduled a tour' },
     { id: 'fu-2', enquiryId: 'enq-1', ownerId: 'user-evelyn-reed', dueAt: getISODateMinutesAgo(-100), method: 'Email', summary: 'Send information packet' },
@@ -379,7 +379,6 @@ export const listHandovers = async (postalId: string): Promise<Handover[]> => {
 
 export const createHandover = async (input: Omit<Handover, 'id'>, actor: User): Promise<Handover> => {
     await delay(400);
-    // FIX: Correctly add fromUserId from actor
     const newHandover: Handover = { ...input, id: `ho-${Date.now()}` };
     MOCK_HANDOVERS.push(newHandover);
     

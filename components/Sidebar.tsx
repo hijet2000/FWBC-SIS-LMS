@@ -34,394 +34,286 @@ const TableIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
     </svg>
 );
-const DownloadIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-  </svg>
-);
-const CreditCardIcon: React.FC<{ className?: string }> = ({ className }) => (
+const VideoCameraIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
     </svg>
 );
-const ReceiptIcon: React.FC<{ className?: string }> = ({ className }) => (
+const AcademicCapIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l2-2 4 4 4-4-2-2m-2 4V3M4 6h16M4 10h16M4 14h16M4 18h16" />
+        <path d="M12 14l9-5-9-5-9 5 9 5z" />
+        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" />
     </svg>
 );
-const CurrencyDollarIcon: React.FC<{ className?: string }> = ({ className }) => (
+const CurrencyPoundIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 16v-1m0-1v.01M12 16c-1.11 0-2.08-.402-2.599-1M12 16V7m0 9h.01M12 8h.01M15 21h-6a2 2 0 01-2-2V5a2 2 0 012-2h6a2 2 0 012 2v14a2 2 0 01-2 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
-);
-const BusIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.5c3.314 0 6 2.686 6 6v7.5H6v-7.5c0-3.314 2.686-6 6-6z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18h12M6 12h12m-9 6a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h3m9 0h3" />
-    </svg>
-);
-const ShieldIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056v-1.007" />
-    </svg>
-);
-const CalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-  </svg>
-);
-const FolderAddIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h5l2 2h5a2 2 0 012 2v10a2 2 0 01-2-2H5a2 2 0 01-2-2z" />
-  </svg>
-);
-const IdentificationIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 0h6" />
-  </svg>
-);
-const PhoneIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-    </svg>
-);
-const MailIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-);
-const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-const UploadIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-  </svg>
-);
-const OfficeBuildingIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-5-4h1m-1 4h1" />
-  </svg>
 );
 const CogIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
-const BellIcon: React.FC<{ className?: string }> = ({ className }) => (
+const ShieldCheckIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944a11.955 11.955 0 009 2.056c3.238.16 6.257-1.08 8.618-3.04A12.02 12.02 0 0021 9.056a11.955 11.955 0 00-3.382-3.04z" />
+  </svg>
+);
+const TruckIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8a1 1 0 001-1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8a1 1 0 001-1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16h2a2 2 0 002-2v-4a2 2 0 00-2-2h-2v10z" />
+    </svg>
+);
+const OfficeBuildingIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
     </svg>
 );
 const ArchiveIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h14" />
-  </svg>
-);
-const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.293l.586-.586a2 2 0 012.828 0l.586.586M12 21a9 9 0 100-18 9 9 0 000 18z" />
-  </svg>
-);
-const ChevronDownIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
     </svg>
 );
-const GiftIcon: React.FC<{ className?: string }> = ({ className }) => (
+const IdentificationIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 0h6" />
+  </svg>
+);
+const DocumentTextIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4H5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+);
+const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.293l.536.536M16.293 4.293l-.536.536M12 21a9 9 0 100-18 9 9 0 000 18z" />
+    </svg>
+);
+const UserGroupIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+);
+const CollectionIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     </svg>
 );
 const BriefcaseIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
+const BookOpenIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+);
+const SwitchHorizontalIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+);
+const ChartBarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+);
+const DocumentDuplicateIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+);
+const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+const BeakerIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19 14.5M14.25 3.104c.251.023.501.05.75.082M19 14.5v.75m0 0l-4.5 4.5M19 14.5l-4.5-4.5m0 0v.75m0 0l-4.5 4.5M4.5 20.25h15A2.25 2.25 0 0021.75 18v-2.625c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125V18a2.25 2.25 0 002.25 2.25z" />
+    </svg>
+);
+const ClipboardListIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 4h.01M12 12h.01M12 16h.01M9 16H9.01" />
+    </svg>
+);
+const ArrowCircleRightIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+const ViewGridIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 8.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 018.25 20.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6A2.25 2.25 0 0115.75 3.75h2.25A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75A2.25 2.25 0 0115.75 13.5h2.25a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+    </svg>
+);
 
-// --- Navigation Components ---
-
+// --- Navigation Item Component ---
 interface NavItemProps {
   to: string;
   icon: React.ReactNode;
-  label: string;
-  isDashboard?: boolean;
+  text: string;
+  scopes?: string[];
+  exact?: boolean;
 }
+const NavItem: React.FC<NavItemProps> = ({ to, icon, text, scopes }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const isActive = location.pathname.startsWith(to);
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isDashboard = false }) => {
-  const baseClasses = "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2";
-  const activeClasses = "bg-indigo-50 text-indigo-600 font-medium";
+  const hasAccess = scopes ? scopes.some(scope => user?.scopes.includes(scope)) : true;
+  if (!hasAccess) return null;
 
   return (
     <NavLink
       to={to}
-      end={isDashboard}
-      className={({ isActive }) => `${baseClasses} ${isActive ? activeClasses : ""}`}
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-200 transition-all hover:bg-gray-700/50 hover:text-white ${isActive ? 'bg-gray-700 text-white' : ''}`}
     >
       {icon}
-      {label}
+      {text}
     </NavLink>
   );
 };
 
-interface CollapsibleNavSectionProps {
+// --- Section Component ---
+interface SectionProps {
   title: string;
-  icon: React.ReactNode;
   children: React.ReactNode;
+  scopes: string[];
 }
+const Section: React.FC<SectionProps> = ({ title, children, scopes }) => {
+    const { user } = useAuth();
+    const hasAccess = scopes.some(scope => user?.scopes.includes(scope));
+    if (!hasAccess) return null;
 
-const CollapsibleNavSection: React.FC<CollapsibleNavSectionProps> = ({ title, icon, children }) => {
-  const location = useLocation();
-
-  const isChildActive = useMemo(() => {
-    let isActive = false;
-    // FIX: Add generic type to React.isValidElement to fix property access errors.
-    React.Children.forEach(children, (child) => {
-      if (React.isValidElement<NavItemProps>(child) && child.props.to) {
-        // Check if the current path starts with the link's path.
-        // For the dashboard link, we need an exact match, which `end` prop on NavLink handles.
-        if (location.pathname.startsWith(child.props.to) && child.props.to !== `/school/${useParams().siteId}`) {
-          isActive = true;
-        }
-        if(location.pathname === child.props.to) {
-            isActive = true;
-        }
-      }
-    });
-    return isActive;
-  }, [children, location.pathname]);
-
-  const [isOpen, setIsOpen] = useState(isChildActive);
-  
-  useEffect(() => {
-    if (isChildActive) {
-      setIsOpen(true);
-    }
-  }, [isChildActive]);
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full gap-3 rounded-lg px-3 py-2 text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-center gap-3">
-          {icon}
-          <span className="font-medium text-sm">{title}</span>
+    return (
+        <div>
+            <span className="px-3 text-xs font-semibold text-gray-400 uppercase">{title}</span>
+            <nav className="mt-2 flex flex-col gap-1">{children}</nav>
         </div>
-        <ChevronDownIcon className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      {isOpen && (
-        <div className="pl-4 pt-1 mt-1 border-l border-gray-200 ml-5">
-          <nav className="flex flex-col gap-1">
-            {children}
-          </nav>
-        </div>
-      )}
-    </div>
-  );
+    );
 };
 
 // --- Main Sidebar Component ---
-
 const Sidebar: React.FC = () => {
-  const { siteId: routeSiteId } = useParams<{ siteId: string }>();
-  const siteId = routeSiteId || 'fwbc';
   const { user } = useAuth();
   const { settings, loading: settingsLoading } = useSettings();
+  const { siteId: routeSiteId } = useParams<{ siteId: string }>();
+  const siteId = routeSiteId || 'fwbc';
 
-  const hasAnyScope = (requiredScopes: string[]): boolean => {
-      if (!user) return false;
-      return requiredScopes.some(scope => user.scopes.includes(scope));
-  };
+  const isSectionVisible = useMemo(() => (sectionName: keyof typeof settings.modules) => {
+    if (settingsLoading || !settings) return true; // Show all if settings are loading
+    return settings.modules[sectionName]?.enabled || false;
+  }, [settings, settingsLoading]);
+
+  const hasAnyScope = (scopes: string[]) => scopes.some(scope => user?.scopes.includes(scope));
   
-  if (settingsLoading) {
-    return (
-         <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4">
-            <div className="animate-pulse space-y-4">
-                <div className="h-8 bg-gray-200 rounded"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
-            </div>
-        </aside>
-    )
-  }
+  if (!user) return null;
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 p-4 flex flex-col">
-      <nav className="flex flex-col gap-2 text-sm font-normal">
-        {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard />}
-        {hasAnyScope(['school:admin', 'homework:teacher']) && <NavItem to={`/school/${siteId}/tasks`} icon={<ClipboardIcon className="h-4 w-4" />} label="My Tasks" />}
+    <aside className="hidden md:flex flex-col w-64 flex-shrink-0 border-r border-gray-700 bg-gray-800 p-4">
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-y-6">
+          <nav className="flex flex-col gap-1">
+            <NavItem to={`/school/${siteId}`} icon={<HomeIcon className="h-5 w-5" />} text="Dashboard" />
+            <NavItem to={`/school/${siteId}/tasks`} icon={<ClipboardListIcon className="h-5 w-5" />} text="My Tasks" />
+          </nav>
+          
+          {isSectionVisible('sis') && (
+            <Section title="Student Information" scopes={['school:admin']}>
+              <NavItem to={`/school/${siteId}/students`} icon={<UsersIcon className="h-5 w-5" />} text="Students" />
+              <NavItem to={`/school/${siteId}/attendance`} icon={<CheckCircleIcon className="h-5 w-5" />} text="Attendance" />
+              <NavItem to={`/school/${siteId}/academics`} icon={<AcademicCapIcon className="h-5 w-5" />} text="Academics" />
+               {/* Student-facing Links moved here */}
+               {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/live-classes`} icon={<VideoCameraIcon className="h-5 w-5" />} text="My Live Classes" />}
+               {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/online-exams`} icon={<DocumentTextIcon className="h-5 w-5" />} text="My Online Exams" />}
+            </Section>
+          )}
 
-        {settings?.modules.sis.enabled && hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="SIS" icon={<UsersIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/students`} icon={<UsersIcon className="h-4 w-4" />} label="Students" />
-                <NavItem to={`/school/${siteId}/attendance`} icon={<ClipboardIcon className="h-4 w-4" />} label="Daily Entry" />
-                <NavItem to={`/school/${siteId}/attendance/records`} icon={<TableIcon className="h-4 w-4" />} label="Records" />
-                <NavItem to={`/school/${siteId}/attendance/exports`} icon={<DownloadIcon className="h-4 w-4" />} label="Exports" />
-                <NavItem to={`/school/${siteId}/attendance/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-            </CollapsibleNavSection>
-        )}
-        
-        {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'homework:teacher']) && (
-            <CollapsibleNavSection title="Academics & LMS" icon={<BookIcon className="h-4 w-4" />}>
-                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics`} icon={<BookIcon className="h-4 w-4" />} label="Overview" />}
-                 {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="Homework" />}
-                 {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />}
-                 {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework/notifications`} icon={<BellIcon className="h-4 w-4" />} label="Notifications" />}
-                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/planner`} icon={<CalendarIcon className="h-4 w-4" />} label="Planner" />}
-                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/class`} icon={<TableIcon className="h-4 w-4" />} label="Class Timetables" />}
-                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/timetable/teacher`} icon={<TableIcon className="h-4 w-4" />} label="Teacher Timetables" />}
-                 {hasAnyScope(['school:admin', 'homework:teacher']) && <NavItem to={`/school/${siteId}/academics/live-classes`} icon={<FilmIcon className="h-4 w-4" />} label="Live Classes" />}
-                 {hasAnyScope(['school:admin']) && <NavItem to={`/school/${siteId}/academics/integrations`} icon={<CogIcon className="h-4 w-4" />} label="Integrations" />}
-            </CollapsibleNavSection>
-        )}
-        
-        {settings?.modules.admissions.enabled && hasAnyScope(['admissions:admin']) && (
-            <CollapsibleNavSection title="Admissions" icon={<FolderAddIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/admissions`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" />
-                <NavItem to={`/school/${siteId}/admissions/applications`} icon={<UsersIcon className="h-4 w-4" />} label="Applications" />
-                <NavItem to={`/school/${siteId}/admissions/seats`} icon={<TableIcon className="h-4 w-4" />} label="Seat Allocation" />
-                <NavItem to={`/school/${siteId}/admissions/import`} icon={<UploadIcon className="h-4 w-4" />} label="Bulk Import" />
-                <NavItem to={`/school/${siteId}/admissions/comms`} icon={<MailIcon className="h-4 w-4" />} label="Parent Comms" />
-                <NavItem to={`/school/${siteId}/admissions/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />
-                <NavItem to={`/school/${siteId}/admissions/offers`} icon={<CheckCircleIcon className="h-4 w-4" />} label="Offers" />
-            </CollapsibleNavSection>
-        )}
+          {isSectionVisible('lms') && (
+            <Section title="LMS" scopes={['homework:teacher', 'homework:student']}>
+                {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/homework`} icon={<BookOpenIcon className="h-5 w-5" />} text="Homework" />}
+                {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/online-exams`} icon={<DocumentTextIcon className="h-5 w-5" />} text="Online Exams" />}
+                {hasAnyScope(['homework:teacher']) && <NavItem to={`/school/${siteId}/question-bank`} icon={<CollectionIcon className="h-5 w-5" />} text="Question Bank" />}
+                {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/homework`} icon={<AcademicCapIcon className="h-5 w-5" />} text="My Homework" />}
+            </Section>
+          )}
 
-        {settings?.modules.frontoffice.enabled && hasAnyScope(['frontoffice:admin']) && (
-            <CollapsibleNavSection title="Front Office" icon={<IdentificationIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/frontoffice`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
-                <NavItem to={`/school/${siteId}/frontoffice/enquiries`} icon={<ClipboardIcon className="h-4 w-4" />} label="Enquiries" />
-                <NavItem to={`/school/${siteId}/frontoffice/visitors`} icon={<IdentificationIcon className="h-4 w-4" />} label="Visitor Book" />
-                <NavItem to={`/school/${siteId}/frontoffice/calls`} icon={<PhoneIcon className="h-4 w-4" />} label="Call Log" />
-                <NavItem to={`/school/${siteId}/frontoffice/postal`} icon={<MailIcon className="h-4 w-4" />} label="Postal Log" />
-            </CollapsibleNavSection>
-        )}
+          {isSectionVisible('library') && (
+            <Section title="Library" scopes={['sis:library:write', 'lms:admin', 'student']}>
+              <NavItem to={`/school/${siteId}/library`} icon={<ViewGridIcon className="h-5 w-5" />} text="Digital Library" />
+              <NavItem to={`/school/${siteId}/library/catchup`} icon={<FilmIcon className="h-5 w-5" />} text="Catch-up Classes" />
+               <div className="pt-2 mt-2 border-t border-gray-700/50">
+                    <span className="px-3 text-xs font-semibold text-gray-400 uppercase">Physical Library</span>
+               </div>
+              <NavItem to={`/school/${siteId}/library/catalog`} icon={<BookOpenIcon className="h-5 w-5" />} text="Catalog" scopes={['sis:library:write']} />
+              <NavItem to={`/school/${siteId}/library/members`} icon={<UsersIcon className="h-5 w-5" />} text="Members" scopes={['sis:library:write']} />
+              <NavItem to={`/school/${siteId}/library/issue-return`} icon={<SwitchHorizontalIcon className="h-5 w-5" />} text="Issue / Return" scopes={['sis:library:write']} />
+              <NavItem to={`/school/${siteId}/library/settings`} icon={<CogIcon className="h-5 w-5" />} text="Settings" scopes={['sis:library:write']} />
+              <NavItem to={`/school/${siteId}/library/reports`} icon={<ChartBarIcon className="h-5 w-5" />} text="Reports" scopes={['sis:library:write']} />
+            </Section>
+          )}
 
-        {settings?.modules.fees.enabled && hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="Student Fees" icon={<CreditCardIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/fees`} icon={<CreditCardIcon className="h-4 w-4" />} label="Structures" />
-                <NavItem to={`/school/${siteId}/fees/payments`} icon={<ReceiptIcon className="h-4 w-4" />} label="Payments" />
-            </CollapsibleNavSection>
-        )}
+          {isSectionVisible('admissions') && (
+            <Section title="Admissions" scopes={['admissions:admin']}>
+              <NavItem to={`/school/${siteId}/admissions`} icon={<ArrowCircleRightIcon className="h-5 w-5" />} text="Dashboard" />
+              <NavItem to={`/school/${siteId}/admissions/applications`} icon={<DocumentDuplicateIcon className="h-5 w-5" />} text="Applications" />
+            </Section>
+          )}
 
-        {settings?.modules.finance.enabled && hasAnyScope(['finance:admin']) && (
-            <CollapsibleNavSection title="Finance" icon={<CurrencyDollarIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/finance/dashboard`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
-                <NavItem to={`/school/${siteId}/finance/ledger`} icon={<TableIcon className="h-4 w-4" />} label="Ledger" />
-                <NavItem to={`/school/${siteId}/finance/config`} icon={<CogIcon className="h-4 w-4" />} label="Categories & Payees" />
-                <NavItem to={`/school/${siteId}/finance/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports" />
-            </CollapsibleNavSection>
-        )}
-        
-        {settings?.modules.library.enabled && hasAnyScope(['sis:library:write']) && (
-            <CollapsibleNavSection title="Physical Library" icon={<BookIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/library/catalog`} icon={<BookIcon className="h-4 w-4" />} label="Catalog" />
-                <NavItem to={`/school/${siteId}/library/members`} icon={<UsersIcon className="h-4 w-4" />} label="Members" />
-                <NavItem to={`/school/${siteId}/library/issue-return`} icon={<ClipboardIcon className="h-4 w-4" />} label="Circulation" />
-                <NavItem to={`/school/${siteId}/library/reports`} icon={<DownloadIcon className="h-4 w-4" />} label="Reports & Notices" />
-                <NavItem to={`/school/${siteId}/library/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-            </CollapsibleNavSection>
-        )}
-        
-        {settings?.modules.hostel.enabled && hasAnyScope(['sis:hostel:write']) && (
-            <CollapsibleNavSection title="Hostel" icon={<OfficeBuildingIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/hostel`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard/>
-                <NavItem to={`/school/${siteId}/hostel/structure`} icon={<TableIcon className="h-4 w-4" />} label="Structure" />
-                <NavItem to={`/school/${siteId}/hostel/allocations`} icon={<UsersIcon className="h-4 w-4" />} label="Allocations" />
-                <NavItem to={`/school/${siteId}/hostel/visitors`} icon={<IdentificationIcon className="h-4 w-4" />} label="Visitors" />
-                <NavItem to={`/school/${siteId}/hostel/curfew`} icon={<ClockIcon className="h-4 w-4" />} label="Curfew" />
-                <NavItem to={`/school/${siteId}/hostel/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-            </CollapsibleNavSection>
-        )}
-        
-        {settings?.modules.transport.enabled && hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="Transport" icon={<BusIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/transport/vehicles`} icon={<BusIcon className="h-4 w-4" />} label="Vehicles" />
-                <NavItem to={`/school/${siteId}/transport/trips`} icon={<ClipboardIcon className="h-4 w-4" />} label="Trips" />
-                <NavItem to={`/school/${siteId}/transport/boarding`} icon={<UsersIcon className="h-4 w-4" />} label="Boarding" />
-                <NavItem to={`/school/${siteId}/transport/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-            </CollapsibleNavSection>
-        )}
+          {isSectionVisible('frontoffice') && (
+            <Section title="Front Office" scopes={['frontoffice:admin']}>
+              <NavItem to={`/school/${siteId}/frontoffice`} icon={<OfficeBuildingIcon className="h-5 w-5" />} text="Dashboard" />
+              <NavItem to={`/school/${siteId}/frontoffice/enquiries`} icon={<ClipboardIcon className="h-5 w-5" />} text="Enquiries" />
+              <NavItem to={`/school/${siteId}/frontoffice/visitors`} icon={<IdentificationIcon className="h-5 w-5" />} text="Visitors" />
+            </Section>
+          )}
+          
+          <div className="pt-4 border-t border-gray-700/50 space-y-6">
+            {isSectionVisible('fees') && <Section title="Business" scopes={['school:admin', 'finance:admin']}>
+              <NavItem to={`/school/${siteId}/fees`} icon={<CurrencyPoundIcon className="h-5 w-5" />} text="Fees" scopes={['school:admin']} />
+              <NavItem to={`/school/${siteId}/finance`} icon={<ChartBarIcon className="h-5 w-5" />} text="Finance" scopes={['finance:admin']} />
+            </Section>}
 
-        {settings?.modules.inventory.enabled && hasAnyScope(['inventory:admin']) && (
-          <CollapsibleNavSection title="Inventory" icon={<ArchiveIcon className="h-4 w-4" />}>
-            <NavItem to={`/school/${siteId}/inventory/items`} icon={<BookIcon className="h-4 w-4" />} label="Items" />
-            <NavItem to={`/school/${siteId}/inventory/stock`} icon={<TableIcon className="h-4 w-4" />} label="Stock" />
-            <NavItem to={`/school/${siteId}/inventory/suppliers`} icon={<UsersIcon className="h-4 w-4" />} label="Suppliers" />
-            <NavItem to={`/school/${siteId}/inventory/requests`} icon={<ClipboardIcon className="h-4 w-4" />} label="Requests" />
-            <NavItem to={`/school/${siteId}/inventory/assets`} icon={<IdentificationIcon className="h-4 w-4" />} label="Assets" />
-          </CollapsibleNavSection>
-        )}
+            {isSectionVisible('transport') && <Section title="Operations" scopes={['school:admin', 'inventory:admin', 'sis:hostel:write']}>
+              <NavItem to={`/school/${siteId}/transport`} icon={<TruckIcon className="h-5 w-5" />} text="Transport" scopes={['school:admin']} />
+              <NavItem to={`/school/${siteId}/hostel`} icon={<OfficeBuildingIcon className="h-5 w-5" />} text="Hostel" scopes={['sis:hostel:write']} />
+              {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/hostel`} icon={<OfficeBuildingIcon className="h-5 w-5" />} text="My Hostel" />}
+              <NavItem to={`/school/${siteId}/inventory`} icon={<ArchiveIcon className="h-5 w-5" />} text="Inventory" scopes={['inventory:admin']} />
+            </Section>}
 
-        {settings?.modules.alumni.enabled && hasAnyScope(['alumni:admin']) && (
-          <CollapsibleNavSection title="Alumni" icon={<UsersIcon className="h-4 w-4" />}>
-            <NavItem to={`/school/${siteId}/alumni/directory`} icon={<UsersIcon className="h-4 w-4" />} label="Directory" />
-            <NavItem to={`/school/${siteId}/alumni/events`} icon={<CalendarIcon className="h-4 w-4" />} label="Events" />
-            <NavItem to={`/school/${siteId}/alumni/donations`} icon={<GiftIcon className="h-4 w-4" />} label="Donations" />
-          </CollapsibleNavSection>
-        )}
-
-        {settings?.modules.hr.enabled && hasAnyScope(['hr:admin', 'payroll:admin']) && (
-          <CollapsibleNavSection title="HR & Payroll" icon={<BriefcaseIcon className="h-4 w-4" />}>
-            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/dashboard`} icon={<HomeIcon className="h-4 w-4" />} label="Dashboard" isDashboard />}
-            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/employees`} icon={<UsersIcon className="h-4 w-4" />} label="Employees" />}
-            {settings?.modules.hr.enabled && hasAnyScope(['hr:admin']) && <NavItem to={`/school/${siteId}/hr/leave`} icon={<CalendarIcon className="h-4 w-4" />} label="Leave" />}
-            {settings?.modules.payroll.enabled && hasAnyScope(['payroll:admin']) && <NavItem to={`/school/${siteId}/hr/payroll`} icon={<CurrencyDollarIcon className="h-4 w-4" />} label="Payroll" />}
-          </CollapsibleNavSection>
-        )}
-
-        {hasAnyScope(['lms:admin', 'school:admin', 'student', 'homework:student', 'homework:parent', 'alumni:portal:self']) && (
-             <CollapsibleNavSection title="Portals" icon={<LibraryIcon className="h-4 w-4" />}>
-                {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'lms:admin', 'student']) && <NavItem to={`/school/${siteId}/library`} icon={<FilmIcon className="h-4 w-4" />} label="Digital Library" />}
-                {settings?.modules.lms.enabled && hasAnyScope(['school:admin', 'student']) && <NavItem to={`/school/${siteId}/library/catchup`} icon={<ClockIcon className="h-4 w-4" />} label="Catch-Up Classes" />}
-                {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/homework`} icon={<ClipboardIcon className="h-4 w-4" />} label="My Homework" />}
-                {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/live-classes`} icon={<FilmIcon className="h-4 w-4" />} label="My Live Classes" />}
-                {hasAnyScope(['homework:student']) && <NavItem to={`/school/${siteId}/student/hostel`} icon={<OfficeBuildingIcon className="h-4 w-4" />} label="My Hostel" />}
-                {hasAnyScope(['homework:parent']) && <NavItem to={`/portal/${siteId}/parent/student/${user?.studentId || 's01'}/homework`} icon={<UsersIcon className="h-4 w-4" />} label="Parent Portal" />}
-                {settings?.modules.alumni.enabled && hasAnyScope(['alumni:portal:self']) && <NavItem to={`/portal/${siteId}/alumni/${user?.alumniId || 'alum-s01'}`} icon={<UsersIcon className="h-4 w-4" />} label="Alumni Portal" />}
-             </CollapsibleNavSection>
-        )}
-
-        {settings?.modules.cms.enabled && hasAnyScope(['cms:admin']) && (
-          <CollapsibleNavSection title="Website CMS" icon={<GlobeIcon className="h-4 w-4" />}>
-              <NavItem to={`/school/${siteId}/cms/pages`} icon={<BookIcon className="h-4 w-4" />} label="Pages" />
-              <NavItem to={`/school/${siteId}/cms/posts`} icon={<ClipboardIcon className="h-4 w-4" />} label="News & Events" />
-              <NavItem to={`/school/${siteId}/cms/menus`} icon={<TableIcon className="h-4 w-4" />} label="Menus" />
-              <NavItem to={`/school/${siteId}/cms/media`} icon={<FilmIcon className="h-4 w-4" />} label="Media Library" />
-              <NavItem to={`/school/${siteId}/cms/settings`} icon={<CogIcon className="h-4 w-4" />} label="Settings" />
-          </CollapsibleNavSection>
-        )}
-
-        {settings?.modules.certificates.enabled && hasAnyScope(['certificates:admin']) && (
-          <CollapsibleNavSection title="Certificates" icon={<IdentificationIcon className="h-4 w-4" />}>
-              <NavItem to={`/school/${siteId}/certificates`} icon={<ClipboardIcon className="h-4 w-4" />} label="Manage Issues" />
-          </CollapsibleNavSection>
-        )}
-
-        {hasAnyScope(['school:admin']) && (
-            <CollapsibleNavSection title="Admin" icon={<ShieldIcon className="h-4 w-4" />}>
-                <NavItem to={`/school/${siteId}/admin/audit`} icon={<ShieldIcon className="h-4 w-4" />} label="Audit Trail" />
-                <NavItem to={`/school/${siteId}/admin/activity`} icon={<UsersIcon className="h-4 w-4" />} label="User Activity" />
-                <NavItem to={`/school/${siteId}/admin/settings`} icon={<CogIcon className="h-4 w-4" />} label="System Settings" />
-            </CollapsibleNavSection>
-        )}
-      
-      </nav>
-      <div className="mt-auto">
-        {user && (
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <div className="text-sm font-semibold text-gray-900">{user.name}</div>
-            <div className="text-xs text-gray-500">{user.role}</div>
+             {isSectionVisible('hr') && <Section title="Human Resources" scopes={['hr:admin', 'payroll:admin']}>
+              <NavItem to={`/school/${siteId}/hr`} icon={<BriefcaseIcon className="h-5 w-5" />} text="HR Dashboard" scopes={['hr:admin']} />
+              <NavItem to={`/school/${siteId}/hr/payroll`} icon={<CurrencyPoundIcon className="h-5 w-5" />} text="Payroll" scopes={['payroll:admin']} />
+            </Section>}
           </div>
-        )}
+
+          <div className="pt-4 border-t border-gray-700/50 space-y-6">
+            {isSectionVisible('cms') && <Section title="Website" scopes={['cms:admin']}>
+               <NavItem to={`/school/${siteId}/cms`} icon={<GlobeIcon className="h-5 w-5" />} text="CMS" />
+            </Section>}
+
+            {hasAnyScope(['homework:parent', 'alumni:portal:self']) && (
+                <Section title="Portals" scopes={['homework:parent', 'alumni:portal:self']}>
+                    {user?.studentId && <NavItem to={`/portal/${siteId}/parent/student/${user.studentId}`} icon={<UsersIcon className="h-5 w-5" />} text="Parent Portal" />}
+                    {user?.alumniId && <NavItem to={`/portal/${siteId}/alumni/${user.alumniId}`} icon={<UserGroupIcon className="h-5 w-5" />} text="Alumni Portal" />}
+                </Section>
+            )}
+
+            <Section title="System" scopes={['school:admin']}>
+              <NavItem to={`/school/${siteId}/admin/audit`} icon={<ShieldCheckIcon className="h-5 w-5" />} text="Audit Trail" />
+              <NavItem to={`/school/${siteId}/admin/settings`} icon={<CogIcon className="h-5 w-5" />} text="System Settings" />
+            </Section>
+          </div>
+        </div>
       </div>
     </aside>
   );

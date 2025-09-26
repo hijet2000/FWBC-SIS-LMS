@@ -1,4 +1,4 @@
-import type { LiveClass, User, LiveClassStatus, LiveClassIntegrationSettings, LiveClassAttendance } from '../types';
+import type { LiveClass, User, LiveClassStatus, LiveClassIntegrationSettings, LiveClassAttendance, LiveClassParticipant } from '../types';
 import { logAuditEvent } from './auditService';
 import { createCatchupFromLiveClass } from './catchupService';
 
@@ -20,6 +20,8 @@ let MOCK_LIVE_CLASSES: LiveClass[] = [
 let MOCK_INTEGRATION_SETTINGS: LiveClassIntegrationSettings = {
     provider: 'SelfHosted',
     enabled: true,
+    autoRecord: true,
+    autoPublishRecording: false,
 };
 
 let MOCK_LIVE_CLASS_ATTENDANCE: LiveClassAttendance[] = [
@@ -29,7 +31,7 @@ let MOCK_LIVE_CLASS_ATTENDANCE: LiveClassAttendance[] = [
 // --- MOCK API ---
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-export const listLiveClasses = async (params: { classId?: string, teacherId?: string, studentId?: string, date?: string }): Promise<LiveClass[]> => {
+export const listLiveClasses = async (params: { classId?: string, teacherId?: string, studentId?: string, date?: string } = {}): Promise<LiveClass[]> => {
     await delay(400);
     let results = [...MOCK_LIVE_CLASSES];
     if (params.classId) {
@@ -42,7 +44,22 @@ export const listLiveClasses = async (params: { classId?: string, teacherId?: st
     return results.sort((a,b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 };
 
-export const createLiveClass = async (input: Omit<LiveClass, 'id'|'status'|'joinUrl'>, actor: User): Promise<LiveClass> => {
+export const getLiveClassDetails = async (id: string): Promise<LiveClass | null> => {
+    await delay(150);
+    return MOCK_LIVE_CLASSES.find(lc => lc.id === id) || null;
+};
+
+export const getLiveClassParticipants = async (id: string): Promise<LiveClassParticipant[]> => {
+    await delay(300);
+    // Mock participants
+    return [
+        { id: 's02', name: 'Bob Williams', isHost: false },
+        { id: 's03', name: 'Charlie Brown', isHost: false },
+        { id: 's04', name: 'Diana Miller', isHost: false },
+    ];
+};
+
+export const createLiveClass = async (input: Omit<LiveClass, 'id'|'status'|'joinUrl'|'meetingId'|'recordedUrl'>, actor: User): Promise<LiveClass> => {
     await delay(500);
     const newClass: LiveClass = {
         ...input,

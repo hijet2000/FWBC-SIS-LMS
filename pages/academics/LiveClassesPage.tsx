@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import * as liveClassService from '../../lib/liveClassService';
 import * as schoolService from '../../lib/schoolService';
 import * as academicsService from '../../lib/academicsService';
 import type { LiveClass, LiveClassStatus, SchoolClass, Subject, Teacher } from '../../types';
+import ScheduleClassModal from '../../components/academics/ScheduleClassModal';
 
 const statusStyles: Record<LiveClassStatus, string> = {
     Scheduled: 'bg-gray-100 text-gray-800',
@@ -14,12 +16,14 @@ const statusStyles: Record<LiveClassStatus, string> = {
 };
 
 const LiveClassesPage: React.FC = () => {
+    const { siteId } = useParams<{ siteId: string }>();
     const { user } = useAuth();
     const { addToast } = useToast();
     
     const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
     const [meta, setMeta] = useState<{ classes: SchoolClass[], subjects: Subject[], teachers: Teacher[] }>({ classes: [], subjects: [], teachers: [] });
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchData = useCallback(() => {
         setLoading(true);
@@ -63,6 +67,12 @@ const LiveClassesPage: React.FC = () => {
             }
         }
     };
+
+    const handleSaveSuccess = () => {
+        setIsModalOpen(false);
+        addToast('Live class scheduled successfully!', 'success');
+        fetchData();
+    };
     
     const metaMaps = useMemo(() => ({
         classes: new Map(meta.classes.map(c => [c.id, c.name])),
@@ -74,7 +84,7 @@ const LiveClassesPage: React.FC = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-800">Live Classes</h1>
-                <button className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md">Schedule New Class</button>
+                <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md">Schedule New Class</button>
             </div>
 
             <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
@@ -96,7 +106,7 @@ const LiveClassesPage: React.FC = () => {
                                 <td className="p-3 text-sm"><span className={`px-2 py-1 text-xs rounded-full ${statusStyles[lc.status]}`}>{lc.status}</span></td>
                                 <td className="p-3 text-right text-sm font-medium space-x-2">
                                     {lc.status === 'Scheduled' && <button onClick={() => handleStatusChange(lc, 'Live')} className="text-green-600">Start</button>}
-                                    {lc.status === 'Live' && <button onClick={() => handleStatusChange(lc, 'Finished')} className="text-red-600">End</button>}
+                                    {lc.status === 'Live' && <Link to={`/school/${siteId}/live-classroom/${lc.id}`} className="px-3 py-1 bg-green-600 text-white rounded-md">Join as Host</Link>}
                                     {lc.status === 'Finished' && <button onClick={() => handleAddToCatchup(lc)} className="text-blue-600">Add to Catch-Up</button>}
                                 </td>
                             </tr>
@@ -104,6 +114,18 @@ const LiveClassesPage: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            {user && (
+                <ScheduleClassModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSaveSuccess={handleSaveSuccess}
+                    actor={user}
+                    classes={meta.classes}
+                    subjects={meta.subjects}
+                    teachers={meta.teachers}
+                />
+            )}
         </div>
     );
 };
